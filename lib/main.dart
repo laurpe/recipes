@@ -60,10 +60,25 @@ class RecipeList extends StatelessWidget {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          // Add your onPressed code here!
+          print(recipe.name);
         },
         child: const Icon(Icons.add),
       ),
     );
   }
 }
+
+class Recipe {
+  String name;
+  List<String> ingredients;
+  String instructions;
+
+  Recipe({
+    required this.name,
+    required this.ingredients,
+    required this.instructions,
+  });
+}
+
+final recipe = Recipe(
+    name: "letut", ingredients: ["jauhoja", "maitoa"], instructions: "sekoita");
