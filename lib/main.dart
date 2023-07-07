@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:recipes/recipe.dart';
 
 void main() {
   runApp(const MyApp());
@@ -7,11 +8,10 @@ void main() {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'Recipe app',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSwatch().copyWith(
           primary: Colors.yellow[700],
@@ -33,12 +33,16 @@ class RecipeList extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Recipes'),
       ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: const [Text("List of recipes will be here!")],
-        ),
-      ),
+      body: ListView.builder(
+          padding: const EdgeInsets.all(8),
+          itemCount: recipes.length,
+          itemBuilder: (BuildContext context, int index) {
+            return Container(
+              height: 50,
+              color: Colors.amber[600],
+              child: Center(child: Text(recipes[index].name)),
+            );
+          }),
       bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
@@ -59,26 +63,18 @@ class RecipeList extends StatelessWidget {
         },
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          print(recipe.name);
-        },
+        onPressed: () {},
         child: const Icon(Icons.add),
       ),
     );
   }
 }
 
-class Recipe {
-  String name;
-  List<String> ingredients;
-  String instructions;
-
-  Recipe({
-    required this.name,
-    required this.ingredients,
-    required this.instructions,
-  });
-}
-
-final recipe = Recipe(
+final letut = Recipe(
     name: "letut", ingredients: ["jauhoja", "maitoa"], instructions: "sekoita");
+final kakku = Recipe(
+    name: "kakku",
+    ingredients: ["jauhoja", "maitoa", "kananmunia"],
+    instructions: "sekoita ja paista");
+
+final recipes = [letut, kakku];
