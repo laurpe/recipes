@@ -1,6 +1,13 @@
+class Ingredient {
+  String amount;
+  String name;
+
+  Ingredient({required this.amount, required this.name});
+}
+
 class Recipe {
   String name;
-  List<String> ingredients;
+  List<Ingredient> ingredients;
   String instructions;
 
   Recipe({

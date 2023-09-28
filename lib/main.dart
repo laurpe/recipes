@@ -119,12 +119,11 @@ class MyApp extends StatelessWidget {
 
 class RecipeList extends StatelessWidget {
   const RecipeList({super.key});
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('First Route'),
+        title: const Text('Recipes'),
       ),
       body: ListView.builder(
           padding: const EdgeInsets.all(8),
@@ -135,7 +134,7 @@ class RecipeList extends StatelessWidget {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => const RecipeView(),
+                    builder: (context) => RecipeView(recipe: recipes[index]),
                   ),
                 );
               },
@@ -151,31 +150,56 @@ class RecipeList extends StatelessWidget {
 }
 
 class RecipeView extends StatelessWidget {
-  const RecipeView({super.key});
+  final Recipe recipe;
+
+  const RecipeView({super.key, required this.recipe});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Second Route'),
+        title: Text(recipe.name),
       ),
-      body: Center(
-        child: ElevatedButton(
-          onPressed: () {
-            Navigator.pop(context);
-          },
-          child: const Text('Go back!'),
-        ),
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text("Ainesosat", style: Theme.of(context).textTheme.headlineSmall),
+          ListView(
+            shrinkWrap: true,
+            children: [
+              for (var ingredient in recipe.ingredients)
+                Row(children: [
+                  SizedBox(width: 60, child: Text(ingredient.amount)),
+                  Text(ingredient.name)
+                ]),
+            ],
+          ),
+          Text(
+            "Ohje",
+            style: Theme.of(context).textTheme.headlineSmall,
+          ),
+          Text(recipe.instructions),
+        ],
       ),
     );
   }
 }
 
 final letut = Recipe(
-    name: "letut", ingredients: ["jauhoja", "maitoa"], instructions: "sekoita");
+    name: "Letut",
+    ingredients: [
+      Ingredient(amount: "2 dl", name: "maitoa"),
+      Ingredient(amount: "1 dl", name: "jauhoja")
+    ],
+    instructions: "sekoita");
 final kakku = Recipe(
-    name: "kakku",
-    ingredients: ["jauhoja", "maitoa", "kananmunia"],
-    instructions: "sekoita ja paista");
+    name: "Kakku",
+    ingredients: [
+      Ingredient(name: "jauhoja", amount: "3 dl"),
+      Ingredient(name: "sokeria", amount: "3 dl"),
+      Ingredient(name: "kananmunia", amount: "3 kpl")
+    ],
+    instructions:
+        "Lämmitä uuni 200 asteeseen. Vatkaa kananmunat ja sokeri kovaksi vaahdoksi. Sekoita varovasti joukkoon jauhot. Kaada voideltuun ja korppujauhotettuun vuokaan ja paista uunissa 200 asteessa noin 30 minuuttia, kunnes taikina on keskeltä kypsä.");
 
 final recipes = [letut, kakku];
