@@ -49,16 +49,50 @@ void main() async {
     }
   }
 
-  final ingredient1 = Ingredient(amount: "2 kg", name: "kukkakaalia");
-  final ingredient2 = Ingredient(amount: "2 dl", name: "kermaviiliä");
-  final ingredient3 = Ingredient(amount: "1 rkl", name: "suolaa");
+  Future<List<Ingredient>> getIngredients(int recipeId) async {
+    final db = database;
 
-  final newRecipe = Recipe(
-      name: "kukkakaaliwingsit",
-      instructions: "Sekoita aineet",
-      ingredients: [ingredient1, ingredient2, ingredient3]);
+    final List<Map<String, dynamic>> ingredientMaps = await db
+        .query('ingredients', where: 'recipeId = ?', whereArgs: [recipeId]);
 
-  await insertRecipe(newRecipe);
+    return List.generate(ingredientMaps.length, (i) {
+      return Ingredient(
+        id: ingredientMaps[i]['id'],
+        name: ingredientMaps[i]['name'],
+        amount: ingredientMaps[i]['amount'],
+      );
+    });
+  }
+
+  Future<List<Recipe>> getRecipes() async {
+    final db = database;
+
+    final List<Map<String, dynamic>> recipes = await db.query('recipes');
+    List<Recipe> recipeList = [];
+
+    for (var recipe in recipes) {
+      recipeList.add(Recipe(
+          id: recipe['id'],
+          name: recipe['name'],
+          instructions: recipe['instructions'],
+          ingredients: await getIngredients(recipe['id'])));
+    }
+
+    return recipeList;
+  }
+
+  print(await getRecipes());
+
+  // final ingredient1 = Ingredient(amount: "2 kg", name: "kukkakaalia");
+  // final ingredient2 = Ingredient(amount: "2 dl", name: "kermaviiliä");
+  // final ingredient3 = Ingredient(amount: "1 rkl", name: "suolaa");
+
+  // final newRecipe = Recipe(
+  //     name: "kukkakaaliwingsit",
+  //     instructions: "Sekoita aineet",
+  //     ingredients: [ingredient1, ingredient2, ingredient3]);
+
+  // await insertRecipe(newRecipe);
 
   runApp(const MyApp());
 }
