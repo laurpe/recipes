@@ -88,7 +88,7 @@ class RecipeList extends StatelessWidget {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => const RecipeForm(),
+                builder: (context) => const RecipeFormView(),
               ),
             );
           },
@@ -97,16 +97,52 @@ class RecipeList extends StatelessWidget {
   }
 }
 
-class RecipeForm extends StatelessWidget {
-  const RecipeForm({super.key});
+class RecipeFormView extends StatelessWidget {
+  const RecipeFormView({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: Text("Add new recipe"),
+          title: const Text("Add new recipe"),
         ),
-        body: const Text("recipe form here"));
+        body: RecipeForm());
+  }
+}
+
+class RecipeForm extends StatefulWidget {
+  const RecipeForm({super.key});
+
+  @override
+  RecipeFormState createState() {
+    return RecipeFormState();
+  }
+}
+
+class RecipeFormState extends State<RecipeForm> {
+  final _formKey = GlobalKey<FormState>();
+
+  @override
+  Widget build(BuildContext context) {
+    return Form(
+        key: _formKey,
+        child: Column(children: [
+          TextFormField(validator: (value) {
+            if (value == null || value.isEmpty) {
+              return 'Enter text';
+            }
+            return null;
+          }),
+          ElevatedButton(
+              onPressed: () {
+                if (_formKey.currentState!.validate()) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Processing data')),
+                  );
+                }
+              },
+              child: const Text('Submit'))
+        ]));
   }
 }
 
