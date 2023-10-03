@@ -48,41 +48,65 @@ class RecipeList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          title: const Text('Recipes'),
-        ),
-        body: FutureBuilder<List<Recipe>>(
-            future: GetIt.I<DatabaseClient>().getRecipes(),
-            builder: (context, snapshot) {
-              if (snapshot.hasData) {
-                return ListView.builder(
-                    padding: const EdgeInsets.all(8),
-                    itemCount: snapshot.data!.length,
-                    itemBuilder: (BuildContext context, int index) {
-                      return TextButton(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) =>
-                                  RecipeView(recipe: snapshot.data![index]),
-                            ),
-                          );
-                        },
-                        child: Container(
-                          height: 50,
-                          color: Colors.amber[600],
-                          child: Center(
-                            child: Text(snapshot.data![index].name,
-                                style: TextStyle(color: Colors.amber[50])),
+      appBar: AppBar(
+        title: const Text('Recipes'),
+      ),
+      body: FutureBuilder<List<Recipe>>(
+          future: GetIt.I<DatabaseClient>().getRecipes(),
+          builder: (context, snapshot) {
+            if (snapshot.hasData) {
+              return ListView.builder(
+                  padding: const EdgeInsets.all(8),
+                  itemCount: snapshot.data!.length,
+                  itemBuilder: (BuildContext context, int index) {
+                    return TextButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                RecipeView(recipe: snapshot.data![index]),
                           ),
+                        );
+                      },
+                      child: Container(
+                        height: 50,
+                        color: Colors.amber[600],
+                        child: Center(
+                          child: Text(snapshot.data![index].name,
+                              style: TextStyle(color: Colors.amber[50])),
                         ),
-                      );
-                    });
-              } else {
-                return const Text("");
-              }
-            }));
+                      ),
+                    );
+                  });
+            } else {
+              return const Text("");
+            }
+          }),
+      floatingActionButton: FloatingActionButton(
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const RecipeForm(),
+              ),
+            );
+          },
+          child: const Icon(Icons.add)),
+    );
+  }
+}
+
+class RecipeForm extends StatelessWidget {
+  const RecipeForm({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+        appBar: AppBar(
+          title: Text("Add new recipe"),
+        ),
+        body: const Text("recipe form here"));
   }
 }
 
