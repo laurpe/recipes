@@ -106,7 +106,7 @@ class RecipeFormView extends StatelessWidget {
         appBar: AppBar(
           title: const Text("Add new recipe"),
         ),
-        body: RecipeForm());
+        body: const RecipeForm());
   }
 }
 
@@ -121,27 +121,85 @@ class RecipeForm extends StatefulWidget {
 
 class RecipeFormState extends State<RecipeForm> {
   final _formKey = GlobalKey<FormState>();
+  String _recipeName = '';
+  String _instructions = '';
+  String _ingredientName = '';
+  String _ingredientAmount = '';
+
+  Future<void> _submitData() async {
+    if (_formKey.currentState!.validate()) {
+      _formKey.currentState!.save();
+
+      final recipe = Recipe(
+          name: _recipeName,
+          instructions: _instructions,
+          ingredients: [
+            Ingredient(name: _ingredientName, amount: _ingredientAmount)
+          ]);
+
+      GetIt.I<DatabaseClient>().insertRecipe(recipe);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Form(
         key: _formKey,
         child: Column(children: [
-          TextFormField(validator: (value) {
-            if (value == null || value.isEmpty) {
-              return 'Enter text';
-            }
-            return null;
-          }),
-          ElevatedButton(
-              onPressed: () {
-                if (_formKey.currentState!.validate()) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Processing data')),
-                  );
-                }
-              },
-              child: const Text('Submit'))
+          TextFormField(
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Required field';
+              }
+              return null;
+            },
+            decoration: const InputDecoration(
+              hintText: 'Name',
+            ),
+            onSaved: (value) {
+              _recipeName = value!;
+            },
+          ),
+          TextFormField(
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Required field';
+              }
+              return null;
+            },
+            decoration: const InputDecoration(hintText: 'Ingredient name'),
+            onSaved: (value) {
+              _ingredientName = value!;
+            },
+          ),
+          TextFormField(
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Required field';
+              }
+              return null;
+            },
+            decoration: const InputDecoration(hintText: 'Ingredient amount'),
+            onSaved: (value) {
+              _ingredientAmount = value!;
+            },
+          ),
+          TextFormField(
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Required field';
+              }
+              return null;
+            },
+            decoration: const InputDecoration(hintText: 'Instructions'),
+            minLines: 10,
+            maxLines: null,
+            keyboardType: TextInputType.multiline,
+            onSaved: (value) {
+              _instructions = value!;
+            },
+          ),
+          ElevatedButton(onPressed: _submitData, child: const Text('Submit'))
         ]));
   }
 }
