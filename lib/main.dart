@@ -142,6 +142,7 @@ class RecipeFormState extends State<RecipeForm> {
         ScaffoldMessenger.of(context)
             .showSnackBar(const SnackBar(content: Text('Recipe saved!')));
         _formKey.currentState!.reset();
+        Navigator.of(context).pop();
       } catch (error) {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
             content: Text('Something went wrong! Please try again.')));
