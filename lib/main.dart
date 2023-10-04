@@ -137,7 +137,14 @@ class RecipeFormState extends State<RecipeForm> {
             Ingredient(name: _ingredientName, amount: _ingredientAmount)
           ]);
 
-      GetIt.I<DatabaseClient>().insertRecipe(recipe);
+      try {
+        GetIt.I<DatabaseClient>().insertRecipe(recipe);
+        ScaffoldMessenger.of(context)
+            .showSnackBar(const SnackBar(content: Text('Recipe saved!')));
+      } catch (error) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+            content: Text('Something went wrong! Please try again.')));
+      }
     }
   }
 
