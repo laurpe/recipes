@@ -123,19 +123,23 @@ class RecipeFormState extends State<RecipeForm> {
   final _formKey = GlobalKey<FormState>();
   String _recipeName = '';
   String _instructions = '';
-  String _ingredientName = '';
-  String _ingredientAmount = '';
+  final List<Ingredient> _ingredients = [];
+
+  void _addSkill() {
+    setState(() {
+      _ingredients.add(const Ingredient(name: '', amount: ''));
+    });
+  }
 
   Future<void> _submitData() async {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
 
       final recipe = Recipe(
-          name: _recipeName,
-          instructions: _instructions,
-          ingredients: [
-            Ingredient(name: _ingredientName, amount: _ingredientAmount)
-          ]);
+        name: _recipeName,
+        instructions: _instructions,
+        ingredients: _ingredients,
+      );
 
       try {
         GetIt.I<DatabaseClient>().insertRecipe(recipe);
@@ -176,30 +180,6 @@ class RecipeFormState extends State<RecipeForm> {
               }
               return null;
             },
-            decoration: const InputDecoration(hintText: 'Ingredient name'),
-            onSaved: (value) {
-              _ingredientName = value!;
-            },
-          ),
-          TextFormField(
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return 'Required field';
-              }
-              return null;
-            },
-            decoration: const InputDecoration(hintText: 'Ingredient amount'),
-            onSaved: (value) {
-              _ingredientAmount = value!;
-            },
-          ),
-          TextFormField(
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return 'Required field';
-              }
-              return null;
-            },
             decoration: const InputDecoration(hintText: 'Instructions'),
             minLines: 10,
             maxLines: null,
@@ -207,6 +187,78 @@ class RecipeFormState extends State<RecipeForm> {
             onSaved: (value) {
               _instructions = value!;
             },
+          ),
+          Expanded(
+            child: ListView.builder(
+              itemCount: _ingredients.length + 1,
+              itemBuilder: (context, index) {
+                if (index == _ingredients.length) {
+                  return ElevatedButton(
+                    onPressed: _addSkill,
+                    child: const Text('Add ingredient'),
+                  );
+                }
+                return SizedBox(
+                  width: MediaQuery.of(context).size.width,
+                  child: Row(
+                    children: [
+                      SizedBox(
+                        width: 100,
+                        child: TextFormField(
+                          initialValue: _ingredients[index].amount,
+                          decoration:
+                              const InputDecoration(labelText: 'Amount'),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Please enter ingredient amount';
+                            }
+                            return null;
+                          },
+                          onChanged: (value) {
+                            setState(() {
+                              _ingredients[index] = Ingredient(
+                                name: _ingredients[index].name,
+                                amount: value,
+                              );
+                            });
+                          },
+                        ),
+                      ),
+                      Expanded(
+                        child: TextFormField(
+                          initialValue: _ingredients[index].name,
+                          decoration: const InputDecoration(
+                            labelText: 'Name',
+                          ),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Please enter ingredient name';
+                            }
+                            return null;
+                          },
+                          onChanged: (value) {
+                            setState(() {
+                              _ingredients[index] = Ingredient(
+                                name: value,
+                                amount: _ingredients[index].amount,
+                              );
+                            });
+                          },
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.delete),
+                        onPressed: () {
+                          setState(() {
+                            _ingredients.removeAt(index);
+                          });
+                        },
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
           ),
           ElevatedButton(onPressed: _submitData, child: const Text('Submit'))
         ]));
