@@ -106,7 +106,8 @@ class RecipeFormView extends StatelessWidget {
         appBar: AppBar(
           title: const Text("Add new recipe"),
         ),
-        body: const RecipeForm());
+        body:
+            const SafeArea(child: SingleChildScrollView(child: RecipeForm())));
   }
 }
 
@@ -125,7 +126,7 @@ class RecipeFormState extends State<RecipeForm> {
   String _instructions = '';
   final List<Ingredient> _ingredients = [];
 
-  void _addSkill() {
+  void _addIndgredient() {
     setState(() {
       _ingredients.add(const Ingredient(name: '', amount: ''));
     });
@@ -158,7 +159,7 @@ class RecipeFormState extends State<RecipeForm> {
   Widget build(BuildContext context) {
     return Form(
         key: _formKey,
-        child: Column(children: [
+        child: Column(mainAxisSize: MainAxisSize.min, children: [
           TextFormField(
             validator: (value) {
               if (value == null || value.isEmpty) {
@@ -188,74 +189,72 @@ class RecipeFormState extends State<RecipeForm> {
               _instructions = value!;
             },
           ),
-          Expanded(
+          Flexible(
             child: ListView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
               itemCount: _ingredients.length + 1,
               itemBuilder: (context, index) {
                 if (index == _ingredients.length) {
                   return ElevatedButton(
-                    onPressed: _addSkill,
+                    onPressed: _addIndgredient,
                     child: const Text('Add ingredient'),
                   );
                 }
-                return SizedBox(
-                  width: MediaQuery.of(context).size.width,
-                  child: Row(
-                    children: [
-                      SizedBox(
-                        width: 100,
-                        child: TextFormField(
-                          initialValue: _ingredients[index].amount,
-                          decoration:
-                              const InputDecoration(labelText: 'Amount'),
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Please enter ingredient amount';
-                            }
-                            return null;
-                          },
-                          onChanged: (value) {
-                            setState(() {
-                              _ingredients[index] = Ingredient(
-                                name: _ingredients[index].name,
-                                amount: value,
-                              );
-                            });
-                          },
-                        ),
-                      ),
-                      Expanded(
-                        child: TextFormField(
-                          initialValue: _ingredients[index].name,
-                          decoration: const InputDecoration(
-                            labelText: 'Name',
-                          ),
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Please enter ingredient name';
-                            }
-                            return null;
-                          },
-                          onChanged: (value) {
-                            setState(() {
-                              _ingredients[index] = Ingredient(
-                                name: value,
-                                amount: _ingredients[index].amount,
-                              );
-                            });
-                          },
-                        ),
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.delete),
-                        onPressed: () {
+                return Row(
+                  children: [
+                    SizedBox(
+                      width: 100,
+                      child: TextFormField(
+                        initialValue: _ingredients[index].amount,
+                        decoration: const InputDecoration(labelText: 'Amount'),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter ingredient amount';
+                          }
+                          return null;
+                        },
+                        onChanged: (value) {
                           setState(() {
-                            _ingredients.removeAt(index);
+                            _ingredients[index] = Ingredient(
+                              name: _ingredients[index].name,
+                              amount: value,
+                            );
                           });
                         },
                       ),
-                    ],
-                  ),
+                    ),
+                    Expanded(
+                      child: TextFormField(
+                        initialValue: _ingredients[index].name,
+                        decoration: const InputDecoration(
+                          labelText: 'Name',
+                        ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter ingredient name';
+                          }
+                          return null;
+                        },
+                        onChanged: (value) {
+                          setState(() {
+                            _ingredients[index] = Ingredient(
+                              name: value,
+                              amount: _ingredients[index].amount,
+                            );
+                          });
+                        },
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.delete),
+                      onPressed: () {
+                        setState(() {
+                          _ingredients.removeAt(index);
+                        });
+                      },
+                    ),
+                  ],
                 );
               },
             ),
