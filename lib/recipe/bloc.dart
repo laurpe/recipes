@@ -6,16 +6,14 @@ import 'package:recipes/recipe/state.dart';
 class RecipeBloc extends Bloc<RecipeEvent, RecipeState> {
   final DatabaseClient databaseClient;
 
-  RecipeBloc({required this.databaseClient}) : super(LoadingRecipesState());
-
-  Stream<RecipeState> mapEventToState(RecipeEvent event) async* {
-    if (event is GetRecipes) {
+  RecipeBloc({required this.databaseClient}) : super(LoadingRecipesState()) {
+    on<GetRecipes>((event, emit) async {
       try {
-        yield LoadingRecipesState();
-        yield LoadedRecipesState(recipes: await databaseClient.getRecipes());
+        emit(LoadingRecipesState());
+        emit(LoadedRecipesState(recipes: await databaseClient.getRecipes()));
       } catch (error) {
-        yield ErrorLoadingRecipesState();
+        emit(ErrorLoadingRecipesState());
       }
-    }
+    });
   }
 }

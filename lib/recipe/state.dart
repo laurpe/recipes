@@ -1,7 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:recipes/recipe.dart';
 
-abstract class RecipeState extends Equatable {
+sealed class RecipeState extends Equatable {
   const RecipeState();
 
   @override

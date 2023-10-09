@@ -4,6 +4,7 @@ import 'package:get_it/get_it.dart';
 import 'package:recipes/recipe.dart';
 import 'package:recipes/database.dart';
 import 'package:recipes/recipe/bloc.dart';
+import 'package:recipes/recipe/events.dart';
 import 'package:recipes/recipe/state.dart';
 
 void main() async {
@@ -48,145 +49,71 @@ class MyApp extends StatelessWidget {
 
 class RecipeList extends StatelessWidget {
   const RecipeList({super.key});
+
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-        create: (_) {
-          final databaseClient = GetIt.I<DatabaseClient>();
-          return RecipeBloc(databaseClient: databaseClient);
-        },
-        child: Scaffold(
-          appBar: AppBar(
-            title: const Text('Recipes'),
-          ),
-          body: BlocBuilder<RecipeBloc, RecipeState>(
-              builder: (BuildContext context, RecipeState state) {
-            if (state is LoadingRecipesState) {
-              return const Center(
-                child: CircularProgressIndicator(),
-              );
-            }
+      create: (_) {
+        final databaseClient = GetIt.I<DatabaseClient>();
+        return RecipeBloc(databaseClient: databaseClient)..add(GetRecipes());
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Recipes'),
+        ),
+        body: BlocBuilder<RecipeBloc, RecipeState>(
+          builder: (
+            BuildContext context,
+            RecipeState state,
+          ) {
+            switch (state) {
+              case LoadingRecipesState():
+                return const Center(
+                  child: CircularProgressIndicator(),
+                );
 
-            if (state is ErrorLoadingRecipesState) {
-              return const Center(child: Text('Error loading recipes'));
-            }
-
-            if (state is LoadedRecipesState) {
-              ListView.builder(itemBuilder: (BuildContext context, int index) {
-                return TextButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) =>
-                            RecipeView(recipe: state.recipes[index]),
+              case ErrorLoadingRecipesState():
+                return const Center(
+                  child: Text('Error loading recipes'),
+                );
+              case LoadedRecipesState():
+                return ListView.builder(
+                  itemCount: state.recipes.length,
+                  itemBuilder: (
+                    BuildContext context,
+                    int index,
+                  ) {
+                    return TextButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => RecipeView(
+                              recipe: state.recipes[index],
+                            ),
+                          ),
+                        );
+                      },
+                      child: Container(
+                        height: 50,
+                        color: Colors.amber[600],
+                        child: Center(
+                          child: Text(
+                            state.recipes[index].name,
+                            style: TextStyle(
+                              color: Colors.amber[50],
+                            ),
+                          ),
+                        ),
                       ),
                     );
                   },
-                  child: Container(
-                    height: 50,
-                    color: Colors.amber[600],
-                    child: Center(
-                      child: Text(state.recipes[index].name,
-                          style: TextStyle(color: Colors.amber[50])),
-                    ),
-                  ),
                 );
-              });
             }
-            return const Text("wut");
-          }),
-        ));
-    // return Scaffold(
-    //   appBar: AppBar(
-    //     title: const Text('Recipes'),
-    //   ),
-    //   body: BlocBuilder<RecipeBloc, RecipeState>(
-    //       builder: (BuildContext context, RecipeState state) {
-    //     if (state is LoadingRecipesState) {
-    //       return const Center(
-    //         child: CircularProgressIndicator(),
-    //       );
-    //     }
-
-    //     if (state is ErrorLoadingRecipesState) {
-    //       return const Center(child: Text('Error loading recipes'));
-    //     }
-
-    //     if (state is LoadedRecipesState) {
-    //       ListView.builder(itemBuilder: (BuildContext context, int index) {
-    //         return TextButton(
-    //           onPressed: () {
-    //             Navigator.push(
-    //               context,
-    //               MaterialPageRoute(
-    //                 builder: (context) =>
-    //                     RecipeView(recipe: state.recipes[index]),
-    //               ),
-    //             );
-    //           },
-    //           child: Container(
-    //             height: 50,
-    //             color: Colors.amber[600],
-    //             child: Center(
-    //               child: Text(state.recipes[index].name,
-    //                   style: TextStyle(color: Colors.amber[50])),
-    //             ),
-    //           ),
-    //         );
-    //       });
-    //     }
-    //     return const Text("wut");
-    //   }),
-    // );
-
-    // return Scaffold(
-    //   appBar: AppBar(
-    //     title: const Text('Recipes'),
-    //   ),
-    //   body: FutureBuilder<List<Recipe>>(
-    //       future: GetIt.I<DatabaseClient>().getRecipes(),
-    //       builder: (context, snapshot) {
-    //         if (snapshot.hasData) {
-    //           return ListView.builder(
-    //               padding: const EdgeInsets.all(8),
-    //               itemCount: snapshot.data!.length,
-    //               itemBuilder: (BuildContext context, int index) {
-    //                 return TextButton(
-    //                   onPressed: () {
-    //                     Navigator.push(
-    //                       context,
-    //                       MaterialPageRoute(
-    //                         builder: (context) =>
-    //                             RecipeView(recipe: snapshot.data![index]),
-    //                       ),
-    //                     );
-    //                   },
-    //                   child: Container(
-    //                     height: 50,
-    //                     color: Colors.amber[600],
-    //                     child: Center(
-    //                       child: Text(snapshot.data![index].name,
-    //                           style: TextStyle(color: Colors.amber[50])),
-    //                     ),
-    //                   ),
-    //                 );
-    //               });
-    //         } else {
-    //           return const Text("");
-    //         }
-    //       }),
-    //   floatingActionButton: FloatingActionButton(
-    //       onPressed: () {
-    //         Navigator.push(
-    //           context,
-    //           MaterialPageRoute(
-    //             builder: (context) => const RecipeFormView(),
-    //           ),
-    //         );
-    //       },
-    //       child: const Icon(Icons.add)),
-    // );
+          },
+        ),
+      ),
+    );
   }
 }
 
