@@ -3,9 +3,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:recipes/recipe.dart';
 import 'package:recipes/database.dart';
-import 'package:recipes/recipe/bloc.dart';
-import 'package:recipes/recipe/events.dart';
-import 'package:recipes/recipe/state.dart';
+import 'package:recipes/recipes/bloc.dart';
+import 'package:recipes/recipes/events.dart';
+import 'package:recipes/recipes/state.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -13,17 +13,6 @@ void main() async {
   GetIt.I.registerSingleton<DatabaseClient>(DatabaseClient());
 
   await GetIt.I<DatabaseClient>().initialize();
-
-  // const ingredient1 = Ingredient(amount: "2 kg", name: "kukkakaalia");
-  // const ingredient2 = Ingredient(amount: "2 dl", name: "kermaviiliä");
-  // const ingredient3 = Ingredient(amount: "1 rkl", name: "suolaa");
-
-  // const newRecipe = Recipe(
-  //     name: "kukkakaaliwingsit",
-  //     instructions: "Sekoita aineet",
-  //     ingredients: [ingredient1, ingredient2, ingredient3]);
-
-  // await GetIt.I<DatabaseClient>().insertRecipe(newRecipe);
 
   runApp(const MyApp());
 }
@@ -55,16 +44,16 @@ class RecipeList extends StatelessWidget {
     return BlocProvider(
       create: (_) {
         final databaseClient = GetIt.I<DatabaseClient>();
-        return RecipeBloc(databaseClient: databaseClient)..add(GetRecipes());
+        return RecipesBloc(databaseClient: databaseClient)..add(GetRecipes());
       },
       child: Scaffold(
         appBar: AppBar(
           title: const Text('Recipes'),
         ),
-        body: BlocBuilder<RecipeBloc, RecipeState>(
+        body: BlocBuilder<RecipesBloc, RecipesState>(
           builder: (
             BuildContext context,
-            RecipeState state,
+            RecipesState state,
           ) {
             switch (state) {
               case LoadingRecipesState():

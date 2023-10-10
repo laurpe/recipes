@@ -1,14 +1,14 @@
 import 'package:equatable/equatable.dart';
 import 'package:recipes/recipe.dart';
 
-sealed class RecipeState extends Equatable {
-  const RecipeState();
+sealed class RecipesState extends Equatable {
+  const RecipesState();
 
   @override
   get props => [];
 }
 
-class LoadedRecipesState extends RecipeState {
+class LoadedRecipesState extends RecipesState {
   final List<Recipe> recipes;
 
   const LoadedRecipesState({required this.recipes});
@@ -17,6 +17,6 @@ class LoadedRecipesState extends RecipeState {
   get props => [recipes];
 }
 
-class LoadingRecipesState extends RecipeState {}
+class LoadingRecipesState extends RecipesState {}
 
-class ErrorLoadingRecipesState extends RecipeState {}
+class ErrorLoadingRecipesState extends RecipesState {}
