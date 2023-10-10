@@ -36,6 +36,19 @@ class MyApp extends StatelessWidget {
   }
 }
 
+Future<void> refreshList(BuildContext context) async {
+  await Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (context) => const RecipeFormView(),
+    ),
+  );
+
+  if (!context.mounted) return;
+
+  BlocProvider.of<RecipesBloc>(context).add(GetRecipes());
+}
+
 class RecipeList extends StatelessWidget {
   const RecipeList({super.key});
 
@@ -46,61 +59,74 @@ class RecipeList extends StatelessWidget {
         final databaseClient = GetIt.I<DatabaseClient>();
         return RecipesBloc(databaseClient: databaseClient)..add(GetRecipes());
       },
-      child: Scaffold(
-        appBar: AppBar(
-          title: const Text('Recipes'),
-        ),
-        body: BlocBuilder<RecipesBloc, RecipesState>(
-          builder: (
-            BuildContext context,
-            RecipesState state,
-          ) {
-            switch (state) {
-              case LoadingRecipesState():
-                return const Center(
-                  child: CircularProgressIndicator(),
-                );
+      child: const RecipeListView(),
+    );
+  }
+}
 
-              case ErrorLoadingRecipesState():
-                return const Center(
-                  child: Text('Error loading recipes'),
-                );
-              case LoadedRecipesState():
-                return ListView.builder(
-                  itemCount: state.recipes.length,
-                  itemBuilder: (
-                    BuildContext context,
-                    int index,
-                  ) {
-                    return TextButton(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => RecipeView(
-                              recipe: state.recipes[index],
-                            ),
+class RecipeListView extends StatelessWidget {
+  const RecipeListView({
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      floatingActionButton: FloatingActionButton(
+          onPressed: () => refreshList(context), child: const Icon(Icons.add)),
+      appBar: AppBar(
+        title: const Text('Recipes'),
+      ),
+      body: BlocBuilder<RecipesBloc, RecipesState>(
+        builder: (
+          BuildContext context,
+          RecipesState state,
+        ) {
+          switch (state) {
+            case LoadingRecipesState():
+              return const Center(
+                child: CircularProgressIndicator(),
+              );
+
+            case ErrorLoadingRecipesState():
+              return const Center(
+                child: Text('Error loading recipes'),
+              );
+            case LoadedRecipesState():
+              return ListView.builder(
+                itemCount: state.recipes.length,
+                itemBuilder: (
+                  BuildContext context,
+                  int index,
+                ) {
+                  return TextButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => RecipeView(
+                            recipe: state.recipes[index],
                           ),
-                        );
-                      },
-                      child: Container(
-                        height: 50,
-                        color: Colors.amber[600],
-                        child: Center(
-                          child: Text(
-                            state.recipes[index].name,
-                            style: TextStyle(
-                              color: Colors.amber[50],
-                            ),
+                        ),
+                      );
+                    },
+                    child: Container(
+                      height: 50,
+                      color: Colors.amber[600],
+                      child: Center(
+                        child: Text(
+                          state.recipes[index].name,
+                          style: TextStyle(
+                            color: Colors.amber[50],
                           ),
                         ),
                       ),
-                    );
-                  },
-                );
-            }
-          },
-        ),
+                    ),
+                  );
+                },
+              );
+          }
+        },
       ),
     );
   }
