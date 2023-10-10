@@ -25,9 +25,10 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Recipe app',
       theme: ThemeData(
+        shadowColor: Colors.black38,
         colorScheme: ColorScheme.fromSwatch().copyWith(
-          primary: Colors.yellow[700],
-          secondary: Colors.yellow[700],
+          primary: const Color.fromARGB(255, 255, 128, 0),
+          secondary: const Color.fromARGB(255, 255, 128, 0),
         ),
         fontFamily: 'Roboto',
       ),
@@ -36,7 +37,7 @@ class MyApp extends StatelessWidget {
   }
 }
 
-Future<void> refreshList(BuildContext context) async {
+Future<void> openAddRecipeView(BuildContext context) async {
   await Navigator.push(
     context,
     MaterialPageRoute(
@@ -73,7 +74,13 @@ class RecipeListView extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       floatingActionButton: FloatingActionButton(
-          onPressed: () => refreshList(context), child: const Icon(Icons.add)),
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(
+              Radius.circular(15.0),
+            ),
+          ),
+          onPressed: () => openAddRecipeView(context),
+          child: const Icon(Icons.add)),
       appBar: AppBar(
         title: const Text('Recipes'),
       ),
@@ -99,28 +106,19 @@ class RecipeListView extends StatelessWidget {
                   BuildContext context,
                   int index,
                 ) {
-                  return TextButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => RecipeView(
-                            recipe: state.recipes[index],
+                  return Card(
+                    child: ListTile(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => RecipeView(
+                              recipe: state.recipes[index],
+                            ),
                           ),
-                        ),
-                      );
-                    },
-                    child: Container(
-                      height: 50,
-                      color: Colors.amber[600],
-                      child: Center(
-                        child: Text(
-                          state.recipes[index].name,
-                          style: TextStyle(
-                            color: Colors.amber[50],
-                          ),
-                        ),
-                      ),
+                        );
+                      },
+                      title: Text(state.recipes[index].name),
                     ),
                   );
                 },
@@ -307,9 +305,9 @@ class RecipeView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(recipe.name),
-      ),
+      appBar: AppBar(title: Text(recipe.name), centerTitle: false, actions: [
+        IconButton(onPressed: () {}, icon: const Icon(Icons.edit))
+      ]),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
