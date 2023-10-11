@@ -107,6 +107,7 @@ class RecipeListView extends StatelessWidget {
                   int index,
                 ) {
                   return Card(
+                    margin: const EdgeInsets.fromLTRB(8, 4, 8, 4),
                     child: ListTile(
                       onTap: () {
                         Navigator.push(
@@ -311,22 +312,38 @@ class RecipeView extends StatelessWidget {
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text("Ainesosat", style: Theme.of(context).textTheme.headlineSmall),
-          ListView(
-            shrinkWrap: true,
-            children: [
-              for (var ingredient in recipe.ingredients)
-                Row(children: [
-                  SizedBox(width: 60, child: Text(ingredient.amount)),
-                  Text(ingredient.name)
-                ]),
-            ],
+          Padding(
+              padding: const EdgeInsets.fromLTRB(8.0, 8.0, 0, 0),
+              child: Text('Ainesosat',
+                  style: Theme.of(context).textTheme.headlineSmall)),
+          Card(
+            margin: const EdgeInsets.all(8.0),
+            child: ListView(
+              padding: const EdgeInsets.all(8.0),
+              shrinkWrap: true,
+              children: [
+                for (var ingredient in recipe.ingredients)
+                  Row(children: [
+                    SizedBox(width: 60, child: Text(ingredient.amount)),
+                    Text(ingredient.name)
+                  ]),
+              ],
+            ),
           ),
-          Text(
-            "Ohje",
-            style: Theme.of(context).textTheme.headlineSmall,
+          Padding(
+            padding: const EdgeInsets.fromLTRB(8.0, 0, 0, 0),
+            child: Text(
+              "Ohje",
+              style: Theme.of(context).textTheme.headlineSmall,
+            ),
           ),
-          Text(recipe.instructions),
+          Card(
+            margin: const EdgeInsets.all(8.0),
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Text(recipe.instructions),
+            ),
+          ),
         ],
       ),
     );
