@@ -194,34 +194,44 @@ class RecipeFormState extends State<RecipeForm> {
     return Form(
         key: _formKey,
         child: Column(mainAxisSize: MainAxisSize.min, children: [
-          TextFormField(
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return 'Required field';
-              }
-              return null;
-            },
-            decoration: const InputDecoration(
-              hintText: 'Name',
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: TextFormField(
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Required field';
+                }
+                return null;
+              },
+              decoration: const InputDecoration(
+                labelText: 'Name',
+                floatingLabelBehavior: FloatingLabelBehavior.always,
+              ),
+              onSaved: (value) {
+                _recipeName = value!;
+              },
             ),
-            onSaved: (value) {
-              _recipeName = value!;
-            },
           ),
-          TextFormField(
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return 'Required field';
-              }
-              return null;
-            },
-            decoration: const InputDecoration(hintText: 'Instructions'),
-            minLines: 10,
-            maxLines: null,
-            keyboardType: TextInputType.multiline,
-            onSaved: (value) {
-              _instructions = value!;
-            },
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: TextFormField(
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Required field';
+                }
+                return null;
+              },
+              decoration: const InputDecoration(
+                labelText: 'Instructions',
+                floatingLabelBehavior: FloatingLabelBehavior.always,
+              ),
+              minLines: 10,
+              maxLines: null,
+              keyboardType: TextInputType.multiline,
+              onSaved: (value) {
+                _instructions = value!;
+              },
+            ),
           ),
           Flexible(
             child: ListView.builder(
@@ -235,60 +245,67 @@ class RecipeFormState extends State<RecipeForm> {
                     child: const Text('Add ingredient'),
                   );
                 }
-                return Row(
-                  children: [
-                    SizedBox(
-                      width: 100,
-                      child: TextFormField(
-                        initialValue: _ingredients[index].amount,
-                        decoration: const InputDecoration(labelText: 'Amount'),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Please enter ingredient amount';
-                          }
-                          return null;
-                        },
-                        onChanged: (value) {
-                          setState(() {
-                            _ingredients[index] = Ingredient(
-                              name: _ingredients[index].name,
-                              amount: value,
-                            );
-                          });
-                        },
-                      ),
-                    ),
-                    Expanded(
-                      child: TextFormField(
-                        initialValue: _ingredients[index].name,
-                        decoration: const InputDecoration(
-                          labelText: 'Name',
+                return Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Row(
+                    children: [
+                      SizedBox(
+                        width: 100,
+                        child: TextFormField(
+                          initialValue: _ingredients[index].amount,
+                          decoration: const InputDecoration(
+                            labelText: 'Amount',
+                            floatingLabelBehavior: FloatingLabelBehavior.always,
+                          ),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Please enter ingredient amount';
+                            }
+                            return null;
+                          },
+                          onChanged: (value) {
+                            setState(() {
+                              _ingredients[index] = Ingredient(
+                                name: _ingredients[index].name,
+                                amount: value,
+                              );
+                            });
+                          },
                         ),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Please enter ingredient name';
-                          }
-                          return null;
-                        },
-                        onChanged: (value) {
+                      ),
+                      Expanded(
+                        child: TextFormField(
+                          initialValue: _ingredients[index].name,
+                          decoration: const InputDecoration(
+                            labelText: 'Ingredient name',
+                            floatingLabelBehavior: FloatingLabelBehavior.always,
+                          ),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Please enter ingredient name';
+                            }
+                            return null;
+                          },
+                          onChanged: (value) {
+                            setState(() {
+                              _ingredients[index] = Ingredient(
+                                name: value,
+                                amount: _ingredients[index].amount,
+                              );
+                            });
+                          },
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.delete),
+                        onPressed: () {
                           setState(() {
-                            _ingredients[index] = Ingredient(
-                              name: value,
-                              amount: _ingredients[index].amount,
-                            );
+                            _ingredients.removeAt(index);
                           });
                         },
                       ),
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.delete),
-                      onPressed: () {
-                        setState(() {
-                          _ingredients.removeAt(index);
-                        });
-                      },
-                    ),
-                  ],
+                    ],
+                  ),
                 );
               },
             ),
@@ -314,7 +331,7 @@ class RecipeView extends StatelessWidget {
         children: [
           Padding(
               padding: const EdgeInsets.fromLTRB(8.0, 8.0, 0, 0),
-              child: Text('Ainesosat',
+              child: Text('Ingredients',
                   style: Theme.of(context).textTheme.headlineSmall)),
           Card(
             margin: const EdgeInsets.all(8.0),
@@ -333,7 +350,7 @@ class RecipeView extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.fromLTRB(8.0, 0, 0, 0),
             child: Text(
-              "Ohje",
+              "Instructions",
               style: Theme.of(context).textTheme.headlineSmall,
             ),
           ),
