@@ -378,6 +378,40 @@ class RecipeView extends StatelessWidget {
   }
 }
 
+Future<void> confirmRecipeDelete(BuildContext context, int recipeId) async {
+  return showDialog<void>(
+    context: context,
+    barrierDismissible: false,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: const Text('Confirm delete'),
+        content: const SingleChildScrollView(
+          child: ListBody(
+            children: <Widget>[
+              Text('Are you sure you want to delete this recipe?'),
+            ],
+          ),
+        ),
+        actions: <Widget>[
+          TextButton(
+            child: const Text('Cancel'),
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+          ),
+          TextButton(
+            child: const Text('Yes'),
+            onPressed: () {
+              GetIt.I<DatabaseClient>().deleteRecipe(recipeId);
+              Navigator.of(context).popUntil((route) => route.isFirst);
+            },
+          )
+        ],
+      );
+    },
+  );
+}
+
 class EditRecipeView extends StatelessWidget {
   final Recipe recipe;
 
@@ -391,7 +425,9 @@ class EditRecipeView extends StatelessWidget {
           centerTitle: false,
           actions: [
             IconButton(
-              onPressed: () {},
+              onPressed: () {
+                confirmRecipeDelete(context, recipe.id!);
+              },
               icon: const Icon(Icons.delete),
             ),
           ]),

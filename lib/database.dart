@@ -95,4 +95,8 @@ class DatabaseClient {
     await _database.update('recipes', recipe.toMap(),
         where: 'id = ?', whereArgs: [recipe.id]);
   }
+
+  Future<void> deleteRecipe(int recipeId) async {
+    await _database.delete('recipes', where: 'id = ?', whereArgs: [recipeId]);
+  }
 }
