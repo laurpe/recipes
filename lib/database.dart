@@ -73,4 +73,26 @@ class DatabaseClient {
 
     return recipeList;
   }
+
+  Future<void> deleteIngredient(int ingredientId) async {
+    await _database
+        .delete('ingredients', where: 'id = ?', whereArgs: [ingredientId]);
+  }
+
+  Future<void> updateRecipe(Recipe recipe) async {
+    final oldIngredients = await getIngredients(recipe.id!);
+
+    // delete recipe's old ingredients
+    for (var ingredient in oldIngredients) {
+      await deleteIngredient(ingredient.id!);
+    }
+
+    // add ingredients as new ingredients
+    for (var ingredient in recipe.ingredients) {
+      await insertIngredient(ingredient, recipe.id!);
+    }
+
+    await _database.update('recipes', recipe.toMap(),
+        where: 'id = ?', whereArgs: [recipe.id]);
+  }
 }

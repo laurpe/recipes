@@ -413,12 +413,14 @@ class EditRecipeForm extends StatefulWidget {
 
 class EditRecipeFormState extends State<EditRecipeForm> {
   final _formKey = GlobalKey<FormState>();
+  late int? _id;
   late String _recipeName;
   late String _instructions;
   late List<Ingredient> _ingredients;
 
   @override
   void initState() {
+    _id = widget.recipe.id;
     _recipeName = widget.recipe.name;
     _instructions = widget.recipe.instructions;
     _ingredients = widget.recipe.ingredients;
@@ -436,15 +438,16 @@ class EditRecipeFormState extends State<EditRecipeForm> {
       _formKey.currentState!.save();
 
       final recipe = Recipe(
+        id: _id,
         name: _recipeName,
         instructions: _instructions,
         ingredients: _ingredients,
       );
 
       try {
-        GetIt.I<DatabaseClient>().insertRecipe(recipe);
+        GetIt.I<DatabaseClient>().updateRecipe(recipe);
         ScaffoldMessenger.of(context)
-            .showSnackBar(const SnackBar(content: Text('Recipe saved!')));
+            .showSnackBar(const SnackBar(content: Text('Recipe updated!')));
         _formKey.currentState!.reset();
         Navigator.of(context).pop();
       } catch (error) {
