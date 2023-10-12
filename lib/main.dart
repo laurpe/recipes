@@ -403,6 +403,8 @@ Future<void> confirmRecipeDelete(BuildContext context, int recipeId) async {
             child: const Text('Yes'),
             onPressed: () {
               GetIt.I<DatabaseClient>().deleteRecipe(recipeId);
+              ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Recipe deleted!')));
               Navigator.of(context).popUntil((route) => route.isFirst);
             },
           )
