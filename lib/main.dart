@@ -3,6 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:recipes/recipe.dart';
 import 'package:recipes/database.dart';
+import 'package:recipes/recipe/bloc.dart';
+import 'package:recipes/recipe/events.dart';
 import 'package:recipes/recipes/bloc.dart';
 import 'package:recipes/recipes/events.dart';
 import 'package:recipes/recipes/state.dart';
@@ -37,7 +39,7 @@ class MyApp extends StatelessWidget {
   }
 }
 
-Future<void> openAddRecipeView(BuildContext context) async {
+Future<void> openAddRecipeSingle(BuildContext context) async {
   await Navigator.push(
     context,
     MaterialPageRoute(
@@ -79,7 +81,7 @@ class RecipeListView extends StatelessWidget {
               Radius.circular(15.0),
             ),
           ),
-          onPressed: () => openAddRecipeView(context),
+          onPressed: () => openAddRecipeSingle(context),
           child: const Icon(Icons.add)),
       appBar: AppBar(
         title: const Text('Recipes'),
@@ -113,7 +115,7 @@ class RecipeListView extends StatelessWidget {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => RecipeView(
+                            builder: (context) => RecipeSingle(
                               recipe: state.recipes[index],
                             ),
                           ),
@@ -315,10 +317,29 @@ class RecipeFormState extends State<RecipeForm> {
   }
 }
 
-class RecipeView extends StatelessWidget {
+class RecipeSingle extends StatelessWidget {
   final Recipe recipe;
 
-  const RecipeView({super.key, required this.recipe});
+  const RecipeSingle({super.key, required this.recipe});
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (_) {
+        return RecipeBloc(recipe: recipe)..add(GetRecipe());
+      },
+      child: RecipeView(recipe: recipe),
+    );
+  }
+}
+
+class RecipeView extends StatelessWidget {
+  const RecipeView({
+    super.key,
+    required this.recipe,
+  });
+
+  final Recipe recipe;
 
   @override
   Widget build(BuildContext context) {
@@ -329,7 +350,7 @@ class RecipeView extends StatelessWidget {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => EditRecipeView(
+                  builder: (context) => EditRecipeSingle(
                     recipe: recipe,
                   ),
                 ),
@@ -414,10 +435,10 @@ Future<void> confirmRecipeDelete(BuildContext context, int recipeId) async {
   );
 }
 
-class EditRecipeView extends StatelessWidget {
+class EditRecipeSingle extends StatelessWidget {
   final Recipe recipe;
 
-  const EditRecipeView({super.key, required this.recipe});
+  const EditRecipeSingle({super.key, required this.recipe});
 
   @override
   Widget build(BuildContext context) {
