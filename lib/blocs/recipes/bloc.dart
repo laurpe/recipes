@@ -1,7 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:recipes/database.dart';
-import 'package:recipes/recipes/events.dart';
-import 'package:recipes/recipes/state.dart';
+import 'package:recipes/blocs/recipes/events.dart';
+import 'package:recipes/blocs/recipes/state.dart';
 
 class RecipesBloc extends Bloc<RecipesEvent, RecipesState> {
   final DatabaseClient databaseClient;
