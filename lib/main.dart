@@ -5,6 +5,7 @@ import 'package:recipes/recipe.dart';
 import 'package:recipes/database.dart';
 import 'package:recipes/recipe/bloc.dart';
 import 'package:recipes/recipe/events.dart';
+import 'package:recipes/recipe/state.dart';
 import 'package:recipes/recipes/bloc.dart';
 import 'package:recipes/recipes/events.dart';
 import 'package:recipes/recipes/state.dart';
@@ -116,7 +117,7 @@ class RecipeListView extends StatelessWidget {
                           context,
                           MaterialPageRoute(
                             builder: (context) => RecipeSingle(
-                              recipe: state.recipes[index],
+                              recipeId: state.recipes[index].id!,
                             ),
                           ),
                         );
@@ -318,17 +319,19 @@ class RecipeFormState extends State<RecipeForm> {
 }
 
 class RecipeSingle extends StatelessWidget {
-  final Recipe recipe;
+  final int recipeId;
 
-  const RecipeSingle({super.key, required this.recipe});
+  const RecipeSingle({super.key, required this.recipeId});
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (_) {
-        return RecipeBloc(recipe: recipe)..add(GetRecipe());
+        final databaseClient = GetIt.I<DatabaseClient>();
+        return RecipeBloc(databaseClient: databaseClient, recipeId: recipeId)
+          ..add(GetRecipe());
       },
-      child: RecipeView(recipe: recipe),
+      child: const RecipeView(),
     );
   }
 }
@@ -336,65 +339,82 @@ class RecipeSingle extends StatelessWidget {
 class RecipeView extends StatelessWidget {
   const RecipeView({
     super.key,
-    required this.recipe,
   });
-
-  final Recipe recipe;
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text(recipe.name), centerTitle: false, actions: [
-        IconButton(
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => EditRecipeSingle(
-                    recipe: recipe,
-                  ),
-                ),
-              );
-            },
-            icon: const Icon(Icons.edit))
-      ]),
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Padding(
-              padding: const EdgeInsets.fromLTRB(8.0, 8.0, 0, 0),
-              child: Text('Ingredients',
-                  style: Theme.of(context).textTheme.headlineSmall)),
-          Card(
-            margin: const EdgeInsets.all(8.0),
-            child: ListView(
-              padding: const EdgeInsets.all(8.0),
-              shrinkWrap: true,
-              children: [
-                for (var ingredient in recipe.ingredients)
-                  Row(children: [
-                    SizedBox(width: 60, child: Text(ingredient.amount)),
-                    Text(ingredient.name)
+    return BlocBuilder<RecipeBloc, RecipeState>(
+      builder: (context, state) {
+        switch (state) {
+          case LoadingRecipeState():
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
+
+          case ErrorLoadingRecipeState():
+            return const Center(
+              child: Text('Error loading recipe'),
+            );
+
+          case LoadedRecipeState():
+            return Scaffold(
+              appBar: AppBar(
+                  title: Text(state.recipe.name),
+                  centerTitle: false,
+                  actions: [
+                    IconButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => EditRecipeSingle(
+                                recipe: state.recipe,
+                              ),
+                            ),
+                          );
+                        },
+                        icon: const Icon(Icons.edit))
                   ]),
-              ],
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(8.0, 0, 0, 0),
-            child: Text(
-              "Instructions",
-              style: Theme.of(context).textTheme.headlineSmall,
-            ),
-          ),
-          Card(
-            margin: const EdgeInsets.all(8.0),
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Text(recipe.instructions),
-            ),
-          ),
-        ],
-      ),
+              body: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Padding(
+                      padding: const EdgeInsets.fromLTRB(8.0, 8.0, 0, 0),
+                      child: Text('Ingredients',
+                          style: Theme.of(context).textTheme.headlineSmall)),
+                  Card(
+                    margin: const EdgeInsets.all(8.0),
+                    child: ListView(
+                      padding: const EdgeInsets.all(8.0),
+                      shrinkWrap: true,
+                      children: [
+                        for (var ingredient in state.recipe.ingredients)
+                          Row(children: [
+                            SizedBox(width: 60, child: Text(ingredient.amount)),
+                            Text(ingredient.name)
+                          ]),
+                      ],
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(8.0, 0, 0, 0),
+                    child: Text(
+                      "Instructions",
+                      style: Theme.of(context).textTheme.headlineSmall,
+                    ),
+                  ),
+                  Card(
+                    margin: const EdgeInsets.all(8.0),
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Text(state.recipe.instructions),
+                    ),
+                  ),
+                ],
+              ),
+            );
+        }
+      },
     );
   }
 }
