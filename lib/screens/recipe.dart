@@ -5,7 +5,24 @@ import 'package:recipes/blocs/recipe/bloc.dart';
 import 'package:recipes/blocs/recipe/events.dart';
 import 'package:recipes/blocs/recipe/state.dart';
 import 'package:recipes/database.dart';
+import 'package:recipes/recipe.dart';
 import 'package:recipes/screens/edit_recipe.dart';
+
+Future<void> openEditRecipe(BuildContext context, Recipe recipe) async {
+  await Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (context) => EditSingleRecipe(recipe: recipe),
+    ),
+  );
+
+  if (!context.mounted) return;
+
+  BlocProvider.of<RecipeBloc>(context).add(GetRecipe());
+
+  ScaffoldMessenger.of(context)
+      .showSnackBar(const SnackBar(content: Text('Recipe updated!')));
+}
 
 class SingleRecipe extends StatelessWidget {
   final int recipeId;
@@ -52,16 +69,7 @@ class RecipeView extends StatelessWidget {
                   centerTitle: false,
                   actions: [
                     IconButton(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => EditSingleRecipe(
-                                recipe: state.recipe,
-                              ),
-                            ),
-                          );
-                        },
+                        onPressed: () => openEditRecipe(context, state.recipe),
                         icon: const Icon(Icons.edit))
                   ]),
               body: Column(

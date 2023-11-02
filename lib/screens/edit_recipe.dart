@@ -73,10 +73,11 @@ class EditRecipeFormState extends State<EditRecipeForm> {
       );
 
       try {
-        GetIt.I<DatabaseClient>().updateRecipe(recipe);
-        ScaffoldMessenger.of(context)
-            .showSnackBar(const SnackBar(content: Text('Recipe updated!')));
+        await GetIt.I<DatabaseClient>().updateRecipe(recipe);
         _formKey.currentState!.reset();
+
+        if (!context.mounted) return;
+
         Navigator.of(context).pop();
       } catch (error) {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
