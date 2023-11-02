@@ -49,10 +49,11 @@ class RecipeFormState extends State<RecipeForm> {
       );
 
       try {
-        GetIt.I<DatabaseClient>().insertRecipe(recipe);
-        ScaffoldMessenger.of(context)
-            .showSnackBar(const SnackBar(content: Text('Recipe saved!')));
+        await GetIt.I<DatabaseClient>().insertRecipe(recipe);
+
         _formKey.currentState!.reset();
+
+        if (!context.mounted) return;
         Navigator.of(context).pop();
       } catch (error) {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(

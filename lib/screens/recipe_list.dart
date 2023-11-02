@@ -19,6 +19,8 @@ Future<void> openAddSingleRecipe(BuildContext context) async {
   if (!context.mounted) return;
 
   BlocProvider.of<RecipesBloc>(context).add(GetRecipes());
+  ScaffoldMessenger.of(context)
+      .showSnackBar(const SnackBar(content: Text('Recipe saved!')));
 }
 
 class RecipeList extends StatelessWidget {
