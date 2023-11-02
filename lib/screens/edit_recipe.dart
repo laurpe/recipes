@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:recipes/database.dart';
 import 'package:recipes/recipe.dart';
-import 'package:recipes/screens/delete_recipe.dart';
 
 class EditSingleRecipe extends StatelessWidget {
   final Recipe recipe;
@@ -13,16 +12,9 @@ class EditSingleRecipe extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-          title: const Text('Edit recipe'),
-          centerTitle: false,
-          actions: [
-            IconButton(
-              onPressed: () {
-                confirmRecipeDelete(context, recipe.id!);
-              },
-              icon: const Icon(Icons.delete),
-            ),
-          ]),
+        title: const Text('Edit recipe'),
+        centerTitle: false,
+      ),
       body: EditRecipeForm(recipe: recipe),
     );
   }

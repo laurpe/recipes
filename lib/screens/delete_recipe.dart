@@ -25,11 +25,18 @@ Future<void> confirmRecipeDelete(BuildContext context, int recipeId) async {
           ),
           TextButton(
             child: const Text('Yes'),
-            onPressed: () {
-              GetIt.I<DatabaseClient>().deleteRecipe(recipeId);
-              ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Recipe deleted!')));
-              Navigator.of(context).popUntil((route) => route.isFirst);
+            onPressed: () async {
+              try {
+                await GetIt.I<DatabaseClient>().deleteRecipe(recipeId);
+
+                if (!context.mounted) return;
+
+                Navigator.of(context).popUntil((route) => route.isFirst);
+              } catch (error) {
+                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                    content:
+                        Text('Could not delete recipe! Please try again.')));
+              }
             },
           )
         ],

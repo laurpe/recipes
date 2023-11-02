@@ -6,6 +6,7 @@ import 'package:recipes/blocs/recipe/events.dart';
 import 'package:recipes/blocs/recipe/state.dart';
 import 'package:recipes/database.dart';
 import 'package:recipes/recipe.dart';
+import 'package:recipes/screens/delete_recipe.dart';
 import 'package:recipes/screens/edit_recipe.dart';
 
 Future<void> openEditRecipe(BuildContext context, Recipe recipe) async {
@@ -70,7 +71,11 @@ class RecipeView extends StatelessWidget {
                   actions: [
                     IconButton(
                         onPressed: () => openEditRecipe(context, state.recipe),
-                        icon: const Icon(Icons.edit))
+                        icon: const Icon(Icons.edit)),
+                    IconButton(
+                        onPressed: () =>
+                            confirmRecipeDelete(context, state.recipe.id!),
+                        icon: const Icon(Icons.delete))
                   ]),
               body: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
