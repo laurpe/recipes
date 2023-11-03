@@ -4,10 +4,10 @@ import 'package:recipes/database.dart';
 import 'package:recipes/recipe.dart';
 import 'package:recipes/screens/recipe.dart';
 
-class EditSingleRecipe extends StatelessWidget {
+class EditRecipe extends StatelessWidget {
   final Recipe recipe;
 
-  const EditSingleRecipe({super.key, required this.recipe});
+  const EditRecipe({super.key, required this.recipe});
 
   @override
   Widget build(BuildContext context) {
