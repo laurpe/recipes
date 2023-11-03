@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:recipes/database.dart';
 import 'package:recipes/recipe.dart';
+import 'package:recipes/screens/recipe.dart';
 
 class EditSingleRecipe extends StatelessWidget {
   final Recipe recipe;
@@ -70,7 +71,7 @@ class EditRecipeFormState extends State<EditRecipeForm> {
 
         if (!context.mounted) return;
 
-        Navigator.of(context).pop();
+        Navigator.of(context).pop(RecipeResult.updated);
       } catch (error) {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
             content: Text('Something went wrong! Please try again.')));

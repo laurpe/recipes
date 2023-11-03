@@ -19,8 +19,9 @@ Future<void> openAddSingleRecipe(BuildContext context) async {
   if (!context.mounted) return;
 
   BlocProvider.of<RecipesBloc>(context).add(GetRecipes());
+
   ScaffoldMessenger.of(context)
-      .showSnackBar(const SnackBar(content: Text('Recipe saved!')));
+      .showSnackBar(const SnackBar(content: Text('Recipe updated!')));
 }
 
 class RecipeList extends StatelessWidget {
@@ -82,8 +83,8 @@ class RecipeListView extends StatelessWidget {
                   return Card(
                     margin: const EdgeInsets.fromLTRB(8, 4, 8, 4),
                     child: ListTile(
-                      onTap: () {
-                        Navigator.push(
+                      onTap: () async {
+                        final result = await Navigator.push(
                           context,
                           MaterialPageRoute(
                             builder: (context) => SingleRecipe(
@@ -91,6 +92,16 @@ class RecipeListView extends StatelessWidget {
                             ),
                           ),
                         );
+
+                        if (result == RecipeResult.deleted) {
+                          if (!context.mounted) return;
+
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Recipe deleted!'),
+                            ),
+                          );
+                        }
                       },
                       title: Text(state.recipes[index].name),
                     ),

@@ -6,11 +6,10 @@ import 'package:recipes/blocs/recipe/events.dart';
 import 'package:recipes/blocs/recipe/state.dart';
 import 'package:recipes/database.dart';
 import 'package:recipes/recipe.dart';
-import 'package:recipes/screens/delete_recipe.dart';
 import 'package:recipes/screens/edit_recipe.dart';
 
 Future<void> openEditRecipe(BuildContext context, Recipe recipe) async {
-  await Navigator.push(
+  final result = await Navigator.push(
     context,
     MaterialPageRoute(
       builder: (context) => EditSingleRecipe(recipe: recipe),
@@ -19,10 +18,15 @@ Future<void> openEditRecipe(BuildContext context, Recipe recipe) async {
 
   if (!context.mounted) return;
 
-  BlocProvider.of<RecipeBloc>(context).add(GetRecipe());
+  if (result == RecipeResult.updated) {
+    BlocProvider.of<RecipeBloc>(context).add(GetRecipe());
 
-  ScaffoldMessenger.of(context)
-      .showSnackBar(const SnackBar(content: Text('Recipe updated!')));
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Recipe updated!'),
+      ),
+    );
+  }
 }
 
 class SingleRecipe extends StatelessWidget {
@@ -43,10 +47,55 @@ class SingleRecipe extends StatelessWidget {
   }
 }
 
+enum RecipeResult { updated, deleted }
+
 class RecipeView extends StatelessWidget {
   const RecipeView({
     super.key,
   });
+
+  Future confirmRecipeDelete(BuildContext context, int recipeId) async {
+    return showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Confirm delete'),
+          content: const SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[
+                Text('Are you sure you want to delete this recipe?'),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Cancel'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: const Text('Yes'),
+              onPressed: () async {
+                try {
+                  await GetIt.I<DatabaseClient>().deleteRecipe(recipeId);
+
+                  if (!context.mounted) return;
+
+                  Navigator.of(context).pop(RecipeResult.deleted);
+                } catch (error) {
+                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                      content:
+                          Text('Could not delete recipe! Please try again.')));
+                }
+              },
+            )
+          ],
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -73,8 +122,18 @@ class RecipeView extends StatelessWidget {
                         onPressed: () => openEditRecipe(context, state.recipe),
                         icon: const Icon(Icons.edit)),
                     IconButton(
-                        onPressed: () =>
-                            confirmRecipeDelete(context, state.recipe.id!),
+                        onPressed: () async {
+                          final result = await confirmRecipeDelete(
+                              context, state.recipe.id!);
+                          if (result == RecipeResult.deleted) {
+                            if (!context.mounted) return;
+
+                            Navigator.of(context).pop(result);
+                          }
+                          // if (!context.mounted) return;
+                          // BlocProvider.of<RecipesBloc>(context)
+                          //     .add(GetRecipes());
+                        },
                         icon: const Icon(Icons.delete))
                   ]),
               body: Column(
