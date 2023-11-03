@@ -9,7 +9,7 @@ import 'package:recipes/screens/add_recipe.dart';
 import 'package:recipes/screens/recipe.dart';
 
 Future<void> openAddSingleRecipe(BuildContext context) async {
-  await Navigator.push(
+  final result = await Navigator.push(
     context,
     MaterialPageRoute(
       builder: (context) => const RecipeFormView(),
@@ -17,11 +17,11 @@ Future<void> openAddSingleRecipe(BuildContext context) async {
   );
 
   if (!context.mounted) return;
-
-  BlocProvider.of<RecipesBloc>(context).add(GetRecipes());
-
-  ScaffoldMessenger.of(context)
-      .showSnackBar(const SnackBar(content: Text('Recipe updated!')));
+  if (result == RecipeResult.added) {
+    ScaffoldMessenger.of(context)
+        .showSnackBar(const SnackBar(content: Text('Recipe added!')));
+    BlocProvider.of<RecipesBloc>(context).add(GetRecipes());
+  }
 }
 
 class RecipeList extends StatelessWidget {

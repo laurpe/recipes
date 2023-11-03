@@ -8,11 +8,13 @@ import 'package:recipes/database.dart';
 import 'package:recipes/recipe.dart';
 import 'package:recipes/screens/edit_recipe.dart';
 
+enum RecipeResult { added, updated, deleted }
+
 Future<void> openEditRecipe(BuildContext context, Recipe recipe) async {
   final result = await Navigator.push(
     context,
     MaterialPageRoute(
-      builder: (context) => EditSingleRecipe(recipe: recipe),
+      builder: (context) => EditRecipe(recipe: recipe),
     ),
   );
 
@@ -46,8 +48,6 @@ class SingleRecipe extends StatelessWidget {
     );
   }
 }
-
-enum RecipeResult { updated, deleted }
 
 class SingleRecipeView extends StatelessWidget {
   const SingleRecipeView({
