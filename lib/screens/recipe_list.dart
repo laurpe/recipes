@@ -8,7 +8,7 @@ import 'package:recipes/database.dart';
 import 'package:recipes/screens/add_recipe.dart';
 import 'package:recipes/screens/recipe.dart';
 
-Future<void> openAddSingleRecipe(BuildContext context) async {
+Future<void> openAddRecipe(BuildContext context) async {
   final result = await Navigator.push(
     context,
     MaterialPageRoute(
@@ -53,7 +53,7 @@ class RecipeListView extends StatelessWidget {
               Radius.circular(15.0),
             ),
           ),
-          onPressed: () => openAddSingleRecipe(context),
+          onPressed: () => openAddRecipe(context),
           child: const Icon(Icons.add)),
       appBar: AppBar(
         title: const Text('Recipes'),
@@ -101,6 +101,8 @@ class RecipeListView extends StatelessWidget {
                               content: Text('Recipe deleted!'),
                             ),
                           );
+                          BlocProvider.of<RecipesBloc>(context)
+                              .add(GetRecipes());
                         }
                       },
                       title: Text(state.recipes[index].name),

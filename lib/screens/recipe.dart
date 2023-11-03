@@ -130,9 +130,6 @@ class SingleRecipeView extends StatelessWidget {
 
                             Navigator.of(context).pop(result);
                           }
-                          // if (!context.mounted) return;
-                          // BlocProvider.of<RecipesBloc>(context)
-                          //     .add(GetRecipes());
                         },
                         icon: const Icon(Icons.delete))
                   ]),
