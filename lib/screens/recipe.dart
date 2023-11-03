@@ -42,15 +42,15 @@ class SingleRecipe extends StatelessWidget {
         return RecipeBloc(databaseClient: databaseClient, recipeId: recipeId)
           ..add(GetRecipe());
       },
-      child: const RecipeView(),
+      child: const SingleRecipeView(),
     );
   }
 }
 
 enum RecipeResult { updated, deleted }
 
-class RecipeView extends StatelessWidget {
-  const RecipeView({
+class SingleRecipeView extends StatelessWidget {
+  const SingleRecipeView({
     super.key,
   });
 
