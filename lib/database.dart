@@ -110,4 +110,20 @@ class DatabaseClient {
         instructions: recipe[0]['instructions'],
         ingredients: await getIngredients(recipe[0]['id']));
   }
+
+  Future<List<Recipe>> paginateRecipes(int offset, int limit) async {
+    final List<Map<String, dynamic>> recipes = await _database.query('recipes',
+        orderBy: 'id', limit: limit, offset: offset);
+    List<Recipe> recipeList = [];
+
+    for (var recipe in recipes) {
+      recipeList.add(Recipe(
+          id: recipe['id'],
+          name: recipe['name'],
+          instructions: recipe['instructions'],
+          ingredients: await getIngredients(recipe['id'])));
+    }
+
+    return recipeList;
+  }
 }
