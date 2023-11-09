@@ -13,7 +13,6 @@ class PaginatedRecipesBloc
     on<GetPaginatedRecipes>((event, emit) async {
       try {
         List<Recipe> recipes = [];
-        print(recipes);
 
         if (state is LoadedPaginatedRecipesState) {
           final currentState = state as LoadedPaginatedRecipesState;

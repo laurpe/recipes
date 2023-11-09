@@ -83,7 +83,7 @@ class RecipeListView extends StatelessWidget {
                 itemBuilder: (context, index) {
                   if (index >= state.recipes.length) {
                     BlocProvider.of<PaginatedRecipesBloc>(context)
-                        .add(GetPaginatedRecipes(offset: index + 15));
+                        .add(GetPaginatedRecipes(offset: index));
                     return const Center(child: CircularProgressIndicator());
                   }
                   return Card(
