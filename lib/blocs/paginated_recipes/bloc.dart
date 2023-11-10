@@ -8,6 +8,13 @@ class PaginatedRecipesBloc
     extends Bloc<PaginatedRecipesEvent, PaginatedRecipesState> {
   final DatabaseClient databaseClient;
 
+  @override
+  void onTransition(
+      Transition<PaginatedRecipesEvent, PaginatedRecipesState> transition) {
+    super.onTransition(transition);
+    print(transition);
+  }
+
   PaginatedRecipesBloc({required this.databaseClient})
       : super(LoadingPaginatedRecipesState()) {
     on<GetPaginatedRecipes>((event, emit) async {
@@ -16,7 +23,9 @@ class PaginatedRecipesBloc
 
         if (state is LoadedPaginatedRecipesState) {
           final currentState = state as LoadedPaginatedRecipesState;
-          if (currentState.hasReachedMax) return;
+          if (currentState.hasReachedMax) {
+            return;
+          }
           recipes = currentState.recipes;
         }
 
@@ -31,6 +40,13 @@ class PaginatedRecipesBloc
       } catch (error) {
         emit(ErrorLoadingPaginatedRecipesState());
       }
+    });
+    on<ResetPagination>((event, emit) async {
+      emit(const LoadedPaginatedRecipesState(
+        recipes: [],
+        hasReachedMax: false,
+      ));
+      add(const GetPaginatedRecipes(offset: 0));
     });
   }
 }

@@ -20,8 +20,7 @@ Future<void> openAddRecipe(BuildContext context) async {
   if (result == RecipeResult.added) {
     ScaffoldMessenger.of(context)
         .showSnackBar(const SnackBar(content: Text('Recipe added!')));
-    BlocProvider.of<PaginatedRecipesBloc>(context)
-        .add(const GetPaginatedRecipes(offset: 0));
+    BlocProvider.of<PaginatedRecipesBloc>(context).add(ResetPagination());
   }
 }
 
@@ -108,7 +107,7 @@ class RecipeListView extends StatelessWidget {
                             ),
                           );
                           BlocProvider.of<PaginatedRecipesBloc>(context)
-                              .add(const GetPaginatedRecipes(offset: 0));
+                              .add(ResetPagination());
                         }
                       },
                       title: Text(state.recipes[index].name),

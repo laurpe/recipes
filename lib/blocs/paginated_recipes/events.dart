@@ -12,3 +12,5 @@ class GetPaginatedRecipes extends PaginatedRecipesEvent {
 
   const GetPaginatedRecipes({required this.offset});
 }
+
+class ResetPagination extends PaginatedRecipesEvent {}
