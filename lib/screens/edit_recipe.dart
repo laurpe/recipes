@@ -38,6 +38,7 @@ class EditRecipeFormState extends State<EditRecipeForm> {
   late String _recipeName;
   late String _instructions;
   late List<Ingredient> _ingredients;
+  late bool _favorite;
 
   @override
   void initState() {
@@ -45,6 +46,7 @@ class EditRecipeFormState extends State<EditRecipeForm> {
     _recipeName = widget.recipe.name;
     _instructions = widget.recipe.instructions;
     _ingredients = widget.recipe.ingredients;
+    _favorite = widget.recipe.favorite;
     super.initState();
   }
 
@@ -63,6 +65,7 @@ class EditRecipeFormState extends State<EditRecipeForm> {
         name: _recipeName,
         instructions: _instructions,
         ingredients: _ingredients,
+        favorite: _favorite,
       );
 
       try {

@@ -47,6 +47,7 @@ class RecipeFormState extends State<RecipeForm> {
         name: _recipeName,
         instructions: _instructions,
         ingredients: _ingredients,
+        favorite: false,
       );
 
       try {

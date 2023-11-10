@@ -73,10 +73,12 @@ class DatabaseClient {
 
     for (var recipe in recipes) {
       recipeList.add(Recipe(
-          id: recipe['id'],
-          name: recipe['name'],
-          instructions: recipe['instructions'],
-          ingredients: await getIngredients(recipe['id'])));
+        id: recipe['id'],
+        name: recipe['name'],
+        instructions: recipe['instructions'],
+        ingredients: await getIngredients(recipe['id']),
+        favorite: recipe['favorite'] == 1 ? true : false,
+      ));
     }
 
     return recipeList;
@@ -113,10 +115,12 @@ class DatabaseClient {
         where: 'id = ?', whereArgs: [recipeId], limit: 1);
 
     return Recipe(
-        id: recipe[0]['id'],
-        name: recipe[0]['name'],
-        instructions: recipe[0]['instructions'],
-        ingredients: await getIngredients(recipe[0]['id']));
+      id: recipe[0]['id'],
+      name: recipe[0]['name'],
+      instructions: recipe[0]['instructions'],
+      ingredients: await getIngredients(recipe[0]['id']),
+      favorite: recipe[0]['favorite'] == 1 ? true : false,
+    );
   }
 
   Future<List<Recipe>> paginateRecipes(int offset) async {
@@ -126,10 +130,12 @@ class DatabaseClient {
 
     for (var recipe in recipes) {
       recipeList.add(Recipe(
-          id: recipe['id'],
-          name: recipe['name'],
-          instructions: recipe['instructions'],
-          ingredients: await getIngredients(recipe['id'])));
+        id: recipe['id'],
+        name: recipe['name'],
+        instructions: recipe['instructions'],
+        ingredients: await getIngredients(recipe['id']),
+        favorite: recipe['favorite'] == 1 ? true : false,
+      ));
     }
 
     return recipeList;
