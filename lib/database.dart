@@ -24,7 +24,15 @@ class DatabaseClient {
             recipeId INTEGER, 
             FOREIGN KEY(recipeId) REFERENCES recipes(id) ON DELETE CASCADE)''');
       },
-      version: 1,
+      onUpgrade: (db, oldVersion, newVersion) async {
+        if (oldVersion == 1 && newVersion == 2) {
+          var batch = db.batch();
+          batch.execute(
+              'ALTER TABLE recipes ADD COLUMN favorite BOOLEAN DEFAULT 0');
+          await batch.commit();
+        }
+      },
+      version: 2,
     );
   }
 
