@@ -111,6 +111,19 @@ class RecipeListView extends StatelessWidget {
                         }
                       },
                       title: Text(state.recipes[index].name),
+                      trailing: IconButton(
+                        onPressed: () {
+                          GetIt.I<DatabaseClient>()
+                              .toggleFavoriteRecipe(state.recipes[index]);
+                          BlocProvider.of<PaginatedRecipesBloc>(context)
+                              .add(ResetPagination());
+                        },
+                        icon: state.recipes[index].favorite
+                            ? const Icon(Icons.favorite,
+                                color: Color.fromARGB(255, 255, 128, 0))
+                            : const Icon(Icons.favorite_outline,
+                                color: Color.fromARGB(255, 255, 128, 0)),
+                      ),
                     ),
                   );
                 },

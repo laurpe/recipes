@@ -140,4 +140,16 @@ class DatabaseClient {
 
     return recipeList;
   }
+
+  Future<void> toggleFavoriteRecipe(Recipe recipe) async {
+    var updatedRecipe = Recipe(
+      id: recipe.id,
+      name: recipe.name,
+      instructions: recipe.instructions,
+      ingredients: recipe.ingredients,
+      favorite: !recipe.favorite,
+    );
+    await _database.update('recipes', updatedRecipe.toMap(),
+        where: 'id = ?', whereArgs: [recipe.id]);
+  }
 }
