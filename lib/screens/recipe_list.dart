@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
-import 'package:recipes/blocs/paginated_recipes/bloc.dart';
-import 'package:recipes/blocs/paginated_recipes/events.dart';
-import 'package:recipes/blocs/paginated_recipes/state.dart';
+import 'package:recipes/blocs/recipes/bloc.dart';
+import 'package:recipes/blocs/recipes/events.dart';
+import 'package:recipes/blocs/recipes/state.dart';
 import 'package:recipes/database.dart';
 import 'package:recipes/recipe.dart';
 import 'package:recipes/screens/add_recipe.dart';
@@ -21,7 +21,7 @@ Future<void> openAddRecipe(BuildContext context) async {
   if (result == RecipeResult.added) {
     ScaffoldMessenger.of(context)
         .showSnackBar(const SnackBar(content: Text('Recipe added!')));
-    BlocProvider.of<PaginatedRecipesBloc>(context).add(ResetPagination());
+    BlocProvider.of<RecipesBloc>(context).add(const GetRecipes());
   }
 }
 
@@ -33,8 +33,8 @@ class RecipeList extends StatelessWidget {
     return BlocProvider(
       create: (_) {
         final databaseClient = GetIt.I<DatabaseClient>();
-        return PaginatedRecipesBloc(databaseClient: databaseClient)
-          ..add(const GetPaginatedRecipes());
+        return RecipesBloc(databaseClient: databaseClient)
+          ..add(const GetRecipes());
       },
       child: const RecipeListView(),
     );
@@ -68,34 +68,34 @@ class RecipeListView extends StatelessWidget {
               prefixIcon: Icon(Icons.search),
             ),
             onChanged: (value) {
-              BlocProvider.of<PaginatedRecipesBloc>(context)
-                  .add(GetPaginatedRecipes(query: value));
+              BlocProvider.of<RecipesBloc>(context)
+                  .add(GetRecipes(query: value));
               print(value);
             },
           ),
           Expanded(
-            child: BlocBuilder<PaginatedRecipesBloc, PaginatedRecipesState>(
+            child: BlocBuilder<RecipesBloc, RecipesState>(
               builder: (
                 BuildContext context,
-                PaginatedRecipesState state,
+                RecipesState state,
               ) {
                 switch (state) {
-                  case LoadingPaginatedRecipesState():
+                  case LoadingRecipesState():
                     return const Center(
                       child: CircularProgressIndicator(),
                     );
 
-                  case ErrorLoadingPaginatedRecipesState():
+                  case ErrorLoadingRecipesState():
                     return const Center(
                       child: Text('Error loading recipes'),
                     );
-                  case LoadedPaginatedRecipesState():
+                  case LoadedRecipesState():
                     return ListView.builder(
                       itemCount: state.recipes.length,
                       itemBuilder: (context, index) {
                         if (index == state.recipes.length - 1) {
-                          BlocProvider.of<PaginatedRecipesBloc>(context)
-                              .add(GetPaginatedRecipes(offset: index));
+                          BlocProvider.of<RecipesBloc>(context)
+                              .add(GetRecipes(offset: index));
                           return const Center(
                             child: SizedBox(),
                           );
@@ -165,8 +165,7 @@ class _RecipeListTileState extends State<RecipeListTile> {
                 content: Text('Recipe deleted!'),
               ),
             );
-            BlocProvider.of<PaginatedRecipesBloc>(context)
-                .add(ResetPagination());
+            BlocProvider.of<RecipesBloc>(context).add(const GetRecipes());
           }
         },
         title: Text(widget.recipe.name),

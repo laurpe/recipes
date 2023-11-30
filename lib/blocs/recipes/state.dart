@@ -1,19 +1,19 @@
 import 'package:equatable/equatable.dart';
 import 'package:recipes/recipe.dart';
 
-sealed class PaginatedRecipesState extends Equatable {
-  const PaginatedRecipesState();
+sealed class RecipesState extends Equatable {
+  const RecipesState();
 
   @override
   get props => [];
 }
 
-class LoadedPaginatedRecipesState extends PaginatedRecipesState {
+class LoadedRecipesState extends RecipesState {
   final List<Recipe> recipes;
   final String? query;
   final int? offset;
 
-  const LoadedPaginatedRecipesState({
+  const LoadedRecipesState({
     required this.recipes,
     required this.query,
     required this.offset,
@@ -23,6 +23,6 @@ class LoadedPaginatedRecipesState extends PaginatedRecipesState {
   get props => [recipes, query, offset];
 }
 
-class LoadingPaginatedRecipesState extends PaginatedRecipesState {}
+class LoadingRecipesState extends RecipesState {}
 
-class ErrorLoadingPaginatedRecipesState extends PaginatedRecipesState {}
+class ErrorLoadingRecipesState extends RecipesState {}
