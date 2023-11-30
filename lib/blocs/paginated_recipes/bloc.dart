@@ -19,23 +19,37 @@ class PaginatedRecipesBloc
       : super(LoadingPaginatedRecipesState()) {
     on<GetPaginatedRecipes>((event, emit) async {
       try {
+        /// jos eventillä on query tai offset
+        /// yliaja current staten offset ja query
+        /// muuten käytä current staten offset ja query
+        /// tai defaultoi offset = 0 ja query = ''
         List<Recipe> recipes = [];
+        int? offset = event.offset;
+        String? query = event.query;
 
         if (state is LoadedPaginatedRecipesState) {
           final currentState = state as LoadedPaginatedRecipesState;
-          if (currentState.hasReachedMax) {
-            return;
-          }
           recipes = currentState.recipes;
+          offset = offset ?? currentState.offset;
+          query = query ?? currentState.query;
+
+          if (query != currentState.query) {
+            offset = 0;
+            recipes = [];
+          }
         }
 
-        emit(LoadingPaginatedRecipesState());
+        // emit(LoadingPaginatedRecipesState());
 
-        final newRecipes = await databaseClient.paginateRecipes(event.offset);
+        final newRecipes = await databaseClient.searchRecipes(
+          offset: offset ?? 0,
+          query: query ?? '',
+        );
 
         emit(LoadedPaginatedRecipesState(
           recipes: recipes + newRecipes,
-          hasReachedMax: newRecipes.isEmpty,
+          query: query,
+          offset: offset,
         ));
       } catch (error) {
         emit(ErrorLoadingPaginatedRecipesState());
@@ -44,9 +58,10 @@ class PaginatedRecipesBloc
     on<ResetPagination>((event, emit) async {
       emit(const LoadedPaginatedRecipesState(
         recipes: [],
-        hasReachedMax: false,
+        query: '',
+        offset: 0,
       ));
-      add(const GetPaginatedRecipes(offset: 0));
+      add(const GetPaginatedRecipes());
     });
   }
 }

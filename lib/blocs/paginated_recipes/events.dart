@@ -8,9 +8,10 @@ abstract class PaginatedRecipesEvent extends Equatable {
 }
 
 class GetPaginatedRecipes extends PaginatedRecipesEvent {
-  final int offset;
+  final int? offset;
+  final String? query;
 
-  const GetPaginatedRecipes({required this.offset});
+  const GetPaginatedRecipes({this.offset, this.query});
 }
 
 class ResetPagination extends PaginatedRecipesEvent {}

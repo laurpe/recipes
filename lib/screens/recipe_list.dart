@@ -33,7 +33,7 @@ class RecipeList extends StatelessWidget {
       create: (_) {
         final databaseClient = GetIt.I<DatabaseClient>();
         return PaginatedRecipesBloc(databaseClient: databaseClient)
-          ..add(const GetPaginatedRecipes(offset: 0));
+          ..add(const GetPaginatedRecipes());
       },
       child: const RecipeListView(),
     );
@@ -59,77 +59,94 @@ class RecipeListView extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Recipes'),
       ),
-      body: BlocBuilder<PaginatedRecipesBloc, PaginatedRecipesState>(
-        builder: (
-          BuildContext context,
-          PaginatedRecipesState state,
-        ) {
-          switch (state) {
-            case LoadingPaginatedRecipesState():
-              return const Center(
-                child: CircularProgressIndicator(),
-              );
+      body: Column(
+        children: [
+          TextField(
+            decoration: const InputDecoration(
+              hintText: 'Search',
+              prefixIcon: Icon(Icons.search),
+            ),
+            onChanged: (value) {
+              BlocProvider.of<PaginatedRecipesBloc>(context)
+                  .add(GetPaginatedRecipes(query: value));
+              print(value);
+            },
+          ),
+          Expanded(
+            child: BlocBuilder<PaginatedRecipesBloc, PaginatedRecipesState>(
+              builder: (
+                BuildContext context,
+                PaginatedRecipesState state,
+              ) {
+                switch (state) {
+                  case LoadingPaginatedRecipesState():
+                    return const Center(
+                      child: CircularProgressIndicator(),
+                    );
 
-            case ErrorLoadingPaginatedRecipesState():
-              return const Center(
-                child: Text('Error loading recipes'),
-              );
-            case LoadedPaginatedRecipesState():
-              return ListView.builder(
-                itemCount: state.hasReachedMax
-                    ? state.recipes.length
-                    : state.recipes.length + 1,
-                itemBuilder: (context, index) {
-                  if (index >= state.recipes.length) {
-                    BlocProvider.of<PaginatedRecipesBloc>(context)
-                        .add(GetPaginatedRecipes(offset: index));
-                    return const Center(child: CircularProgressIndicator());
-                  }
-                  return Card(
-                    margin: const EdgeInsets.fromLTRB(8, 4, 8, 4),
-                    child: ListTile(
-                      onTap: () async {
-                        final result = await Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => SingleRecipe(
-                              recipeId: state.recipes[index].id!,
+                  case ErrorLoadingPaginatedRecipesState():
+                    return const Center(
+                      child: Text('Error loading recipes'),
+                    );
+                  case LoadedPaginatedRecipesState():
+                    return ListView.builder(
+                      itemCount: state.recipes.length,
+                      itemBuilder: (context, index) {
+                        if (index == state.recipes.length - 1) {
+                          BlocProvider.of<PaginatedRecipesBloc>(context)
+                              .add(GetPaginatedRecipes(offset: index));
+                          return const Center(
+                            child: SizedBox(),
+                          );
+                        }
+                        return Card(
+                          margin: const EdgeInsets.fromLTRB(8, 4, 8, 4),
+                          child: ListTile(
+                            onTap: () async {
+                              final result = await Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => SingleRecipe(
+                                    recipeId: state.recipes[index].id!,
+                                  ),
+                                ),
+                              );
+
+                              if (result == RecipeResult.deleted) {
+                                if (!context.mounted) return;
+
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('Recipe deleted!'),
+                                  ),
+                                );
+                                BlocProvider.of<PaginatedRecipesBloc>(context)
+                                    .add(ResetPagination());
+                              }
+                            },
+                            title: Text(state.recipes[index].name),
+                            trailing: IconButton(
+                              onPressed: () {
+                                GetIt.I<DatabaseClient>()
+                                    .toggleFavoriteRecipe(state.recipes[index]);
+                                BlocProvider.of<PaginatedRecipesBloc>(context)
+                                    .add(ResetPagination());
+                              },
+                              icon: state.recipes[index].favorite
+                                  ? const Icon(Icons.favorite,
+                                      color: Color.fromARGB(255, 255, 128, 0))
+                                  : const Icon(Icons.favorite_outline,
+                                      color: Color.fromARGB(255, 255, 128, 0)),
                             ),
                           ),
                         );
-
-                        if (result == RecipeResult.deleted) {
-                          if (!context.mounted) return;
-
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Recipe deleted!'),
-                            ),
-                          );
-                          BlocProvider.of<PaginatedRecipesBloc>(context)
-                              .add(ResetPagination());
-                        }
                       },
-                      title: Text(state.recipes[index].name),
-                      trailing: IconButton(
-                        onPressed: () {
-                          GetIt.I<DatabaseClient>()
-                              .toggleFavoriteRecipe(state.recipes[index]);
-                          BlocProvider.of<PaginatedRecipesBloc>(context)
-                              .add(ResetPagination());
-                        },
-                        icon: state.recipes[index].favorite
-                            ? const Icon(Icons.favorite,
-                                color: Color.fromARGB(255, 255, 128, 0))
-                            : const Icon(Icons.favorite_outline,
-                                color: Color.fromARGB(255, 255, 128, 0)),
-                      ),
-                    ),
-                  );
-                },
-              );
-          }
-        },
+                    );
+                }
+              },
+            ),
+          ),
+        ],
       ),
     );
   }

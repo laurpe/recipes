@@ -10,13 +10,17 @@ sealed class PaginatedRecipesState extends Equatable {
 
 class LoadedPaginatedRecipesState extends PaginatedRecipesState {
   final List<Recipe> recipes;
-  final bool hasReachedMax;
+  final String? query;
+  final int? offset;
 
-  const LoadedPaginatedRecipesState(
-      {required this.recipes, required this.hasReachedMax});
+  const LoadedPaginatedRecipesState({
+    required this.recipes,
+    required this.query,
+    required this.offset,
+  });
 
   @override
-  get props => [recipes, hasReachedMax];
+  get props => [recipes, query, offset];
 }
 
 class LoadingPaginatedRecipesState extends PaginatedRecipesState {}

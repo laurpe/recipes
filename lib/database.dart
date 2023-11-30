@@ -152,4 +152,28 @@ class DatabaseClient {
     await _database.update('recipes', updatedRecipe.toMap(),
         where: 'id = ?', whereArgs: [recipe.id]);
   }
+
+  Future<List<Recipe>> searchRecipes({
+    required int offset,
+    required String query,
+  }) async {
+    final List<Map<String, dynamic>> recipes = await _database.query('recipes',
+        where: 'name LIKE ?',
+        whereArgs: ['%$query%'],
+        offset: offset,
+        limit: 15);
+    List<Recipe> recipeList = [];
+
+    for (var recipe in recipes) {
+      recipeList.add(Recipe(
+        id: recipe['id'],
+        name: recipe['name'],
+        instructions: recipe['instructions'],
+        ingredients: await getIngredients(recipe['id']),
+        favorite: recipe['favorite'] == 1 ? true : false,
+      ));
+    }
+
+    return recipeList;
+  }
 }
