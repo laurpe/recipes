@@ -5,6 +5,7 @@ import 'package:recipes/blocs/paginated_recipes/bloc.dart';
 import 'package:recipes/blocs/paginated_recipes/events.dart';
 import 'package:recipes/blocs/paginated_recipes/state.dart';
 import 'package:recipes/database.dart';
+import 'package:recipes/recipe.dart';
 import 'package:recipes/screens/add_recipe.dart';
 import 'package:recipes/screens/recipe.dart';
 
@@ -99,47 +100,7 @@ class RecipeListView extends StatelessWidget {
                             child: SizedBox(),
                           );
                         }
-                        return Card(
-                          margin: const EdgeInsets.fromLTRB(8, 4, 8, 4),
-                          child: ListTile(
-                            onTap: () async {
-                              final result = await Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => SingleRecipe(
-                                    recipeId: state.recipes[index].id!,
-                                  ),
-                                ),
-                              );
-
-                              if (result == RecipeResult.deleted) {
-                                if (!context.mounted) return;
-
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text('Recipe deleted!'),
-                                  ),
-                                );
-                                BlocProvider.of<PaginatedRecipesBloc>(context)
-                                    .add(ResetPagination());
-                              }
-                            },
-                            title: Text(state.recipes[index].name),
-                            trailing: IconButton(
-                              onPressed: () {
-                                GetIt.I<DatabaseClient>()
-                                    .toggleFavoriteRecipe(state.recipes[index]);
-                                BlocProvider.of<PaginatedRecipesBloc>(context)
-                                    .add(ResetPagination());
-                              },
-                              icon: state.recipes[index].favorite
-                                  ? const Icon(Icons.favorite,
-                                      color: Color.fromARGB(255, 255, 128, 0))
-                                  : const Icon(Icons.favorite_outline,
-                                      color: Color.fromARGB(255, 255, 128, 0)),
-                            ),
-                          ),
-                        );
+                        return RecipeListTile(recipe: state.recipes[index]);
                       },
                     );
                 }
@@ -147,6 +108,78 @@ class RecipeListView extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class RecipeListTile extends StatefulWidget {
+  final Recipe recipe;
+
+  const RecipeListTile({
+    super.key,
+    required this.recipe,
+  });
+
+  @override
+  State<RecipeListTile> createState() => _RecipeListTileState();
+}
+
+class _RecipeListTileState extends State<RecipeListTile> {
+  late bool _favorite;
+
+  @override
+  void initState() {
+    _favorite = widget.recipe.favorite;
+    super.initState();
+  }
+
+  void _toggleFavorite() async {
+    setState(() {
+      _favorite = !_favorite;
+    });
+    await GetIt.I<DatabaseClient>()
+        .toggleFavoriteRecipe(widget.recipe, _favorite);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      margin: const EdgeInsets.fromLTRB(8, 4, 8, 4),
+      child: ListTile(
+        onTap: () async {
+          final result = await Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => SingleRecipe(
+                recipeId: widget.recipe.id!,
+              ),
+            ),
+          );
+
+          if (result == RecipeResult.deleted) {
+            if (!context.mounted) return;
+
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Recipe deleted!'),
+              ),
+            );
+            BlocProvider.of<PaginatedRecipesBloc>(context)
+                .add(ResetPagination());
+          }
+        },
+        title: Text(widget.recipe.name),
+        trailing: IconButton(
+          onPressed: () {
+            _toggleFavorite();
+          },
+          icon: _favorite
+              ? const Icon(Icons.favorite,
+                  color: Color.fromARGB(255, 255, 128, 0))
+              : const Icon(Icons.favorite_outline,
+                  color: Color.fromARGB(255, 255, 128, 0)),
+        ),
       ),
     );
   }
