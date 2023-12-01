@@ -70,7 +70,6 @@ class RecipeListView extends StatelessWidget {
             onChanged: (value) {
               BlocProvider.of<RecipesBloc>(context)
                   .add(GetRecipes(query: value));
-              print(value);
             },
           ),
           Expanded(
@@ -100,7 +99,10 @@ class RecipeListView extends StatelessWidget {
                             child: SizedBox(),
                           );
                         }
-                        return RecipeListTile(recipe: state.recipes[index]);
+                        return RecipeListTile(
+                          key: Key('${state.recipes[index].id}'),
+                          recipe: state.recipes[index],
+                        );
                       },
                     );
                 }
@@ -113,34 +115,13 @@ class RecipeListView extends StatelessWidget {
   }
 }
 
-class RecipeListTile extends StatefulWidget {
+class RecipeListTile extends StatelessWidget {
   final Recipe recipe;
 
   const RecipeListTile({
     super.key,
     required this.recipe,
   });
-
-  @override
-  State<RecipeListTile> createState() => _RecipeListTileState();
-}
-
-class _RecipeListTileState extends State<RecipeListTile> {
-  late bool _favorite;
-
-  @override
-  void initState() {
-    _favorite = widget.recipe.favorite;
-    super.initState();
-  }
-
-  void _toggleFavorite() async {
-    setState(() {
-      _favorite = !_favorite;
-    });
-    await GetIt.I<DatabaseClient>()
-        .toggleFavoriteRecipe(widget.recipe, _favorite);
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -152,7 +133,7 @@ class _RecipeListTileState extends State<RecipeListTile> {
             context,
             MaterialPageRoute(
               builder: (context) => SingleRecipe(
-                recipeId: widget.recipe.id!,
+                recipeId: recipe.id!,
               ),
             ),
           );
@@ -168,12 +149,13 @@ class _RecipeListTileState extends State<RecipeListTile> {
             BlocProvider.of<RecipesBloc>(context).add(const GetRecipes());
           }
         },
-        title: Text(widget.recipe.name),
+        title: Text(recipe.name),
         trailing: IconButton(
           onPressed: () {
-            _toggleFavorite();
+            BlocProvider.of<RecipesBloc>(context)
+                .add(ToggleFavoriteRecipe(recipe: recipe));
           },
-          icon: _favorite
+          icon: recipe.favorite
               ? const Icon(Icons.favorite,
                   color: Color.fromARGB(255, 255, 128, 0))
               : const Icon(Icons.favorite_outline,

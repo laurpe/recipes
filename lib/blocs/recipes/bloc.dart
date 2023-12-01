@@ -8,6 +8,38 @@ class RecipesBloc extends Bloc<RecipesEvent, RecipesState> {
   final DatabaseClient databaseClient;
 
   RecipesBloc({required this.databaseClient}) : super(LoadingRecipesState()) {
+    on<ToggleFavoriteRecipe>(
+      (event, emit) async {
+        try {
+          final recipe = event.recipe;
+          await databaseClient.toggleFavoriteRecipe(recipe, !recipe.favorite);
+          if (state is LoadedRecipesState) {
+            final currentState = state as LoadedRecipesState;
+
+            final recipes = currentState.recipes.map((r) {
+              if (r.id == recipe.id) {
+                return Recipe(
+                  id: recipe.id,
+                  name: recipe.name,
+                  ingredients: recipe.ingredients,
+                  instructions: recipe.instructions,
+                  favorite: !recipe.favorite,
+                );
+              }
+              return r;
+            }).toList();
+
+            emit(LoadedRecipesState(
+              recipes: recipes,
+              query: currentState.query,
+              offset: currentState.offset,
+            ));
+          }
+        } catch (error) {
+          emit(ErrorLoadingRecipesState());
+        }
+      },
+    );
     on<GetRecipes>(
       (event, emit) async {
         try {
