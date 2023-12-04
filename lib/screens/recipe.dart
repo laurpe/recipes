@@ -148,7 +148,10 @@ class SingleRecipeView extends StatelessWidget {
                       children: [
                         for (var ingredient in state.recipe.ingredients)
                           Row(children: [
-                            SizedBox(width: 60, child: Text(ingredient.amount)),
+                            SizedBox(
+                                width: 60,
+                                child: Text(ingredient.amount.toString())),
+                            SizedBox(width: 60, child: Text(ingredient.unit)),
                             Text(ingredient.name)
                           ]),
                       ],

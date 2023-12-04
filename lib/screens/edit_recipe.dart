@@ -52,7 +52,7 @@ class EditRecipeFormState extends State<EditRecipeForm> {
 
   void _addIndgredient() {
     setState(() {
-      _ingredients.add(const Ingredient(name: '', amount: ''));
+      _ingredients.add(const Ingredient(name: '', amount: '', unit: ''));
     });
   }
 
@@ -145,7 +145,7 @@ class EditRecipeFormState extends State<EditRecipeForm> {
                   child: Row(
                     children: [
                       SizedBox(
-                        width: 100,
+                        width: 50,
                         child: TextFormField(
                           initialValue: _ingredients[index].amount,
                           decoration: const InputDecoration(
@@ -163,6 +163,32 @@ class EditRecipeFormState extends State<EditRecipeForm> {
                               _ingredients[index] = Ingredient(
                                 name: _ingredients[index].name,
                                 amount: value,
+                                unit: _ingredients[index].unit,
+                              );
+                            });
+                          },
+                        ),
+                      ),
+                      SizedBox(
+                        width: 50,
+                        child: TextFormField(
+                          initialValue: _ingredients[index].unit,
+                          decoration: const InputDecoration(
+                            labelText: 'Unit',
+                            floatingLabelBehavior: FloatingLabelBehavior.always,
+                          ),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Please enter ingredient unit';
+                            }
+                            return null;
+                          },
+                          onChanged: (value) {
+                            setState(() {
+                              _ingredients[index] = Ingredient(
+                                name: _ingredients[index].name,
+                                amount: _ingredients[index].amount,
+                                unit: value,
                               );
                             });
                           },
@@ -186,6 +212,7 @@ class EditRecipeFormState extends State<EditRecipeForm> {
                               _ingredients[index] = Ingredient(
                                 name: value,
                                 amount: _ingredients[index].amount,
+                                unit: _ingredients[index].unit,
                               );
                             });
                           },

@@ -58,8 +58,60 @@ class DatabaseClient {
           await db.execute('DROP TABLE ingredients');
           await db.execute('ALTER TABLE new_ingredients RENAME TO ingredients');
         }
+        if (oldVersion < 4) {
+          await db.execute('''CREATE TABLE temp_ingredients(
+            id INTEGER PRIMARY KEY, 
+            name TEXT, 
+            amount TEXT,
+            unit TEXT, 
+            recipeId INTEGER, 
+            FOREIGN KEY(recipeId) REFERENCES recipes(id) ON DELETE CASCADE)''');
+
+          List<Map> oldData = await db.query('ingredients');
+          for (var row in oldData) {
+            await db.insert('temp_ingredients', {
+              'id': row['id'],
+              'name': row['name'],
+              'amount': row['amount'].toString(),
+              'unit': row['unit'],
+              'recipeId': row['recipeId']
+            });
+          }
+
+          await db.execute('DROP TABLE ingredients');
+          await db
+              .execute('ALTER TABLE temp_ingredients RENAME TO ingredients');
+        }
+        if (oldVersion < 5) {
+          await db.execute('''CREATE TABLE temp_ingredients(
+            id INTEGER PRIMARY KEY, 
+            name TEXT, 
+            amount TEXT,
+            unit TEXT, 
+            recipeId INTEGER, 
+            FOREIGN KEY(recipeId) REFERENCES recipes(id) ON DELETE CASCADE)''');
+
+          List<Map> oldData = await db.query('ingredients');
+          for (var row in oldData) {
+            String amount = row['amount'];
+            var split = amount.split('.');
+            String finalAmount = split[0];
+
+            await db.insert('temp_ingredients', {
+              'id': row['id'],
+              'name': row['name'],
+              'amount': finalAmount,
+              'unit': row['unit'],
+              'recipeId': row['recipeId']
+            });
+          }
+
+          await db.execute('DROP TABLE ingredients');
+          await db
+              .execute('ALTER TABLE temp_ingredients RENAME TO ingredients');
+        }
       },
-      version: 3,
+      version: 5,
     );
   }
 
@@ -90,6 +142,7 @@ class DatabaseClient {
         id: ingredientMaps[i]['id'],
         name: ingredientMaps[i]['name'],
         amount: ingredientMaps[i]['amount'],
+        unit: ingredientMaps[i]['unit'],
       );
     });
   }
