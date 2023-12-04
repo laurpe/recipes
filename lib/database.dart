@@ -25,14 +25,41 @@ class DatabaseClient {
             FOREIGN KEY(recipeId) REFERENCES recipes(id) ON DELETE CASCADE)''');
       },
       onUpgrade: (db, oldVersion, newVersion) async {
-        if (oldVersion == 1 && newVersion == 2) {
+        if (oldVersion < 2) {
           var batch = db.batch();
           batch.execute(
               'ALTER TABLE recipes ADD COLUMN favorite BOOLEAN DEFAULT 0');
           await batch.commit();
         }
+        if (oldVersion < 3) {
+          await db.execute('''CREATE TABLE new_ingredients(
+            id INTEGER PRIMARY KEY, 
+            name TEXT, 
+            amount REAL,
+            unit TEXT, 
+            recipeId INTEGER, 
+            FOREIGN KEY(recipeId) REFERENCES recipes(id) ON DELETE CASCADE)''');
+
+          List<Map> oldData = await db.query('ingredients');
+          for (var row in oldData) {
+            String fullAmount = row['amount'];
+            var split = fullAmount.split(' ');
+            double amount = double.tryParse(split[0]) ?? 0;
+            String unit = split.length > 1 ? split[1] : '';
+
+            await db.insert('new_ingredients', {
+              'id': row['id'],
+              'name': row['name'],
+              'amount': amount,
+              'unit': unit,
+              'recipeId': row['recipeId']
+            });
+          }
+          await db.execute('DROP TABLE ingredients');
+          await db.execute('ALTER TABLE new_ingredients RENAME TO ingredients');
+        }
       },
-      version: 2,
+      version: 3,
     );
   }
 
