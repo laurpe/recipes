@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:path/path.dart';
+import 'package:recipes/grocery.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:recipes/recipe.dart';
 
@@ -275,5 +276,20 @@ class DatabaseClient {
     }
 
     return recipeList;
+  }
+
+  Future<List<Grocery>> getGroceries() async {
+    final List<Map<String, dynamic>> groceriesMap =
+        await _database.query('groceries');
+
+    return List.generate(groceriesMap.length, (i) {
+      return Grocery(
+        id: groceriesMap[i]['id'],
+        name: groceriesMap[i]['name'],
+        amount: groceriesMap[i]['amount'],
+        unit: groceriesMap[i]['unit'],
+        isBought: groceriesMap[i]['is_bought'] == 1 ? true : false,
+      );
+    });
   }
 }
