@@ -292,4 +292,14 @@ class DatabaseClient {
       );
     });
   }
+
+  Future<void> insertGrocery(Grocery grocery) async {
+    var groceryMap = grocery.toMap();
+    groceryMap['is_bought'] = grocery.isBought ? 1 : 0;
+
+    await _database.insert(
+      'groceries',
+      groceryMap,
+    );
+  }
 }
