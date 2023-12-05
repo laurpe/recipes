@@ -110,8 +110,18 @@ class DatabaseClient {
           await db
               .execute('ALTER TABLE temp_ingredients RENAME TO ingredients');
         }
+        if (oldVersion < 6) {
+          await db.execute('DROP TABLE IF EXISTS grocery_items');
+          await db.execute('''CREATE TABLE groceries(
+            id INTEGER PRIMARY KEY, 
+            name TEXT, 
+            amount TEXT,
+            unit TEXT,
+            is_bought BOOLEAN DEFAULT 0
+            )''');
+        }
       },
-      version: 5,
+      version: 6,
     );
   }
 
