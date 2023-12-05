@@ -67,7 +67,8 @@ class EditRecipeFormState extends State<EditRecipeForm> {
         ingredients: _ingredients,
         favorite: _favorite,
       );
-
+      // FIXME: recipe list or recipe view doesn't update after editing recipe
+      // same with deleting a recipe
       try {
         await GetIt.I<DatabaseClient>().updateRecipe(recipe);
         _formKey.currentState!.reset();
