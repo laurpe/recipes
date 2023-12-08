@@ -20,3 +20,7 @@ class LoadedRecipeState extends RecipeState {
 class LoadingRecipeState extends RecipeState {}
 
 class ErrorLoadingRecipeState extends RecipeState {}
+
+// class AddedGroceriesState extends RecipeState {}
+
+// class ErrorAddingGroceriesState extends RecipeState {}

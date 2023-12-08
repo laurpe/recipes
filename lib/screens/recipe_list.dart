@@ -7,6 +7,7 @@ import 'package:recipes/blocs/recipes/state.dart';
 import 'package:recipes/database.dart';
 import 'package:recipes/recipe.dart';
 import 'package:recipes/screens/add_recipe.dart';
+import 'package:recipes/screens/groceries.dart';
 import 'package:recipes/screens/recipe.dart';
 
 Future<void> openAddRecipe(BuildContext context) async {
@@ -59,6 +60,17 @@ class RecipeListView extends StatelessWidget {
           child: const Icon(Icons.add)),
       appBar: AppBar(
         title: const Text('Recipes'),
+        actions: [
+          IconButton(
+              onPressed: () {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const GroceriesList(),
+                    ));
+              },
+              icon: const Icon(Icons.shopping_cart))
+        ],
       ),
       body: Column(
         children: [

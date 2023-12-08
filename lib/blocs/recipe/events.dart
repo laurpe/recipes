@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:recipes/recipe.dart';
 
 abstract class RecipeEvent extends Equatable {
   const RecipeEvent();
@@ -8,3 +9,9 @@ abstract class RecipeEvent extends Equatable {
 }
 
 class GetRecipe extends RecipeEvent {}
+
+class AddGroceries extends RecipeEvent {
+  final List<Ingredient> ingredients;
+
+  const AddGroceries({required this.ingredients});
+}

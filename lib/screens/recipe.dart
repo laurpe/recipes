@@ -137,9 +137,23 @@ class SingleRecipeView extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   Padding(
-                      padding: const EdgeInsets.fromLTRB(8.0, 8.0, 0, 0),
-                      child: Text('Ingredients',
-                          style: Theme.of(context).textTheme.headlineSmall)),
+                    padding: const EdgeInsets.fromLTRB(8.0, 8.0, 0, 0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text('Ingredients',
+                            style: Theme.of(context).textTheme.headlineSmall),
+                        IconButton(
+                            onPressed: () {
+                              BlocProvider.of<RecipeBloc>(context).add(
+                                AddGroceries(
+                                    ingredients: state.recipe.ingredients),
+                              );
+                            },
+                            icon: const Icon(Icons.add_shopping_cart))
+                      ],
+                    ),
+                  ),
                   Card(
                     margin: const EdgeInsets.all(8.0),
                     child: ListView(
@@ -147,13 +161,18 @@ class SingleRecipeView extends StatelessWidget {
                       shrinkWrap: true,
                       children: [
                         for (var ingredient in state.recipe.ingredients)
-                          Row(children: [
-                            SizedBox(
+                          Row(
+                            children: [
+                              SizedBox(
                                 width: 60,
-                                child: Text(ingredient.amount.toString())),
-                            SizedBox(width: 60, child: Text(ingredient.unit)),
-                            Text(ingredient.name)
-                          ]),
+                                child: Text(
+                                  ingredient.amount.toString(),
+                                ),
+                              ),
+                              SizedBox(width: 60, child: Text(ingredient.unit)),
+                              Text(ingredient.name)
+                            ],
+                          ),
                       ],
                     ),
                   ),
