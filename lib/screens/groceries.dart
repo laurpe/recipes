@@ -46,8 +46,15 @@ class GroceriesListView extends StatelessWidget {
                 itemBuilder: (context, index) {
                   final grocery = state.groceries[index];
 
-                  return ListTile(
-                    title: Text(grocery.name),
+                  return Card(
+                    child: CheckboxListTile(
+                      value: false,
+                      onChanged: (bool? value) {
+                        value = true;
+                      },
+                      title: Text(
+                          "${grocery.amount} ${grocery.unit} ${grocery.name}"),
+                    ),
                   );
                 },
               );
