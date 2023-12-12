@@ -27,7 +27,15 @@ class GroceriesBloc extends Bloc<GroceriesEvent, GroceriesState> {
               );
             }
             return g;
-          }).toList();
+          }).toList()
+            ..sort((a, b) {
+              if (a.isBought && !b.isBought) {
+                return 1;
+              } else if (!a.isBought && b.isBought) {
+                return -1;
+              }
+              return 0;
+            });
 
           emit(LoadedGroceriesState(groceries: groceries));
         }
@@ -38,7 +46,15 @@ class GroceriesBloc extends Bloc<GroceriesEvent, GroceriesState> {
     on<GetGroceries>((event, emit) async {
       try {
         emit(LoadedGroceriesState(
-            groceries: await databaseClient.getGroceries()));
+            groceries: await databaseClient.getGroceries()
+              ..sort((a, b) {
+                if (a.isBought && !b.isBought) {
+                  return 1;
+                } else if (!a.isBought && b.isBought) {
+                  return -1;
+                }
+                return 0;
+              })));
       } catch (error) {
         emit(ErrorLoadingGroceriesState());
       }
