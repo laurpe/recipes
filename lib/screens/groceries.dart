@@ -66,9 +66,8 @@ class GroceryListTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      child: CheckboxListTile(
-        value: grocery.isBought,
-        onChanged: (value) async {
+      child: ListTile(
+        onTap: () {
           BlocProvider.of<GroceriesBloc>(context)
               .add(ToggleGroceryBought(grocery: grocery));
         },
