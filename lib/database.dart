@@ -315,7 +315,7 @@ class DatabaseClient {
     await _database.delete('groceries');
   }
 
-  Future<void> toggleGroceryIsBought(Grocery grocery, bool isBought) async {
+  Future<void> toggleGroceryBought(Grocery grocery, bool isBought) async {
     var groceryMap = grocery.toMap();
     groceryMap['is_bought'] = isBought ? 1 : 0;
 

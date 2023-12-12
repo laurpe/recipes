@@ -55,7 +55,7 @@ class GroceriesListView extends StatelessWidget {
   }
 }
 
-class GroceryListTile extends StatefulWidget {
+class GroceryListTile extends StatelessWidget {
   final Grocery grocery;
 
   const GroceryListTile({
@@ -64,32 +64,19 @@ class GroceryListTile extends StatefulWidget {
   });
 
   @override
-  State<GroceryListTile> createState() => _GroceryListTileState();
-}
-
-class _GroceryListTileState extends State<GroceryListTile> {
-  late bool _isBought;
-
-  @override
-  void initState() {
-    _isBought = widget.grocery.isBought;
-    super.initState();
-  }
-
-  @override
   Widget build(BuildContext context) {
     return Card(
       child: CheckboxListTile(
-        value: _isBought,
+        value: grocery.isBought,
         onChanged: (value) async {
-          await GetIt.I<DatabaseClient>()
-              .toggleGroceryIsBought(widget.grocery, !_isBought);
-          setState(() {
-            _isBought = !_isBought;
-          });
+          BlocProvider.of<GroceriesBloc>(context)
+              .add(ToggleGroceryBought(grocery: grocery));
         },
         title: Text(
-            "${widget.grocery.amount} ${widget.grocery.unit} ${widget.grocery.name}"),
+          "${grocery.amount} ${grocery.unit} ${grocery.name}",
+          style: TextStyle(
+              decoration: grocery.isBought ? TextDecoration.lineThrough : null),
+        ),
       ),
     );
   }
