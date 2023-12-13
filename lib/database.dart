@@ -280,7 +280,7 @@ class DatabaseClient {
 
   Future<List<Grocery>> getGroceries() async {
     final List<Map<String, dynamic>> groceriesMap =
-        await _database.query('groceries');
+        await _database.query('groceries', orderBy: 'name');
 
     return List.generate(groceriesMap.length, (i) {
       return Grocery(
