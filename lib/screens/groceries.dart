@@ -26,11 +26,55 @@ class GroceriesList extends StatelessWidget {
 class GroceriesListView extends StatelessWidget {
   const GroceriesListView({super.key});
 
+  Future<void> confirmGroceriesDelete(
+      BuildContext context, GroceriesBloc bloc) async {
+    return showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Confirm delete'),
+          content: const SingleChildScrollView(
+            child: ListBody(
+              children: [
+                Text('Are you sure you want to delete all groceries?'),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              child: const Text('Cancel'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: const Text('Yes'),
+              onPressed: () {
+                bloc.add(DeleteGroceries());
+                Navigator.of(context).pop();
+              },
+            )
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Groceries'),
+        actions: [
+          IconButton(
+            onPressed: () async {
+              await confirmGroceriesDelete(
+                  context, BlocProvider.of<GroceriesBloc>(context));
+            },
+            icon: const Icon(Icons.playlist_remove),
+          ),
+        ],
       ),
       body: BlocBuilder<GroceriesBloc, GroceriesState>(
         builder: (context, state) {

@@ -59,5 +59,13 @@ class GroceriesBloc extends Bloc<GroceriesEvent, GroceriesState> {
         emit(ErrorLoadingGroceriesState());
       }
     });
+    on<DeleteGroceries>((event, emit) async {
+      try {
+        await databaseClient.deleteGroceries();
+        emit(const LoadedGroceriesState(groceries: []));
+      } catch (error) {
+        emit(ErrorLoadingGroceriesState());
+      }
+    });
   }
 }
