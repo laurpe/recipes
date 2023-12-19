@@ -86,12 +86,7 @@ class GroceriesListView extends StatelessWidget {
                 child: Text('Error loading groceries'),
               );
             case LoadedGroceriesState():
-              return ListView.builder(
-                itemCount: state.groceries.length,
-                itemBuilder: (context, index) {
-                  return GroceryListTile(grocery: state.groceries[index]);
-                },
-              );
+              return AnimatedGroceryList(groceries: state.groceries);
           }
         },
       ),
@@ -99,28 +94,95 @@ class GroceriesListView extends StatelessWidget {
   }
 }
 
-class GroceryListTile extends StatelessWidget {
-  final Grocery grocery;
+class AnimatedGroceryList extends StatefulWidget {
+  final List<Grocery> groceries;
 
-  const GroceryListTile({
-    super.key,
-    required this.grocery,
-  });
+  const AnimatedGroceryList({super.key, required this.groceries});
+
+  @override
+  AnimatedGroceryListState createState() => AnimatedGroceryListState();
+}
+
+class AnimatedGroceryListState extends State<AnimatedGroceryList> {
+  final GlobalKey<AnimatedListState> _listKey = GlobalKey<AnimatedListState>();
+  late List<Grocery> _items;
+
+  @override
+  void initState() {
+    _items = widget.groceries;
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      child: ListTile(
-        onTap: () {
-          BlocProvider.of<GroceriesBloc>(context)
-              .add(ToggleGroceryBought(grocery: grocery));
-        },
-        title: Text(
-          "${grocery.amount} ${grocery.unit} ${grocery.name}",
-          style: TextStyle(
-              decoration: grocery.isBought ? TextDecoration.lineThrough : null),
+    return AnimatedList(
+      key: _listKey,
+      initialItemCount: _items.length,
+      itemBuilder: (context, index, animation) {
+        return _buildItem(_items[index], animation);
+      },
+    );
+  }
+
+  Widget _buildItem(Grocery item, Animation<double> animation) {
+    return Padding(
+      padding: const EdgeInsets.all(2.0),
+      child: SizeTransition(
+        sizeFactor: animation,
+        child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: () {
+            _moveItemToBottom(item);
+            BlocProvider.of<GroceriesBloc>(context)
+                .add(ToggleGroceryBought(grocery: item));
+          },
+          child: Card(
+            child: ListTile(
+              title: Text('${item.amount} ${item.unit} ${item.name}',
+                  style: item.isBought
+                      ? const TextStyle(decoration: TextDecoration.lineThrough)
+                      : null),
+            ),
+          ),
         ),
       ),
     );
   }
+
+  void _moveItemToBottom(Grocery item) {
+    int currentIndex = _items.indexOf(item);
+    _listKey.currentState!.removeItem(
+      currentIndex,
+      (context, animation) => _buildItem(item, animation),
+    );
+    _items.removeAt(currentIndex);
+    _items.add(item);
+    _listKey.currentState!.insertItem(_items.length - 1);
+  }
 }
+
+// class GroceryListTile extends StatelessWidget {
+//   final Grocery grocery;
+
+//   const GroceryListTile({
+//     super.key,
+//     required this.grocery,
+//   });
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return Card(
+//       child: ListTile(
+//         onTap: () {
+//           BlocProvider.of<GroceriesBloc>(context)
+//               .add(ToggleGroceryBought(grocery: grocery));
+//         },
+//         title: Text(
+//           "${grocery.amount} ${grocery.unit} ${grocery.name}",
+//           style: TextStyle(
+//               decoration: grocery.isBought ? TextDecoration.lineThrough : null),
+//         ),
+//       ),
+//     );
+//   }
+// }
