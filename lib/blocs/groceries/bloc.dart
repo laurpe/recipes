@@ -13,8 +13,11 @@ class GroceriesBloc extends Bloc<GroceriesEvent, GroceriesState> {
       try {
         final grocery = event.grocery;
         await databaseClient.toggleGroceryBought(grocery, !grocery.isBought);
+
         if (state is LoadedGroceriesState) {
           final currentState = state as LoadedGroceriesState;
+
+          final index = currentState.groceries.indexOf(grocery);
 
           final groceries = currentState.groceries.map((g) {
             if (g.id == grocery.id) {
@@ -27,15 +30,23 @@ class GroceriesBloc extends Bloc<GroceriesEvent, GroceriesState> {
               );
             }
             return g;
-          }).toList()
-            ..sort((a, b) {
-              if (a.isBought && !b.isBought) {
-                return 1;
-              } else if (!a.isBought && b.isBought) {
-                return -1;
-              }
-              return 0;
-            });
+          }).toList();
+
+          groceries.removeAt(index);
+
+          final newGrocery = Grocery(
+            id: grocery.id,
+            name: grocery.name,
+            amount: grocery.amount,
+            unit: grocery.unit,
+            isBought: !grocery.isBought,
+          );
+
+          if (!event.grocery.isBought) {
+            groceries.add(newGrocery);
+          } else {
+            groceries.insert(0, newGrocery);
+          }
 
           emit(LoadedGroceriesState(groceries: groceries));
         }
@@ -46,15 +57,7 @@ class GroceriesBloc extends Bloc<GroceriesEvent, GroceriesState> {
     on<GetGroceries>((event, emit) async {
       try {
         emit(LoadedGroceriesState(
-            groceries: await databaseClient.getGroceries()
-              ..sort((a, b) {
-                if (a.isBought && !b.isBought) {
-                  return 1;
-                } else if (!a.isBought && b.isBought) {
-                  return -1;
-                }
-                return 0;
-              })));
+            groceries: await databaseClient.getGroceries()));
       } catch (error) {
         emit(ErrorLoadingGroceriesState());
       }

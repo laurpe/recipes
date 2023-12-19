@@ -18,13 +18,15 @@ class GroceriesList extends StatelessWidget {
         return GroceriesBloc(databaseClient: databaseClient)
           ..add(GetGroceries());
       },
-      child: const GroceriesListView(),
+      child: GroceriesListView(),
     );
   }
 }
 
 class GroceriesListView extends StatelessWidget {
-  const GroceriesListView({super.key});
+  final GlobalKey<AnimatedListState> _listKey = GlobalKey<AnimatedListState>();
+
+  GroceriesListView({super.key});
 
   Future<void> confirmGroceriesDelete(
       BuildContext context, GroceriesBloc bloc) async {
@@ -86,9 +88,44 @@ class GroceriesListView extends StatelessWidget {
                 child: Text('Error loading groceries'),
               );
             case LoadedGroceriesState():
-              return AnimatedGroceryList(groceries: state.groceries);
+              return AnimatedList(
+                key: _listKey,
+                initialItemCount: state.groceries.length,
+                itemBuilder: (context, index, animation) {
+                  return _buildItem(context, index, state.groceries.length,
+                      state.groceries[index], animation);
+                },
+              );
           }
         },
+      ),
+    );
+  }
+
+  Widget _buildItem(context, int index, int length, Grocery item,
+      Animation<double> animation) {
+    return SizeTransition(
+      sizeFactor: animation,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: () {
+          BlocProvider.of<GroceriesBloc>(context)
+              .add(ToggleGroceryBought(grocery: item));
+          _listKey.currentState!.removeItem(
+            index,
+            (context, animation) =>
+                _buildItem(context, index, length, item, animation),
+          );
+          _listKey.currentState!.insertItem(length - 1);
+        },
+        child: Card(
+          child: ListTile(
+            title: Text('${item.amount} ${item.unit} ${item.name}',
+                style: item.isBought
+                    ? const TextStyle(decoration: TextDecoration.lineThrough)
+                    : null),
+          ),
+        ),
       ),
     );
   }
