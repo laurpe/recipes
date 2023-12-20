@@ -32,6 +32,9 @@ class GroceriesBloc extends Bloc<GroceriesEvent, GroceriesState> {
             return g;
           }).toList();
 
+          // TODO: unify sorting when fetching list from database, reloading page and toggling grocery bought
+          // toggling isBought from false to true: move to top of bought groceries, not top of whole list
+
           groceries.removeAt(index);
 
           final newGrocery = Grocery(

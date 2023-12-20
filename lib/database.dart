@@ -282,7 +282,7 @@ class DatabaseClient {
     final List<Map<String, dynamic>> groceriesMap =
         await _database.query('groceries', orderBy: 'name');
 
-    return List.generate(groceriesMap.length, (i) {
+    List<Grocery> groceries = List.generate(groceriesMap.length, (i) {
       return Grocery(
         id: groceriesMap[i]['id'],
         name: groceriesMap[i]['name'],
@@ -291,6 +291,16 @@ class DatabaseClient {
         isBought: groceriesMap[i]['is_bought'] == 1 ? true : false,
       );
     });
+
+    return groceries
+      ..sort((a, b) {
+        if (a.isBought && !b.isBought) {
+          return 1;
+        } else if (!a.isBought && b.isBought) {
+          return -1;
+        }
+        return 0;
+      });
   }
 
   Future<void> insertGrocery(Grocery grocery) async {
