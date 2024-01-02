@@ -109,14 +109,18 @@ class GroceriesListView extends StatelessWidget {
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
         onTap: () {
-          BlocProvider.of<GroceriesBloc>(context)
-              .add(ToggleGroceryBought(grocery: item));
           _listKey.currentState!.removeItem(
             index,
             (context, animation) =>
                 _buildItem(context, index, length, item, animation),
           );
-          _listKey.currentState!.insertItem(length - 1);
+
+          int insertIndex = item.isBought ? 0 : length - 1;
+
+          _listKey.currentState!.insertItem(insertIndex);
+
+          BlocProvider.of<GroceriesBloc>(context)
+              .add(ToggleGroceryBought(grocery: item));
         },
         child: Card(
           child: ListTile(

@@ -12,7 +12,16 @@ class GroceriesBloc extends Bloc<GroceriesEvent, GroceriesState> {
     on<ToggleGroceryBought>((event, emit) async {
       try {
         final grocery = event.grocery;
+
         await databaseClient.toggleGroceryBought(grocery, !grocery.isBought);
+
+        final updatedGrocery = Grocery(
+          id: grocery.id,
+          name: grocery.name,
+          amount: grocery.amount,
+          unit: grocery.unit,
+          isBought: !grocery.isBought,
+        );
 
         if (state is LoadedGroceriesState) {
           final currentState = state as LoadedGroceriesState;
@@ -21,35 +30,16 @@ class GroceriesBloc extends Bloc<GroceriesEvent, GroceriesState> {
 
           final groceries = currentState.groceries.map((g) {
             if (g.id == grocery.id) {
-              return Grocery(
-                id: grocery.id,
-                name: grocery.name,
-                amount: grocery.amount,
-                unit: grocery.unit,
-                isBought: !grocery.isBought,
-              );
+              return updatedGrocery;
             }
             return g;
           }).toList();
 
-          // TODO: unify sorting when fetching list from database, reloading page and toggling grocery bought
-          // toggling isBought from false to true: move to top of bought groceries, not top of whole list
-
           groceries.removeAt(index);
 
-          final newGrocery = Grocery(
-            id: grocery.id,
-            name: grocery.name,
-            amount: grocery.amount,
-            unit: grocery.unit,
-            isBought: !grocery.isBought,
-          );
-
-          if (!event.grocery.isBought) {
-            groceries.add(newGrocery);
-          } else {
-            groceries.insert(0, newGrocery);
-          }
+          event.grocery.isBought
+              ? groceries.insert(0, updatedGrocery)
+              : groceries.add(updatedGrocery);
 
           emit(LoadedGroceriesState(groceries: groceries));
         }
