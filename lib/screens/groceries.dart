@@ -53,6 +53,8 @@ class GroceriesListView extends StatelessWidget {
             TextButton(
               child: const Text('Yes'),
               onPressed: () {
+                _listKey.currentState!
+                    .removeAllItems((context, animation) => Container());
                 bloc.add(DeleteGroceries());
                 Navigator.of(context).pop();
               },
