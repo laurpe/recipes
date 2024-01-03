@@ -8,10 +8,26 @@ import 'package:recipes/database.dart';
 import 'package:recipes/recipe.dart';
 import 'package:recipes/screens/edit_recipe.dart';
 
-enum RecipeResult { added, updated, deleted }
+sealed class Result<T> {
+  final T data;
+
+  Result(this.data);
+}
+
+class Updated extends Result<Recipe> {
+  Updated(Recipe data) : super(data);
+}
+
+class Deleted extends Result<int> {
+  Deleted(int data) : super(data);
+}
+
+class Added extends Result<Recipe> {
+  Added(Recipe data) : super(data);
+}
 
 Future<void> openEditRecipe(BuildContext context, Recipe recipe) async {
-  final result = await Navigator.push(
+  final Result result = await Navigator.push(
     context,
     MaterialPageRoute(
       builder: (context) => EditRecipe(recipe: recipe),
@@ -20,7 +36,7 @@ Future<void> openEditRecipe(BuildContext context, Recipe recipe) async {
 
   if (!context.mounted) return;
 
-  if (result == RecipeResult.updated) {
+  if (result is Updated) {
     BlocProvider.of<RecipeBloc>(context).add(GetRecipe());
 
     ScaffoldMessenger.of(context).showSnackBar(
@@ -83,7 +99,7 @@ class SingleRecipeView extends StatelessWidget {
 
                   if (!context.mounted) return;
 
-                  Navigator.of(context).pop(RecipeResult.deleted);
+                  Navigator.of(context).pop(Deleted(recipeId));
                 } catch (error) {
                   ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
                       content:
@@ -118,7 +134,8 @@ class SingleRecipeView extends StatelessWidget {
                   title: Text(state.recipe.name),
                   centerTitle: false,
                   leading: IconButton(
-                      onPressed: () => Navigator.of(context).pop(state.recipe),
+                      onPressed: () =>
+                          Navigator.of(context).pop(Updated(state.recipe)),
                       icon: const Icon(Icons.arrow_back_ios)),
                   actions: [
                     IconButton(
@@ -126,12 +143,12 @@ class SingleRecipeView extends StatelessWidget {
                         icon: const Icon(Icons.edit)),
                     IconButton(
                         onPressed: () async {
-                          final result = await confirmRecipeDelete(
+                          final Result result = await confirmRecipeDelete(
                               context, state.recipe.id!);
-                          if (result == RecipeResult.deleted) {
+                          if (result is Deleted) {
                             if (!context.mounted) return;
 
-                            Navigator.of(context).pop(result);
+                            Navigator.of(context).pop(Deleted(result.data));
                           }
                         },
                         icon: const Icon(Icons.delete))

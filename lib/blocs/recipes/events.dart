@@ -26,3 +26,9 @@ class RecipeUpdated extends RecipesEvent {
 
   const RecipeUpdated({required this.recipe});
 }
+
+class RecipeDeleted extends RecipesEvent {
+  final int recipeId;
+
+  const RecipeDeleted({required this.recipeId});
+}

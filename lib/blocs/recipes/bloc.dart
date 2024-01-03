@@ -66,6 +66,28 @@ class RecipesBloc extends Bloc<RecipesEvent, RecipesState> {
         }
       },
     );
+    on<RecipeDeleted>(
+      (event, emit) async {
+        try {
+          final recipeId = event.recipeId;
+
+          if (state is LoadedRecipesState) {
+            final currentState = state as LoadedRecipesState;
+
+            final recipes =
+                currentState.recipes.where((r) => r.id != recipeId).toList();
+
+            emit(LoadedRecipesState(
+              recipes: recipes,
+              query: currentState.query,
+              offset: currentState.offset,
+            ));
+          }
+        } catch (error) {
+          emit(ErrorLoadingRecipesState());
+        }
+      },
+    );
     on<GetRecipes>(
       (event, emit) async {
         try {

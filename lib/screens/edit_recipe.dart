@@ -74,7 +74,7 @@ class EditRecipeFormState extends State<EditRecipeForm> {
 
         if (!context.mounted) return;
 
-        Navigator.of(context).pop(RecipeResult.updated);
+        Navigator.of(context).pop(Updated(recipe));
       } catch (error) {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
             content: Text('Something went wrong! Please try again.')));

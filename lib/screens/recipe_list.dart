@@ -11,7 +11,7 @@ import 'package:recipes/screens/groceries.dart';
 import 'package:recipes/screens/recipe.dart';
 
 Future<void> openAddRecipe(BuildContext context) async {
-  final result = await Navigator.push(
+  final Result result = await Navigator.push(
     context,
     MaterialPageRoute(
       builder: (context) => const RecipeFormView(),
@@ -19,7 +19,7 @@ Future<void> openAddRecipe(BuildContext context) async {
   );
 
   if (!context.mounted) return;
-  if (result == RecipeResult.added) {
+  if (result is Added) {
     ScaffoldMessenger.of(context)
         .showSnackBar(const SnackBar(content: Text('Recipe added!')));
     BlocProvider.of<RecipesBloc>(context).add(const GetRecipes());
@@ -147,7 +147,7 @@ class RecipeListTile extends StatelessWidget {
       margin: const EdgeInsets.fromLTRB(8, 4, 8, 4),
       child: ListTile(
         onTap: () async {
-          final result = await Navigator.push(
+          final Result result = await Navigator.push(
             context,
             MaterialPageRoute(
               builder: (context) => SingleRecipe(
@@ -156,7 +156,7 @@ class RecipeListTile extends StatelessWidget {
             ),
           );
 
-          if (result == RecipeResult.deleted) {
+          if (result is Deleted) {
             if (!context.mounted) return;
 
             ScaffoldMessenger.of(context).showSnackBar(
@@ -164,16 +164,17 @@ class RecipeListTile extends StatelessWidget {
                 content: Text('Recipe deleted!'),
               ),
             );
-            BlocProvider.of<RecipesBloc>(context).add(const GetRecipes());
+            BlocProvider.of<RecipesBloc>(context)
+                .add(RecipeDeleted(recipeId: result.data));
           }
 
           /// Get recipe when returning from single recipe page
           /// to update list tile if recipe was updated
-          if (result is Recipe) {
+          if (result is Updated) {
             if (!context.mounted) return;
 
             BlocProvider.of<RecipesBloc>(context)
-                .add(RecipeUpdated(recipe: result));
+                .add(RecipeUpdated(recipe: result.data));
           }
         },
         title: Text(recipe.name),
