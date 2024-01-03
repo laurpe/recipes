@@ -20,3 +20,9 @@ class ToggleFavoriteRecipe extends RecipesEvent {
 
   const ToggleFavoriteRecipe({required this.recipe});
 }
+
+class RecipeUpdated extends RecipesEvent {
+  final Recipe recipe;
+
+  const RecipeUpdated({required this.recipe});
+}

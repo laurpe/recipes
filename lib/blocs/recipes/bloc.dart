@@ -40,6 +40,32 @@ class RecipesBloc extends Bloc<RecipesEvent, RecipesState> {
         }
       },
     );
+    on<RecipeUpdated>(
+      (event, emit) async {
+        try {
+          final recipe = event.recipe;
+
+          if (state is LoadedRecipesState) {
+            final currentState = state as LoadedRecipesState;
+
+            final recipes = currentState.recipes.map((r) {
+              if (r.id == recipe.id) {
+                return recipe;
+              }
+              return r;
+            }).toList();
+
+            emit(LoadedRecipesState(
+              recipes: recipes,
+              query: currentState.query,
+              offset: currentState.offset,
+            ));
+          }
+        } catch (error) {
+          emit(ErrorLoadingRecipesState());
+        }
+      },
+    );
     on<GetRecipes>(
       (event, emit) async {
         try {

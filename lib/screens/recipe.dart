@@ -117,6 +117,9 @@ class SingleRecipeView extends StatelessWidget {
               appBar: AppBar(
                   title: Text(state.recipe.name),
                   centerTitle: false,
+                  leading: IconButton(
+                      onPressed: () => Navigator.of(context).pop(state.recipe),
+                      icon: const Icon(Icons.arrow_back_ios)),
                   actions: [
                     IconButton(
                         onPressed: () => openEditRecipe(context, state.recipe),

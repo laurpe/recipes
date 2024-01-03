@@ -166,6 +166,15 @@ class RecipeListTile extends StatelessWidget {
             );
             BlocProvider.of<RecipesBloc>(context).add(const GetRecipes());
           }
+
+          /// Get recipe when returning from single recipe page
+          /// to update list tile if recipe was updated
+          if (result is Recipe) {
+            if (!context.mounted) return;
+
+            BlocProvider.of<RecipesBloc>(context)
+                .add(RecipeUpdated(recipe: result));
+          }
         },
         title: Text(recipe.name),
         trailing: IconButton(
