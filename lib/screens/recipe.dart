@@ -9,7 +9,7 @@ import 'package:recipes/recipe.dart';
 import 'package:recipes/screens/edit_recipe.dart';
 
 sealed class Result<T> {
-  final T data;
+  final T? data;
 
   Result(this.data);
 }
@@ -27,7 +27,7 @@ class Added extends Result<Recipe> {
 }
 
 Future<void> openEditRecipe(BuildContext context, Recipe recipe) async {
-  final Result result = await Navigator.push(
+  final Result? result = await Navigator.push(
     context,
     MaterialPageRoute(
       builder: (context) => EditRecipe(recipe: recipe),
@@ -143,12 +143,12 @@ class SingleRecipeView extends StatelessWidget {
                         icon: const Icon(Icons.edit)),
                     IconButton(
                         onPressed: () async {
-                          final Result result = await confirmRecipeDelete(
+                          final Result? result = await confirmRecipeDelete(
                               context, state.recipe.id!);
                           if (result is Deleted) {
                             if (!context.mounted) return;
 
-                            Navigator.of(context).pop(Deleted(result.data));
+                            Navigator.of(context).pop(Deleted(result.data!));
                           }
                         },
                         icon: const Icon(Icons.delete))

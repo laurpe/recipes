@@ -165,7 +165,7 @@ class RecipeListTile extends StatelessWidget {
               ),
             );
             BlocProvider.of<RecipesBloc>(context)
-                .add(RecipeDeleted(recipeId: result.data));
+                .add(RecipeDeleted(recipeId: result.data!));
           }
 
           /// Get recipe when returning from single recipe page
@@ -174,7 +174,7 @@ class RecipeListTile extends StatelessWidget {
             if (!context.mounted) return;
 
             BlocProvider.of<RecipesBloc>(context)
-                .add(RecipeUpdated(recipe: result.data));
+                .add(RecipeUpdated(recipe: result.data!));
           }
         },
         title: Text(recipe.name),
