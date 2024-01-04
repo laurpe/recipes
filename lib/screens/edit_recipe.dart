@@ -17,7 +17,10 @@ class EditRecipe extends StatelessWidget {
         centerTitle: false,
       ),
       body: SafeArea(
-          child: SingleChildScrollView(child: EditRecipeForm(recipe: recipe))),
+        child: SingleChildScrollView(
+          child: EditRecipeForm(recipe: recipe),
+        ),
+      ),
     );
   }
 }

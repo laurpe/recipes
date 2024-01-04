@@ -10,11 +10,15 @@ class RecipeFormView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          title: const Text("Add new recipe"),
+      appBar: AppBar(
+        title: const Text("Add new recipe"),
+      ),
+      body: const SafeArea(
+        child: SingleChildScrollView(
+          child: RecipeForm(),
         ),
-        body:
-            const SafeArea(child: SingleChildScrollView(child: RecipeForm())));
+      ),
+    );
   }
 }
 
