@@ -11,7 +11,7 @@ import 'package:recipes/screens/groceries.dart';
 import 'package:recipes/screens/recipe.dart';
 
 Future<void> openAddRecipe(BuildContext context) async {
-  final Result result = await Navigator.push(
+  final Result? result = await Navigator.push(
     context,
     MaterialPageRoute(
       builder: (context) => const RecipeFormView(),
@@ -74,15 +74,18 @@ class RecipeListView extends StatelessWidget {
       ),
       body: Column(
         children: [
-          TextField(
-            decoration: const InputDecoration(
-              hintText: 'Search',
-              prefixIcon: Icon(Icons.search),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(0, 0, 0, 2.8),
+            child: TextField(
+              decoration: const InputDecoration(
+                hintText: 'Search',
+                prefixIcon: Icon(Icons.search),
+              ),
+              onChanged: (value) {
+                BlocProvider.of<RecipesBloc>(context)
+                    .add(GetRecipes(query: value));
+              },
             ),
-            onChanged: (value) {
-              BlocProvider.of<RecipesBloc>(context)
-                  .add(GetRecipes(query: value));
-            },
           ),
           Expanded(
             child: BlocBuilder<RecipesBloc, RecipesState>(
@@ -135,7 +138,6 @@ class RecipeListTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      margin: const EdgeInsets.fromLTRB(8, 4, 8, 4),
       child: ListTile(
         onTap: () async {
           final Result result = await Navigator.push(
@@ -175,10 +177,8 @@ class RecipeListTile extends StatelessWidget {
                 .add(ToggleFavoriteRecipe(recipe: recipe));
           },
           icon: recipe.favorite
-              ? const Icon(Icons.favorite,
-                  color: Color.fromARGB(255, 255, 128, 0))
-              : const Icon(Icons.favorite_outline,
-                  color: Color.fromARGB(255, 255, 128, 0)),
+              ? const Icon(Icons.favorite)
+              : const Icon(Icons.favorite_outline),
         ),
       ),
     );

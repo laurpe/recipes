@@ -157,12 +157,12 @@ class SingleRecipeView extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   Padding(
-                    padding: const EdgeInsets.fromLTRB(8.0, 8.0, 0, 0),
+                    padding: const EdgeInsets.fromLTRB(8.0, 0, 0, 0),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text('Ingredients',
-                            style: Theme.of(context).textTheme.headlineSmall),
+                            style: Theme.of(context).textTheme.headlineMedium),
                         IconButton(
                             onPressed: () {
                               BlocProvider.of<RecipeBloc>(context).add(
@@ -175,7 +175,7 @@ class SingleRecipeView extends StatelessWidget {
                     ),
                   ),
                   Card(
-                    margin: const EdgeInsets.all(8.0),
+                    margin: const EdgeInsets.fromLTRB(8.0, 0, 8.0, 8.0),
                     child: ListView(
                       padding: const EdgeInsets.all(8.0),
                       shrinkWrap: true,
@@ -200,7 +200,7 @@ class SingleRecipeView extends StatelessWidget {
                     padding: const EdgeInsets.fromLTRB(8.0, 0, 0, 0),
                     child: Text(
                       "Instructions",
-                      style: Theme.of(context).textTheme.headlineSmall,
+                      style: Theme.of(context).textTheme.headlineMedium,
                     ),
                   ),
                   Card(

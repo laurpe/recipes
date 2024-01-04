@@ -19,14 +19,49 @@ class RecipeApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Recipe app',
+      title: 'Recipes',
       theme: ThemeData(
-        shadowColor: Colors.black38,
-        colorScheme: ColorScheme.fromSwatch().copyWith(
-          primary: const Color.fromARGB(255, 255, 128, 0),
-          secondary: const Color.fromARGB(255, 255, 128, 0),
+        appBarTheme: AppBarTheme(
+            scrolledUnderElevation: 0,
+            color: Colors.orange[800],
+            iconTheme: const IconThemeData(color: Colors.white),
+            actionsIconTheme: const IconThemeData(color: Colors.white),
+            titleTextStyle: const TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.w600,
+              color: Colors.white,
+            )),
+        useMaterial3: true,
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.orange,
+          primary: Colors.orange[800],
         ),
-        fontFamily: 'Roboto',
+        inputDecorationTheme: const InputDecorationTheme(
+          hintStyle: TextStyle(
+            color: Colors.black26,
+          ),
+          prefixIconColor: Colors.black26,
+        ),
+        textTheme: const TextTheme(
+          titleLarge: TextStyle(
+            fontSize: 22,
+            fontWeight: FontWeight.w600,
+          ),
+          headlineMedium: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+          ),
+          bodyMedium: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.normal,
+          ),
+        ),
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            textStyle:
+                const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+          ),
+        ),
       ),
       home: const RecipeList(),
     );

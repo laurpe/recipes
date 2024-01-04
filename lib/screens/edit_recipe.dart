@@ -16,7 +16,8 @@ class EditRecipe extends StatelessWidget {
         title: const Text('Edit recipe'),
         centerTitle: false,
       ),
-      body: EditRecipeForm(recipe: recipe),
+      body: SafeArea(
+          child: SingleChildScrollView(child: EditRecipeForm(recipe: recipe))),
     );
   }
 }
@@ -85,154 +86,161 @@ class EditRecipeFormState extends State<EditRecipeForm> {
   @override
   Widget build(BuildContext context) {
     return Form(
-        key: _formKey,
-        child: Column(mainAxisSize: MainAxisSize.min, children: [
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: TextFormField(
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Required field';
-                }
-                return null;
-              },
-              decoration: const InputDecoration(
-                labelText: 'Name',
-                floatingLabelBehavior: FloatingLabelBehavior.always,
-              ),
-              onSaved: (value) {
-                _recipeName = value!;
-              },
-              initialValue: _recipeName,
+      key: _formKey,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          TextFormField(
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Required field';
+              }
+              return null;
+            },
+            decoration: const InputDecoration(
+              labelText: 'Name',
+              floatingLabelBehavior: FloatingLabelBehavior.always,
+              contentPadding: EdgeInsets.fromLTRB(10, 20, 10, 20),
             ),
+            onSaved: (value) {
+              _recipeName = value!;
+            },
+            initialValue: _recipeName,
           ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: TextFormField(
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Required field';
-                }
-                return null;
-              },
-              decoration: const InputDecoration(
+          TextFormField(
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Required field';
+              }
+              return null;
+            },
+            decoration: const InputDecoration(
                 labelText: 'Instructions',
                 floatingLabelBehavior: FloatingLabelBehavior.always,
-              ),
-              minLines: 10,
-              maxLines: null,
-              keyboardType: TextInputType.multiline,
-              onSaved: (value) {
-                _instructions = value!;
-              },
-              initialValue: _instructions,
-            ),
+                contentPadding: EdgeInsets.fromLTRB(10, 20, 10, 20)),
+            minLines: 8,
+            maxLines: null,
+            keyboardType: TextInputType.multiline,
+            onSaved: (value) {
+              _instructions = value!;
+            },
+            initialValue: _instructions,
           ),
           Flexible(
             child: ListView.builder(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
-              itemCount: _ingredients.length + 1,
+              itemCount: _ingredients.length,
               itemBuilder: (context, index) {
-                if (index == _ingredients.length) {
-                  return ElevatedButton(
-                    onPressed: _addIndgredient,
-                    child: const Text('Add ingredient'),
-                  );
-                }
-                return Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Row(
-                    children: [
-                      SizedBox(
-                        width: 50,
-                        child: TextFormField(
-                          initialValue: _ingredients[index].amount,
-                          decoration: const InputDecoration(
-                            labelText: 'Amount',
-                            floatingLabelBehavior: FloatingLabelBehavior.always,
-                          ),
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Please enter ingredient amount';
-                            }
-                            return null;
-                          },
-                          onChanged: (value) {
-                            setState(() {
-                              _ingredients[index] = Ingredient(
-                                name: _ingredients[index].name,
-                                amount: value,
-                                unit: _ingredients[index].unit,
-                              );
-                            });
-                          },
+                return Row(
+                  children: [
+                    SizedBox(
+                      width: 60,
+                      child: TextFormField(
+                        initialValue: _ingredients[index].amount,
+                        decoration: const InputDecoration(
+                          labelText: 'Amount',
+                          floatingLabelBehavior: FloatingLabelBehavior.always,
+                          contentPadding: EdgeInsets.fromLTRB(10, 20, 0, 20),
                         ),
-                      ),
-                      SizedBox(
-                        width: 50,
-                        child: TextFormField(
-                          initialValue: _ingredients[index].unit,
-                          decoration: const InputDecoration(
-                            labelText: 'Unit',
-                            floatingLabelBehavior: FloatingLabelBehavior.always,
-                          ),
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Please enter ingredient unit';
-                            }
-                            return null;
-                          },
-                          onChanged: (value) {
-                            setState(() {
-                              _ingredients[index] = Ingredient(
-                                name: _ingredients[index].name,
-                                amount: _ingredients[index].amount,
-                                unit: value,
-                              );
-                            });
-                          },
-                        ),
-                      ),
-                      Expanded(
-                        child: TextFormField(
-                          initialValue: _ingredients[index].name,
-                          decoration: const InputDecoration(
-                            labelText: 'Ingredient name',
-                            floatingLabelBehavior: FloatingLabelBehavior.always,
-                          ),
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Please enter ingredient name';
-                            }
-                            return null;
-                          },
-                          onChanged: (value) {
-                            setState(() {
-                              _ingredients[index] = Ingredient(
-                                name: value,
-                                amount: _ingredients[index].amount,
-                                unit: _ingredients[index].unit,
-                              );
-                            });
-                          },
-                        ),
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.delete),
-                        onPressed: () {
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter ingredient amount';
+                          }
+                          return null;
+                        },
+                        onChanged: (value) {
                           setState(() {
-                            _ingredients.removeAt(index);
+                            _ingredients[index] = Ingredient(
+                              name: _ingredients[index].name,
+                              amount: value,
+                              unit: _ingredients[index].unit,
+                            );
                           });
                         },
                       ),
-                    ],
-                  ),
+                    ),
+                    SizedBox(
+                      width: 50,
+                      child: TextFormField(
+                        initialValue: _ingredients[index].unit,
+                        decoration: const InputDecoration(
+                          labelText: 'Unit',
+                          floatingLabelBehavior: FloatingLabelBehavior.always,
+                          contentPadding: EdgeInsets.fromLTRB(10, 20, 0, 20),
+                        ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter ingredient unit';
+                          }
+                          return null;
+                        },
+                        onChanged: (value) {
+                          setState(() {
+                            _ingredients[index] = Ingredient(
+                              name: _ingredients[index].name,
+                              amount: _ingredients[index].amount,
+                              unit: value,
+                            );
+                          });
+                        },
+                      ),
+                    ),
+                    Expanded(
+                      child: TextFormField(
+                        initialValue: _ingredients[index].name,
+                        decoration: InputDecoration(
+                          labelText: 'Ingredient',
+                          floatingLabelBehavior: FloatingLabelBehavior.always,
+                          contentPadding:
+                              const EdgeInsets.fromLTRB(10, 20, 10, 20),
+                          suffixIcon: IconButton(
+                            icon: const Icon(Icons.clear),
+                            onPressed: () {
+                              setState(() {
+                                _ingredients.removeAt(index);
+                              });
+                            },
+                          ),
+                        ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter ingredient name';
+                          }
+                          return null;
+                        },
+                        onChanged: (value) {
+                          setState(() {
+                            _ingredients[index] = Ingredient(
+                              name: value,
+                              amount: _ingredients[index].amount,
+                              unit: _ingredients[index].unit,
+                            );
+                          });
+                        },
+                      ),
+                    ),
+                  ],
                 );
               },
             ),
           ),
-          ElevatedButton(onPressed: _submitData, child: const Text('Save'))
-        ]));
+          Padding(
+            padding: const EdgeInsets.all(4.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                ElevatedButton(
+                  onPressed: _addIndgredient,
+                  child: const Text('Add ingredient'),
+                ),
+                ElevatedButton(
+                    onPressed: _submitData, child: const Text('Save')),
+              ],
+            ),
+          )
+        ],
+      ),
+    );
   }
 }
