@@ -107,16 +107,11 @@ class RecipeListView extends StatelessWidget {
                         if (index == state.recipes.length - 1) {
                           BlocProvider.of<RecipesBloc>(context)
                               .add(GetRecipes(offset: index + 1));
-                          return const Center(
-                            child: SizedBox(),
+                          return RecipeListTile(
+                            key: Key('${state.recipes[index].id}'),
+                            recipe: state.recipes[index],
                           );
                         }
-                        // FIXME:
-                        //ei osaa hakea reseptiä 24, koska reseptejä on 25
-                        //silloin index on 24 ja state.recipes.length on 25 ->
-                        //menee ifiin, hakee lisää reseptejä offsetillä 25
-                        //mutta lisää reseptejä ei ole, eli ei näytä enää
-                        //lisää reseptejä
                         return RecipeListTile(
                           key: Key('${state.recipes[index].id}'),
                           recipe: state.recipes[index],
