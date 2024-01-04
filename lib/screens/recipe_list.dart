@@ -107,10 +107,6 @@ class RecipeListView extends StatelessWidget {
                         if (index == state.recipes.length - 1) {
                           BlocProvider.of<RecipesBloc>(context)
                               .add(GetRecipes(offset: index + 1));
-                          return RecipeListTile(
-                            key: Key('${state.recipes[index].id}'),
-                            recipe: state.recipes[index],
-                          );
                         }
                         return RecipeListTile(
                           key: Key('${state.recipes[index].id}'),
