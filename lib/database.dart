@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:path/path.dart';
 import 'package:recipes/grocery.dart';
+import 'package:recipes/seed_recipes.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:recipes/recipe.dart';
 
@@ -16,114 +17,40 @@ class DatabaseClient {
       join(await getDatabasesPath(), 'recipe_database.db'),
       onConfigure: onConfigure,
       onCreate: (db, version) async {
-        await db.execute(
-            'CREATE TABLE recipes(id INTEGER PRIMARY KEY, name TEXT, instructions TEXT)');
+        await db.execute('''CREATE TABLE recipes(
+            id INTEGER PRIMARY KEY,
+            name TEXT NOT NULL,
+            instructions TEXT NOT NULL,
+            favorite BOOLEAN NOT NULL,
+            servings INTEGER NOT NULL
+            )''');
         await db.execute('''CREATE TABLE ingredients(
             id INTEGER PRIMARY KEY, 
-            name TEXT, 
-            amount TEXT, 
+            name TEXT NOT NULL, 
+            amount TEXT NOT NULL,
+            unit TEXT NOT NULL, 
             recipeId INTEGER, 
-            FOREIGN KEY(recipeId) REFERENCES recipes(id) ON DELETE CASCADE)''');
-      },
-      onUpgrade: (db, oldVersion, newVersion) async {
-        if (oldVersion < 2) {
-          var batch = db.batch();
-          batch.execute(
-              'ALTER TABLE recipes ADD COLUMN favorite BOOLEAN DEFAULT 0');
-          await batch.commit();
-        }
-        if (oldVersion < 3) {
-          await db.execute('''CREATE TABLE new_ingredients(
-            id INTEGER PRIMARY KEY, 
-            name TEXT, 
-            amount REAL,
-            unit TEXT, 
-            recipeId INTEGER, 
-            FOREIGN KEY(recipeId) REFERENCES recipes(id) ON DELETE CASCADE)''');
-
-          List<Map> oldData = await db.query('ingredients');
-          for (var row in oldData) {
-            String fullAmount = row['amount'];
-            var split = fullAmount.split(' ');
-            double amount = double.tryParse(split[0]) ?? 0;
-            String unit = split.length > 1 ? split[1] : '';
-
-            await db.insert('new_ingredients', {
-              'id': row['id'],
-              'name': row['name'],
-              'amount': amount,
-              'unit': unit,
-              'recipeId': row['recipeId']
-            });
-          }
-          await db.execute('DROP TABLE ingredients');
-          await db.execute('ALTER TABLE new_ingredients RENAME TO ingredients');
-        }
-        if (oldVersion < 4) {
-          await db.execute('''CREATE TABLE temp_ingredients(
-            id INTEGER PRIMARY KEY, 
-            name TEXT, 
-            amount TEXT,
-            unit TEXT, 
-            recipeId INTEGER, 
-            FOREIGN KEY(recipeId) REFERENCES recipes(id) ON DELETE CASCADE)''');
-
-          List<Map> oldData = await db.query('ingredients');
-          for (var row in oldData) {
-            await db.insert('temp_ingredients', {
-              'id': row['id'],
-              'name': row['name'],
-              'amount': row['amount'].toString(),
-              'unit': row['unit'],
-              'recipeId': row['recipeId']
-            });
-          }
-
-          await db.execute('DROP TABLE ingredients');
-          await db
-              .execute('ALTER TABLE temp_ingredients RENAME TO ingredients');
-        }
-        if (oldVersion < 5) {
-          await db.execute('''CREATE TABLE temp_ingredients(
-            id INTEGER PRIMARY KEY, 
-            name TEXT, 
-            amount TEXT,
-            unit TEXT, 
-            recipeId INTEGER, 
-            FOREIGN KEY(recipeId) REFERENCES recipes(id) ON DELETE CASCADE)''');
-
-          List<Map> oldData = await db.query('ingredients');
-          for (var row in oldData) {
-            String amount = row['amount'];
-            var split = amount.split('.');
-            String finalAmount = split[0];
-
-            await db.insert('temp_ingredients', {
-              'id': row['id'],
-              'name': row['name'],
-              'amount': finalAmount,
-              'unit': row['unit'],
-              'recipeId': row['recipeId']
-            });
-          }
-
-          await db.execute('DROP TABLE ingredients');
-          await db
-              .execute('ALTER TABLE temp_ingredients RENAME TO ingredients');
-        }
-        if (oldVersion < 6) {
-          await db.execute('DROP TABLE IF EXISTS grocery_items');
-          await db.execute('''CREATE TABLE groceries(
-            id INTEGER PRIMARY KEY, 
-            name TEXT, 
-            amount TEXT,
-            unit TEXT,
-            is_bought BOOLEAN DEFAULT 0
+            FOREIGN KEY(recipeId) REFERENCES recipes(id) ON DELETE CASCADE
             )''');
-        }
+        await db.execute('''CREATE TABLE groceries(
+            id INTEGER PRIMARY KEY, 
+            name TEXT NOT NULL, 
+            amount TEXT NOT NULL,
+            unit TEXT NOT NULL,
+            is_bought BOOLEAN NOT NULL
+            )''');
+        _seedRecipes(seedRecipes);
       },
-      version: 6,
+      // onUpgrade: (db, oldVersion, newVersion) async {
+      // },
+      version: 1,
     );
+  }
+
+  Future<void> _seedRecipes(List<Recipe> recipes) async {
+    for (var recipe in recipes) {
+      await insertRecipe(recipe);
+    }
   }
 
   Future<void> insertIngredient(Ingredient ingredient, int recipeId) async {
@@ -172,6 +99,7 @@ class DatabaseClient {
         instructions: recipe['instructions'],
         ingredients: await getIngredients(recipe['id']),
         favorite: recipe['favorite'] == 1 ? true : false,
+        servings: recipe['servings'],
       ));
     }
 
@@ -217,6 +145,7 @@ class DatabaseClient {
       instructions: recipe[0]['instructions'],
       ingredients: await getIngredients(recipe[0]['id']),
       favorite: recipe[0]['favorite'] == 1 ? true : false,
+      servings: recipe[0]['servings'],
     );
   }
 
@@ -232,6 +161,7 @@ class DatabaseClient {
         instructions: recipe['instructions'],
         ingredients: await getIngredients(recipe['id']),
         favorite: recipe['favorite'] == 1 ? true : false,
+        servings: recipe['servings'],
       ));
     }
 
@@ -245,6 +175,7 @@ class DatabaseClient {
       instructions: recipe.instructions,
       ingredients: recipe.ingredients,
       favorite: favorite,
+      servings: recipe.servings,
     );
 
     var updatedRecipeMap = updatedRecipe.toMap();
@@ -272,6 +203,7 @@ class DatabaseClient {
         instructions: recipe['instructions'],
         ingredients: await getIngredients(recipe['id']),
         favorite: recipe['favorite'] == 1 ? true : false,
+        servings: recipe['servings'],
       ));
     }
 

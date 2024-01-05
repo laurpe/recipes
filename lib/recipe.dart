@@ -33,6 +33,7 @@ class Recipe extends Equatable {
   final List<Ingredient> ingredients;
   final String instructions;
   final bool favorite;
+  final int servings;
 
   const Recipe({
     this.id,
@@ -40,6 +41,7 @@ class Recipe extends Equatable {
     required this.ingredients,
     required this.instructions,
     required this.favorite,
+    required this.servings,
   });
 
   Map<String, dynamic> toMap() {
@@ -47,6 +49,7 @@ class Recipe extends Equatable {
       'name': name,
       'instructions': instructions,
       'favorite': favorite,
+      'servings': servings,
     };
 
     if (id != null) {
@@ -57,5 +60,6 @@ class Recipe extends Equatable {
   }
 
   @override
-  List<Object?> get props => [id, name, ingredients, instructions, favorite];
+  List<Object?> get props =>
+      [id, name, ingredients, instructions, favorite, servings];
 }

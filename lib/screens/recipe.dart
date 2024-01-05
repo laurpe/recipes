@@ -288,6 +288,10 @@ class SingleRecipeView extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   Padding(
+                    padding: const EdgeInsets.fromLTRB(8.0, 8.0, 8.0, 0),
+                    child: Text('Servings: ${state.recipe.servings}'),
+                  ),
+                  Padding(
                     padding: const EdgeInsets.fromLTRB(8.0, 0, 0, 0),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,

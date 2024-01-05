@@ -43,6 +43,7 @@ class EditRecipeFormState extends State<EditRecipeForm> {
   late String _instructions;
   late List<Ingredient> _ingredients;
   late bool _favorite;
+  late int _servings;
 
   @override
   void initState() {
@@ -51,6 +52,7 @@ class EditRecipeFormState extends State<EditRecipeForm> {
     _instructions = widget.recipe.instructions;
     _ingredients = widget.recipe.ingredients;
     _favorite = widget.recipe.favorite;
+    _servings = widget.recipe.servings;
     super.initState();
   }
 
@@ -70,6 +72,7 @@ class EditRecipeFormState extends State<EditRecipeForm> {
         instructions: _instructions,
         ingredients: _ingredients,
         favorite: _favorite,
+        servings: _servings,
       );
 
       try {
@@ -109,6 +112,24 @@ class EditRecipeFormState extends State<EditRecipeForm> {
               _recipeName = value!;
             },
             initialValue: _recipeName,
+          ),
+          TextFormField(
+            validator: (value) {
+              if (int.parse(value!) <= 0) {
+                return 'Servings must be greater than 0';
+              }
+              return null;
+            },
+            keyboardType: TextInputType.number,
+            decoration: const InputDecoration(
+              labelText: 'Servings',
+              floatingLabelBehavior: FloatingLabelBehavior.always,
+              contentPadding: EdgeInsets.fromLTRB(10, 20, 10, 20),
+            ),
+            onSaved: (value) {
+              _servings = int.parse(value!);
+            },
+            initialValue: _servings.toString(),
           ),
           TextFormField(
             validator: (value) {

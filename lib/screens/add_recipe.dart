@@ -36,6 +36,7 @@ class RecipeFormState extends State<RecipeForm> {
   String _recipeName = '';
   String _instructions = '';
   final List<Ingredient> _ingredients = [];
+  int _servings = 0;
 
   void _addIndgredient() {
     setState(() {
@@ -52,6 +53,7 @@ class RecipeFormState extends State<RecipeForm> {
         instructions: _instructions,
         ingredients: _ingredients,
         favorite: false,
+        servings: _servings,
       );
 
       try {
@@ -90,6 +92,24 @@ class RecipeFormState extends State<RecipeForm> {
             onSaved: (value) {
               _recipeName = value!;
             },
+          ),
+          TextFormField(
+            validator: (value) {
+              if (int.parse(value!) <= 0) {
+                return 'Servings must be greater than 0';
+              }
+              return null;
+            },
+            keyboardType: TextInputType.number,
+            decoration: const InputDecoration(
+              labelText: 'Servings',
+              floatingLabelBehavior: FloatingLabelBehavior.always,
+              contentPadding: EdgeInsets.fromLTRB(10, 20, 10, 20),
+            ),
+            onSaved: (value) {
+              _servings = int.parse(value!);
+            },
+            initialValue: _servings.toString(),
           ),
           TextFormField(
             validator: (value) {
