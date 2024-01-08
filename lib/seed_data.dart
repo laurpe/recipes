@@ -124,3 +124,5 @@ const seedRecipes = [
       favorite: false,
       servings: 8)
 ];
+
+const seedTags = ['breakfast', 'lunch', 'dinner', 'dessert', 'snack'];

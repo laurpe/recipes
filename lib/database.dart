@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:path/path.dart';
 import 'package:recipes/grocery.dart';
-import 'package:recipes/seed_recipes.dart';
+import 'package:recipes/seed_data.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:recipes/recipe.dart';
 
@@ -39,7 +39,20 @@ class DatabaseClient {
             unit TEXT NOT NULL,
             is_bought BOOLEAN NOT NULL
             )''');
-        _seedRecipes(seedRecipes);
+        await db.execute('''CREATE TABLE tags(
+            id INTEGER PRIMARY KEY, 
+            name TEXT NOT NULL 
+            )''');
+        await db.execute('''CREATE TABLE recipe_tags(
+            recipe_id INTEGER NOT NULL,
+            tag_id INTEGER NOT NULL,
+            PRIMARY KEY(recipe_id, tag_id),
+            FOREIGN KEY(recipe_id) REFERENCES recipes(id),
+            FOREIGN KEY(tag_id) REFERENCES tags(id)
+            )''');
+
+        await _seedRecipes(db, seedRecipes);
+        await _seedTags(db, seedTags);
       },
       // onUpgrade: (db, oldVersion, newVersion) async {
       // },
@@ -47,10 +60,39 @@ class DatabaseClient {
     );
   }
 
-  Future<void> _seedRecipes(List<Recipe> recipes) async {
+  Future<void> _seedRecipes(Database db, List<Recipe> recipes) async {
     for (var recipe in recipes) {
-      await insertRecipe(recipe);
+      var recipeMap = recipe.toMap();
+      recipeMap['favorite'] = recipe.favorite ? 1 : 0;
+
+      final recipeId = await db.insert(
+        'recipes',
+        recipeMap,
+      );
+
+      for (var ingredient in recipe.ingredients) {
+        await db.insert(
+          'ingredients',
+          {...ingredient.toMap(), 'recipeId': recipeId},
+        );
+      }
     }
+  }
+
+  Future<void> _seedTags(db, List<String> tags) async {
+    for (var tag in tags) {
+      await db.insert(
+        'tags',
+        {'name': tag},
+      );
+    }
+  }
+
+  Future<int> insertTag(String tag) async {
+    return await _database.insert(
+      'tags',
+      {'name': tag},
+    );
   }
 
   Future<void> insertIngredient(Ingredient ingredient, int recipeId) async {
