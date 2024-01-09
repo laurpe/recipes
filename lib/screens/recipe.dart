@@ -292,6 +292,12 @@ class SingleRecipeView extends StatelessWidget {
                     child: Text('Servings: ${state.recipe.servings}'),
                   ),
                   Padding(
+                    padding: const EdgeInsets.fromLTRB(8.0, 8.0, 8.0, 0),
+                    child: state.recipe.tags!.isNotEmpty
+                        ? Text('Tags: ${state.recipe.tags![0].name}')
+                        : const Text('Tags: '),
+                  ),
+                  Padding(
                     padding: const EdgeInsets.fromLTRB(8.0, 0, 0, 0),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,

@@ -33,10 +33,45 @@ class RecipeForm extends StatefulWidget {
 
 class RecipeFormState extends State<RecipeForm> {
   final _formKey = GlobalKey<FormState>();
+  bool _clearedProgrammatically = false;
+
   String _recipeName = '';
   String _instructions = '';
   final List<Ingredient> _ingredients = [];
   int _servings = 0;
+  final List<String> _tagList = [];
+
+  final TextEditingController _controller = TextEditingController();
+
+  RegExp tagFieldRegex = RegExp(r'^[a-zA-Z0-9-]+[ ,]?$');
+
+  @override
+  void initState() {
+    super.initState();
+    _controller.addListener(_handleTextChange);
+  }
+
+  void _handleTextChange() {
+    String text = _controller.text;
+
+    if (text.isNotEmpty &&
+        tagFieldRegex.hasMatch(text) &&
+        (text.endsWith(',') || text.endsWith(' '))) {
+      String trimmedText = text.substring(0, text.length - 1).trim();
+      setState(() {
+        _tagList.add(trimmedText);
+        _clearedProgrammatically = true;
+        _controller.clear();
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.removeListener(_handleTextChange);
+    _controller.dispose();
+    super.dispose();
+  }
 
   void _addIndgredient() {
     setState(() {
@@ -110,6 +145,36 @@ class RecipeFormState extends State<RecipeForm> {
               _servings = int.parse(value!);
             },
             initialValue: _servings.toString(),
+          ),
+          Wrap(
+            spacing: 8.0,
+            alignment: WrapAlignment.center,
+            children: [for (var tag in _tagList) Chip(label: Text(tag))],
+          ),
+          TextFormField(
+            autocorrect: false,
+            controller: _controller,
+            decoration: const InputDecoration(
+              labelText: 'Tags',
+              floatingLabelBehavior: FloatingLabelBehavior.always,
+              contentPadding: EdgeInsets.fromLTRB(10, 20, 10, 20),
+              hintText: 'Separate tags by comma or space',
+            ),
+            validator: (value) {
+              if (_clearedProgrammatically) {
+                _clearedProgrammatically = false;
+                return null;
+              }
+
+              if (value != null || value!.isNotEmpty) {
+                if (!tagFieldRegex.hasMatch(value)) {
+                  return 'Only letters, numbers, and hyphens are allowed';
+                }
+              }
+
+              return null;
+            },
+            autovalidateMode: AutovalidateMode.onUserInteraction,
           ),
           TextFormField(
             validator: (value) {

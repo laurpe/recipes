@@ -53,6 +53,7 @@ class DatabaseClient {
 
         await _seedRecipes(db, seedRecipes);
         await _seedTags(db, seedTags);
+        await _seedRecipeTags(db);
       },
       // onUpgrade: (db, oldVersion, newVersion) async {
       // },
@@ -88,11 +89,34 @@ class DatabaseClient {
     }
   }
 
-  Future<int> insertTag(String tag) async {
+  Future<void> _seedRecipeTags(Database db) async {
+    /// depends on recipe and tag seeds
+    db.insert('recipe_tags', {'recipe_id': 1, 'tag_id': 4});
+    db.insert('recipe_tags', {'recipe_id': 2, 'tag_id': 4});
+    db.insert('recipe_tags', {'recipe_id': 3, 'tag_id': 2});
+    db.insert('recipe_tags', {'recipe_id': 4, 'tag_id': 2});
+    db.insert('recipe_tags', {'recipe_id': 4, 'tag_id': 3});
+  }
+
+  Future<int> insertTag(Tag tag) async {
     return await _database.insert(
       'tags',
-      {'name': tag},
+      tag.toMap(),
     );
+  }
+
+  Future<List<Tag>> getTags() async {
+    final List<Map<String, dynamic>> tags = await _database.query('tags');
+    List<Tag> tagList = [];
+
+    for (var tag in tags) {
+      tagList.add(Tag(
+        id: tag['id'],
+        name: tag['name'],
+      ));
+    }
+
+    return tagList;
   }
 
   Future<void> insertIngredient(Ingredient ingredient, int recipeId) async {
@@ -102,7 +126,17 @@ class DatabaseClient {
     );
   }
 
-  Future<void> insertRecipe(Recipe recipe) async {
+  Future<void> insertRecipeTags(int recipeId, List<int> tagIds) async {
+    for (var tagId in tagIds) {
+      await _database.insert(
+        'recipe_tags',
+        {'recipe_id': recipeId, 'tag_id': tagId},
+      );
+    }
+  }
+
+  /// TODO: handle tags
+  Future<int> insertRecipe(Recipe recipe) async {
     var recipeMap = recipe.toMap();
     recipeMap['favorite'] = recipe.favorite ? 1 : 0;
 
@@ -114,6 +148,8 @@ class DatabaseClient {
     for (var ingredient in recipe.ingredients) {
       await insertIngredient(ingredient, recipeId);
     }
+
+    return recipeId;
   }
 
   Future<List<Ingredient>> getIngredients(int recipeId) async {
@@ -130,6 +166,22 @@ class DatabaseClient {
     });
   }
 
+  Future<List<Tag>> getRecipeTags(int recipeId) async {
+    final List<Map<String, dynamic>> tags = await _database.rawQuery(
+        'SELECT tags.name FROM tags INNER JOIN recipe_tags ON tags.id = recipe_tags.tag_id WHERE recipe_tags.recipe_id = ?',
+        [recipeId]);
+    List<Tag> tagList = [];
+
+    for (var tag in tags) {
+      tagList.add(Tag(
+        id: tag['id'],
+        name: tag['name'],
+      ));
+    }
+
+    return tagList;
+  }
+
   Future<List<Recipe>> getRecipes() async {
     final List<Map<String, dynamic>> recipes = await _database.query('recipes');
     List<Recipe> recipeList = [];
@@ -142,6 +194,7 @@ class DatabaseClient {
         ingredients: await getIngredients(recipe['id']),
         favorite: recipe['favorite'] == 1 ? true : false,
         servings: recipe['servings'],
+        tags: await getRecipeTags(recipe['id']),
       ));
     }
 
@@ -153,6 +206,7 @@ class DatabaseClient {
         .delete('ingredients', where: 'id = ?', whereArgs: [ingredientId]);
   }
 
+  /// TODO: handle tags
   Future<void> updateRecipe(Recipe recipe) async {
     final oldIngredients = await getIngredients(recipe.id!);
 
@@ -188,6 +242,7 @@ class DatabaseClient {
       ingredients: await getIngredients(recipe[0]['id']),
       favorite: recipe[0]['favorite'] == 1 ? true : false,
       servings: recipe[0]['servings'],
+      tags: await getRecipeTags(recipe[0]['id']),
     );
   }
 
@@ -204,6 +259,7 @@ class DatabaseClient {
         ingredients: await getIngredients(recipe['id']),
         favorite: recipe['favorite'] == 1 ? true : false,
         servings: recipe['servings'],
+        tags: await getRecipeTags(recipe['id']),
       ));
     }
 
@@ -218,6 +274,7 @@ class DatabaseClient {
       ingredients: recipe.ingredients,
       favorite: favorite,
       servings: recipe.servings,
+      tags: recipe.tags,
     );
 
     var updatedRecipeMap = updatedRecipe.toMap();
@@ -246,6 +303,7 @@ class DatabaseClient {
         ingredients: await getIngredients(recipe['id']),
         favorite: recipe['favorite'] == 1 ? true : false,
         servings: recipe['servings'],
+        tags: await getRecipeTags(recipe['id']),
       ));
     }
 
