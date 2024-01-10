@@ -135,7 +135,6 @@ class DatabaseClient {
     }
   }
 
-  /// TODO: handle tags
   Future<int> insertRecipe(Recipe recipe) async {
     var recipeMap = recipe.toMap();
     recipeMap['favorite'] = recipe.favorite ? 1 : 0;

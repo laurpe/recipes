@@ -33,13 +33,12 @@ class RecipeForm extends StatefulWidget {
 
 class RecipeFormState extends State<RecipeForm> {
   final _formKey = GlobalKey<FormState>();
-  bool _clearedProgrammatically = false;
 
   String _recipeName = '';
   String _instructions = '';
   final List<Ingredient> _ingredients = [];
   int _servings = 0;
-  final List<String> _tagList = [];
+  final List<Tag> _newTags = [];
 
   final TextEditingController _controller = TextEditingController();
 
@@ -59,8 +58,7 @@ class RecipeFormState extends State<RecipeForm> {
         (text.endsWith(',') || text.endsWith(' '))) {
       String trimmedText = text.substring(0, text.length - 1).trim();
       setState(() {
-        _tagList.add(trimmedText);
-        _clearedProgrammatically = true;
+        _newTags.add(Tag(name: trimmedText));
         _controller.clear();
       });
     }
@@ -92,13 +90,30 @@ class RecipeFormState extends State<RecipeForm> {
       );
 
       try {
-        await GetIt.I<DatabaseClient>().insertRecipe(recipe);
+        List<Tag> existingTags = await GetIt.I<DatabaseClient>().getTags();
+
+        List<int> tagIds = [];
+
+        for (var newTag in _newTags) {
+          if (existingTags.any((tag) => tag.name == newTag.name)) {
+            Tag existingTag =
+                existingTags.firstWhere((tag) => tag.name == newTag.name);
+            tagIds.add(existingTag.id!);
+          } else {
+            int id = await GetIt.I<DatabaseClient>().insertTag(newTag);
+            tagIds.add(id);
+          }
+        }
+
+        int recipeId = await GetIt.I<DatabaseClient>().insertRecipe(recipe);
+        await GetIt.I<DatabaseClient>().insertRecipeTags(recipeId, tagIds);
 
         _formKey.currentState!.reset();
 
         if (!context.mounted) return;
         Navigator.of(context).pop(Added(recipe));
       } catch (error) {
+        if (!context.mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
             content: Text('Something went wrong! Please try again.')));
       }
@@ -149,7 +164,7 @@ class RecipeFormState extends State<RecipeForm> {
           Wrap(
             spacing: 8.0,
             alignment: WrapAlignment.center,
-            children: [for (var tag in _tagList) Chip(label: Text(tag))],
+            children: [for (var tag in _newTags) Chip(label: Text(tag.name))],
           ),
           TextFormField(
             autocorrect: false,
@@ -161,17 +176,11 @@ class RecipeFormState extends State<RecipeForm> {
               hintText: 'Separate tags by comma or space',
             ),
             validator: (value) {
-              if (_clearedProgrammatically) {
-                _clearedProgrammatically = false;
-                return null;
-              }
-
-              if (value != null || value!.isNotEmpty) {
+              if (value != null && value.isNotEmpty) {
                 if (!tagFieldRegex.hasMatch(value)) {
                   return 'Only letters, numbers, and hyphens are allowed';
                 }
               }
-
               return null;
             },
             autovalidateMode: AutovalidateMode.onUserInteraction,
