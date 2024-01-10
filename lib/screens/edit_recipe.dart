@@ -173,7 +173,17 @@ class EditRecipeFormState extends State<EditRecipeForm> {
           Wrap(
             spacing: 8.0,
             alignment: WrapAlignment.center,
-            children: [for (var tag in _tags) Chip(label: Text(tag.name))],
+            children: [
+              for (var tag in _tags)
+                Chip(
+                  label: Text(tag.name),
+                  onDeleted: () {
+                    setState(() {
+                      _tags.removeWhere((t) => t.name == tag.name);
+                    });
+                  },
+                )
+            ],
           ),
           TextFormField(
             autocorrect: false,

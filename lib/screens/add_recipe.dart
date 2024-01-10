@@ -164,7 +164,17 @@ class RecipeFormState extends State<RecipeForm> {
           Wrap(
             spacing: 8.0,
             alignment: WrapAlignment.center,
-            children: [for (var tag in _newTags) Chip(label: Text(tag.name))],
+            children: [
+              for (var tag in _newTags)
+                Chip(
+                  label: Text(tag.name),
+                  onDeleted: () {
+                    setState(() {
+                      _newTags.removeWhere((t) => t.name == tag.name);
+                    });
+                  },
+                )
+            ],
           ),
           TextFormField(
             autocorrect: false,
