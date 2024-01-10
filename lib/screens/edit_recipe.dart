@@ -38,22 +38,44 @@ class EditRecipeForm extends StatefulWidget {
 
 class EditRecipeFormState extends State<EditRecipeForm> {
   final _formKey = GlobalKey<FormState>();
-  late int? _id;
+
+  late int _id;
   late String _recipeName;
   late String _instructions;
   late List<Ingredient> _ingredients;
   late bool _favorite;
   late int _servings;
+  late List<Tag> _tags;
+
+  final TextEditingController _controller = TextEditingController();
+
+  RegExp tagFieldRegex = RegExp(r'^[a-zA-Z0-9-]+[ ,]?$');
 
   @override
   void initState() {
-    _id = widget.recipe.id;
+    super.initState();
+    _id = widget.recipe.id!;
     _recipeName = widget.recipe.name;
     _instructions = widget.recipe.instructions;
     _ingredients = widget.recipe.ingredients;
     _favorite = widget.recipe.favorite;
     _servings = widget.recipe.servings;
-    super.initState();
+    _tags = widget.recipe.tags ?? [];
+    _controller.addListener(_handleTextChange);
+  }
+
+  void _handleTextChange() {
+    String text = _controller.text;
+
+    if (text.isNotEmpty &&
+        tagFieldRegex.hasMatch(text) &&
+        (text.endsWith(',') || text.endsWith(' '))) {
+      String trimmedText = text.substring(0, text.length - 1).trim();
+      setState(() {
+        _tags.add(Tag(name: trimmedText));
+        _controller.clear();
+      });
+    }
   }
 
   void _addIndgredient() {
@@ -76,7 +98,24 @@ class EditRecipeFormState extends State<EditRecipeForm> {
       );
 
       try {
+        List<Tag> existingTags = await GetIt.I<DatabaseClient>().getTags();
+
+        List<int> tagIds = [];
+
+        for (var newTag in _tags) {
+          if (existingTags.any((tag) => tag.name == newTag.name)) {
+            Tag existingTag =
+                existingTags.firstWhere((tag) => tag.name == newTag.name);
+            tagIds.add(existingTag.id!);
+          } else {
+            int id = await GetIt.I<DatabaseClient>().insertTag(newTag);
+            tagIds.add(id);
+          }
+        }
+
         await GetIt.I<DatabaseClient>().updateRecipe(recipe);
+        await GetIt.I<DatabaseClient>().updateRecipeTags(recipe.id!, tagIds);
+
         _formKey.currentState!.reset();
 
         if (!context.mounted) return;
@@ -130,6 +169,30 @@ class EditRecipeFormState extends State<EditRecipeForm> {
               _servings = int.parse(value!);
             },
             initialValue: _servings.toString(),
+          ),
+          Wrap(
+            spacing: 8.0,
+            alignment: WrapAlignment.center,
+            children: [for (var tag in _tags) Chip(label: Text(tag.name))],
+          ),
+          TextFormField(
+            autocorrect: false,
+            controller: _controller,
+            decoration: const InputDecoration(
+              labelText: 'Tags',
+              floatingLabelBehavior: FloatingLabelBehavior.always,
+              contentPadding: EdgeInsets.fromLTRB(10, 20, 10, 20),
+              hintText: 'Separate tags by comma or space',
+            ),
+            validator: (value) {
+              if (value != null && value.isNotEmpty) {
+                if (!tagFieldRegex.hasMatch(value)) {
+                  return 'Only letters, numbers, and hyphens are allowed';
+                }
+              }
+              return null;
+            },
+            autovalidateMode: AutovalidateMode.onUserInteraction,
           ),
           TextFormField(
             validator: (value) {

@@ -181,6 +181,16 @@ class DatabaseClient {
     return tagList;
   }
 
+  Future<void> deleteRecipeTags(int recipeId) async {
+    await _database
+        .delete('recipe_tags', where: 'recipe_id = ?', whereArgs: [recipeId]);
+  }
+
+  Future<void> updateRecipeTags(int recipeId, List<int> tagIds) async {
+    await deleteRecipeTags(recipeId);
+    await insertRecipeTags(recipeId, tagIds);
+  }
+
   Future<List<Recipe>> getRecipes() async {
     final List<Map<String, dynamic>> recipes = await _database.query('recipes');
     List<Recipe> recipeList = [];
