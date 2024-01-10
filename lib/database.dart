@@ -167,7 +167,7 @@ class DatabaseClient {
 
   Future<List<Tag>> getRecipeTags(int recipeId) async {
     final List<Map<String, dynamic>> tags = await _database.rawQuery(
-        'SELECT tags.name FROM tags INNER JOIN recipe_tags ON tags.id = recipe_tags.tag_id WHERE recipe_tags.recipe_id = ?',
+        'SELECT * FROM tags INNER JOIN recipe_tags ON tags.id = recipe_tags.tag_id WHERE recipe_tags.recipe_id = ?',
         [recipeId]);
     List<Tag> tagList = [];
 

@@ -294,8 +294,9 @@ class SingleRecipeView extends StatelessWidget {
                   Padding(
                     padding: const EdgeInsets.fromLTRB(8.0, 8.0, 8.0, 0),
                     child: state.recipe.tags!.isNotEmpty
-                        ? Text('Tags: ${state.recipe.tags![0].name}')
-                        : const Text('Tags: '),
+                        ? Text(
+                            'Tags: ${state.recipe.tags!.map((tag) => tag.name).join(', ')}')
+                        : null,
                   ),
                   Padding(
                     padding: const EdgeInsets.fromLTRB(8.0, 0, 0, 0),
