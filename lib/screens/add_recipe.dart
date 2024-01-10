@@ -11,7 +11,7 @@ class RecipeFormView extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Add new recipe"),
+        title: const Text("Add recipe"),
       ),
       body: const SafeArea(
         child: SingleChildScrollView(
@@ -161,20 +161,28 @@ class RecipeFormState extends State<RecipeForm> {
             },
             initialValue: _servings.toString(),
           ),
-          Wrap(
-            spacing: 8.0,
-            alignment: WrapAlignment.center,
-            children: [
-              for (var tag in _newTags)
-                Chip(
-                  label: Text(tag.name),
-                  onDeleted: () {
-                    setState(() {
-                      _newTags.removeWhere((t) => t.name == tag.name);
-                    });
-                  },
-                )
-            ],
+          Padding(
+            padding: const EdgeInsets.fromLTRB(6.0, 2.0, 6.0, 0),
+            child: Wrap(
+              spacing: 8.0,
+              runSpacing: -4.0,
+              alignment: WrapAlignment.center,
+              children: [
+                for (var tag in _newTags)
+                  Chip(
+                    label: Text(tag.name),
+                    onDeleted: () {
+                      setState(() {
+                        _newTags.removeWhere((t) => t.name == tag.name);
+                      });
+                    },
+                    deleteIcon: const Icon(
+                      Icons.clear,
+                      size: 18,
+                    ),
+                  )
+              ],
+            ),
           ),
           TextFormField(
             autocorrect: false,

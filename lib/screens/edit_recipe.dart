@@ -170,20 +170,28 @@ class EditRecipeFormState extends State<EditRecipeForm> {
             },
             initialValue: _servings.toString(),
           ),
-          Wrap(
-            spacing: 8.0,
-            alignment: WrapAlignment.center,
-            children: [
-              for (var tag in _tags)
-                Chip(
-                  label: Text(tag.name),
-                  onDeleted: () {
-                    setState(() {
-                      _tags.removeWhere((t) => t.name == tag.name);
-                    });
-                  },
-                )
-            ],
+          Padding(
+            padding: const EdgeInsets.fromLTRB(6.0, 2.0, 6.0, 0),
+            child: Wrap(
+              spacing: 8.0,
+              runSpacing: -4.0,
+              alignment: WrapAlignment.center,
+              children: [
+                for (var tag in _tags)
+                  Chip(
+                    label: Text(tag.name),
+                    onDeleted: () {
+                      setState(() {
+                        _tags.removeWhere((t) => t.name == tag.name);
+                      });
+                    },
+                    deleteIcon: const Icon(
+                      Icons.clear,
+                      size: 18,
+                    ),
+                  )
+              ],
+            ),
           ),
           TextFormField(
             autocorrect: false,

@@ -62,6 +62,17 @@ class RecipeApp extends StatelessWidget {
                 const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
           ),
         ),
+        chipTheme: ChipThemeData(
+          side: BorderSide.none,
+          labelStyle: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+            color: Colors.orange[800],
+          ),
+          elevation: 1,
+          shadowColor: Colors.black87,
+          deleteIconColor: Colors.black54,
+        ),
       ),
       home: const RecipeList(),
     );
