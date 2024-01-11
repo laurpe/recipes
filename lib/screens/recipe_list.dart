@@ -180,6 +180,11 @@ class RecipeListTile extends StatelessWidget {
               ? const Icon(Icons.favorite)
               : const Icon(Icons.favorite_outline),
         ),
+
+        /// TODO: remove this
+        subtitle: recipe.tags!.isNotEmpty
+            ? Text(recipe.tags!.map((tag) => tag.name).join(', '))
+            : null,
       ),
     );
   }

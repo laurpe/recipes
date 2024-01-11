@@ -215,7 +215,6 @@ class DatabaseClient {
         .delete('ingredients', where: 'id = ?', whereArgs: [ingredientId]);
   }
 
-  /// TODO: handle tags
   Future<void> updateRecipe(Recipe recipe) async {
     final oldIngredients = await getIngredients(recipe.id!);
 
@@ -255,26 +254,6 @@ class DatabaseClient {
     );
   }
 
-  Future<List<Recipe>> paginateRecipes(int offset) async {
-    final List<Map<String, dynamic>> recipes = await _database.query('recipes',
-        orderBy: 'id', limit: 15, offset: offset);
-    List<Recipe> recipeList = [];
-
-    for (var recipe in recipes) {
-      recipeList.add(Recipe(
-        id: recipe['id'],
-        name: recipe['name'],
-        instructions: recipe['instructions'],
-        ingredients: await getIngredients(recipe['id']),
-        favorite: recipe['favorite'] == 1 ? true : false,
-        servings: recipe['servings'],
-        tags: await getRecipeTags(recipe['id']),
-      ));
-    }
-
-    return recipeList;
-  }
-
   Future<void> toggleFavoriteRecipe(Recipe recipe, bool favorite) async {
     var updatedRecipe = Recipe(
       id: recipe.id,
@@ -297,11 +276,20 @@ class DatabaseClient {
     required int offset,
     required String query,
   }) async {
-    final List<Map<String, dynamic>> recipes = await _database.query('recipes',
-        where: 'name LIKE ?',
-        whereArgs: ['%$query%'],
-        offset: offset,
-        limit: 15);
+    late final List<Map<String, dynamic>> recipes;
+
+    if (query.startsWith('#')) {
+      recipes = await _database.rawQuery(
+          'SELECT recipes.* FROM recipes INNER JOIN recipe_tags ON recipes.id = recipe_tags.recipe_id INNER JOIN tags ON recipe_tags.tag_id = tags.id WHERE tags.name LIKE ? GROUP BY recipes.id LIMIT ? OFFSET ?',
+          ['%${query.substring(1)}%', 15, offset]);
+    } else {
+      recipes = await _database.query('recipes',
+          where: 'name LIKE ?',
+          whereArgs: ['%$query%'],
+          offset: offset,
+          limit: 15);
+    }
+
     List<Recipe> recipeList = [];
 
     for (var recipe in recipes) {
