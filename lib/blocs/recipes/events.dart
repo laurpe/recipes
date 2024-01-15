@@ -11,8 +11,9 @@ abstract class RecipesEvent extends Equatable {
 class GetRecipes extends RecipesEvent {
   final int? offset;
   final String? query;
+  final List<Tag>? tags;
 
-  const GetRecipes({this.offset, this.query});
+  const GetRecipes({this.offset, this.query, this.tags});
 }
 
 class ToggleFavoriteRecipe extends RecipesEvent {

@@ -34,6 +34,7 @@ class RecipesBloc extends Bloc<RecipesEvent, RecipesState> {
               recipes: recipes,
               query: currentState.query,
               offset: currentState.offset,
+              tags: currentState.tags,
             ));
           }
         } catch (error) {
@@ -60,6 +61,7 @@ class RecipesBloc extends Bloc<RecipesEvent, RecipesState> {
               recipes: recipes,
               query: currentState.query,
               offset: currentState.offset,
+              tags: currentState.tags,
             ));
           }
         } catch (error) {
@@ -82,6 +84,7 @@ class RecipesBloc extends Bloc<RecipesEvent, RecipesState> {
               recipes: recipes,
               query: currentState.query,
               offset: currentState.offset,
+              tags: currentState.tags,
             ));
           }
         } catch (error) {
@@ -95,14 +98,16 @@ class RecipesBloc extends Bloc<RecipesEvent, RecipesState> {
           List<Recipe> recipes = [];
           int? offset = event.offset;
           String? query = event.query;
+          List<Tag>? tags = event.tags;
 
           if (state is LoadedRecipesState) {
             final currentState = state as LoadedRecipesState;
             recipes = currentState.recipes;
             offset = offset ?? currentState.offset;
             query = query ?? currentState.query;
+            tags = tags ?? currentState.tags;
 
-            if (query != currentState.query) {
+            if (query != currentState.query || tags == currentState.tags) {
               offset = 0;
               recipes = [];
             }
@@ -111,12 +116,14 @@ class RecipesBloc extends Bloc<RecipesEvent, RecipesState> {
           final newRecipes = await databaseClient.searchRecipes(
             offset: offset ?? 0,
             query: query ?? '',
+            tags: tags ?? [],
           );
 
           emit(LoadedRecipesState(
             recipes: recipes + newRecipes,
             query: query,
             offset: offset,
+            tags: tags,
           ));
         } catch (error) {
           emit(ErrorLoadingRecipesState());

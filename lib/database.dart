@@ -275,19 +275,22 @@ class DatabaseClient {
   Future<List<Recipe>> searchRecipes({
     required int offset,
     required String query,
+    required List<Tag> tags,
   }) async {
     late final List<Map<String, dynamic>> recipes;
 
-    if (query.startsWith('#')) {
+    if (tags.isNotEmpty) {
+      String tagIds = tags.map((t) => t.id).join(',');
+
       recipes = await _database.rawQuery(
-          'SELECT recipes.* FROM recipes INNER JOIN recipe_tags ON recipes.id = recipe_tags.recipe_id INNER JOIN tags ON recipe_tags.tag_id = tags.id WHERE tags.name LIKE ? GROUP BY recipes.id LIMIT ? OFFSET ?',
-          ['%${query.substring(1)}%', 15, offset]);
+          'SELECT recipes.* FROM recipes INNER JOIN recipe_tags ON recipes.id = recipe_tags.recipe_id WHERE (recipe_tags.tag_id IN ($tagIds) AND recipes.name LIKE ?) GROUP BY recipes.id HAVING COUNT(DISTINCT recipe_tags.tag_id) = ${tags.length} LIMIT 15 OFFSET ?',
+          ['%$query%', offset]);
     } else {
       recipes = await _database.query('recipes',
           where: 'name LIKE ?',
           whereArgs: ['%$query%'],
-          offset: offset,
-          limit: 15);
+          limit: 15,
+          offset: offset);
     }
 
     List<Recipe> recipeList = [];
