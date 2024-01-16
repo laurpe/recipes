@@ -42,10 +42,29 @@ class RecipeList extends StatelessWidget {
   }
 }
 
-class RecipeListView extends StatelessWidget {
+class RecipeListView extends StatefulWidget {
   const RecipeListView({
     super.key,
   });
+
+  @override
+  State<RecipeListView> createState() => _RecipeListViewState();
+}
+
+class _RecipeListViewState extends State<RecipeListView> {
+  bool _showFilters = false;
+  List<Tag> tags = [];
+  List<Tag> selectedTags = [];
+
+  Future<List<Tag>> getTags() async {
+    return await GetIt.I<DatabaseClient>().getTags();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    getTags().then((value) => setState(() => tags = value));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -63,6 +82,13 @@ class RecipeListView extends StatelessWidget {
         actions: [
           IconButton(
               onPressed: () {
+                setState(() {
+                  _showFilters = !_showFilters;
+                });
+              },
+              icon: const Icon(Icons.filter_list)),
+          IconButton(
+              onPressed: () {
                 Navigator.push(
                     context,
                     MaterialPageRoute(
@@ -74,20 +100,47 @@ class RecipeListView extends StatelessWidget {
       ),
       body: Column(
         children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(0, 0, 0, 2.8),
-            child: TextField(
-              decoration: const InputDecoration(
-                hintText: 'Search',
-                prefixIcon: Icon(Icons.search),
-              ),
-              onChanged: (value) {
-                BlocProvider.of<RecipesBloc>(context)
-                    .add(GetRecipes(query: value));
-              },
-            ),
-          ),
-          const Filters(),
+          _showFilters
+              ? Column(
+                  children: [
+                    TextField(
+                      decoration: const InputDecoration(
+                        hintText: 'Search',
+                        prefixIcon: Icon(Icons.search),
+                      ),
+                      onChanged: (value) {
+                        BlocProvider.of<RecipesBloc>(context)
+                            .add(GetRecipes(query: value));
+                      },
+                    ),
+                    Wrap(
+                      spacing: 8.0,
+                      runSpacing: -4.0,
+                      alignment: WrapAlignment.center,
+                      children: [
+                        for (final tag in tags)
+                          FilterChip(
+                            label: Text(tag.name),
+                            selected: selectedTags.contains(tag),
+                            onSelected: (selected) {
+                              setState(() {
+                                if (selected) {
+                                  selectedTags.add(tag);
+                                  BlocProvider.of<RecipesBloc>(context)
+                                      .add(GetRecipes(tags: selectedTags));
+                                } else {
+                                  selectedTags.remove(tag);
+                                  BlocProvider.of<RecipesBloc>(context)
+                                      .add(GetRecipes(tags: selectedTags));
+                                }
+                              });
+                            },
+                          ),
+                      ],
+                    ),
+                  ],
+                )
+              : Container(),
           Expanded(
             child: BlocBuilder<RecipesBloc, RecipesState>(
               builder: (
@@ -186,57 +239,6 @@ class RecipeListTile extends StatelessWidget {
             ? Text(recipe.tags!.map((tag) => tag.name).join(', '))
             : null,
       ),
-    );
-  }
-}
-
-class Filters extends StatefulWidget {
-  const Filters({super.key});
-
-  @override
-  FiltersState createState() => FiltersState();
-}
-
-class FiltersState extends State<Filters> {
-  List<Tag> tags = [];
-  List<Tag> selectedTags = [];
-
-  Future<List<Tag>> getTags() async {
-    return await GetIt.I<DatabaseClient>().getTags();
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    getTags().then((value) => setState(() => tags = value));
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Wrap(
-      spacing: 8.0,
-      runSpacing: -4.0,
-      alignment: WrapAlignment.center,
-      children: [
-        for (final tag in tags)
-          FilterChip(
-            label: Text(tag.name),
-            selected: selectedTags.contains(tag),
-            onSelected: (selected) {
-              setState(() {
-                if (selected) {
-                  selectedTags.add(tag);
-                  BlocProvider.of<RecipesBloc>(context)
-                      .add(GetRecipes(tags: selectedTags));
-                } else {
-                  selectedTags.remove(tag);
-                  BlocProvider.of<RecipesBloc>(context)
-                      .add(GetRecipes(tags: selectedTags));
-                }
-              });
-            },
-          ),
-      ],
     );
   }
 }
