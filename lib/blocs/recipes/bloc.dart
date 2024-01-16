@@ -35,6 +35,7 @@ class RecipesBloc extends Bloc<RecipesEvent, RecipesState> {
               query: currentState.query,
               offset: currentState.offset,
               tags: currentState.tags,
+              hasReachedEnd: currentState.hasReachedEnd,
             ));
           }
         } catch (error) {
@@ -62,6 +63,7 @@ class RecipesBloc extends Bloc<RecipesEvent, RecipesState> {
               query: currentState.query,
               offset: currentState.offset,
               tags: currentState.tags,
+              hasReachedEnd: currentState.hasReachedEnd,
             ));
           }
         } catch (error) {
@@ -85,6 +87,7 @@ class RecipesBloc extends Bloc<RecipesEvent, RecipesState> {
               query: currentState.query,
               offset: currentState.offset,
               tags: currentState.tags,
+              hasReachedEnd: currentState.hasReachedEnd,
             ));
           }
         } catch (error) {
@@ -99,6 +102,7 @@ class RecipesBloc extends Bloc<RecipesEvent, RecipesState> {
           int? offset = event.offset;
           String? query = event.query;
           List<Tag>? tags = event.tags;
+          bool hasReachedEnd = false;
 
           if (state is LoadedRecipesState) {
             final currentState = state as LoadedRecipesState;
@@ -106,11 +110,17 @@ class RecipesBloc extends Bloc<RecipesEvent, RecipesState> {
             offset = offset ?? currentState.offset;
             query = query ?? currentState.query;
             tags = tags ?? currentState.tags;
+            hasReachedEnd = currentState.hasReachedEnd;
 
-            if (query != currentState.query || tags == currentState.tags) {
+            if (query != currentState.query || tags != null) {
               offset = 0;
               recipes = [];
+              hasReachedEnd = false;
             }
+          }
+
+          if (hasReachedEnd) {
+            return;
           }
 
           final newRecipes = await databaseClient.searchRecipes(
@@ -124,6 +134,7 @@ class RecipesBloc extends Bloc<RecipesEvent, RecipesState> {
             query: query,
             offset: offset,
             tags: tags,
+            hasReachedEnd: newRecipes.length < 10,
           ));
         } catch (error) {
           emit(ErrorLoadingRecipesState());

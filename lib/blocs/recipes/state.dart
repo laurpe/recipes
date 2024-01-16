@@ -13,16 +13,18 @@ class LoadedRecipesState extends RecipesState {
   final String? query;
   final int? offset;
   final List<Tag>? tags;
+  final bool hasReachedEnd;
 
   const LoadedRecipesState({
     required this.recipes,
     required this.query,
     required this.offset,
     required this.tags,
+    required this.hasReachedEnd,
   });
 
   @override
-  get props => [recipes, query, offset, tags];
+  get props => [recipes, query, offset, tags, hasReachedEnd];
 }
 
 class LoadingRecipesState extends RecipesState {}

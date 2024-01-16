@@ -87,7 +87,7 @@ class RecipeListView extends StatelessWidget {
               },
             ),
           ),
-          Filters(),
+          const Filters(),
           Expanded(
             child: BlocBuilder<RecipesBloc, RecipesState>(
               builder: (
@@ -108,8 +108,8 @@ class RecipeListView extends StatelessWidget {
                     return ListView.builder(
                       itemCount: state.recipes.length,
                       itemBuilder: (context, index) {
-                        if (index == state.recipes.length - 1) {
-                          ///TODO: Sus homma
+                        if (index == state.recipes.length - 1 &&
+                            !state.hasReachedEnd) {
                           BlocProvider.of<RecipesBloc>(context)
                               .add(GetRecipes(offset: index + 1));
                         }
@@ -182,8 +182,6 @@ class RecipeListTile extends StatelessWidget {
               ? const Icon(Icons.favorite)
               : const Icon(Icons.favorite_outline),
         ),
-
-        /// TODO: remove this
         subtitle: recipe.tags!.isNotEmpty
             ? Text(recipe.tags!.map((tag) => tag.name).join(', '))
             : null,
