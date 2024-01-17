@@ -29,6 +29,7 @@ class RecipesBloc extends Bloc<RecipesEvent, RecipesState> {
               offset: currentState.offset,
               tags: currentState.tags,
               hasReachedEnd: currentState.hasReachedEnd,
+              favorites: currentState.favorites,
             ));
           }
         } catch (error) {
@@ -53,6 +54,7 @@ class RecipesBloc extends Bloc<RecipesEvent, RecipesState> {
               offset: currentState.offset,
               tags: currentState.tags,
               hasReachedEnd: currentState.hasReachedEnd,
+              favorites: currentState.favorites,
             ));
           }
         } catch (error) {
@@ -68,6 +70,7 @@ class RecipesBloc extends Bloc<RecipesEvent, RecipesState> {
           String? query = event.query;
           List<Tag>? tags = event.tags;
           bool hasReachedEnd = false;
+          bool? favorites = event.favorites;
 
           if (state is LoadedRecipesState) {
             final currentState = state as LoadedRecipesState;
@@ -76,8 +79,11 @@ class RecipesBloc extends Bloc<RecipesEvent, RecipesState> {
             query = query ?? currentState.query;
             tags = tags ?? currentState.tags;
             hasReachedEnd = currentState.hasReachedEnd;
+            favorites = favorites ?? currentState.favorites;
 
-            if (query != currentState.query || tags != null) {
+            if (query != currentState.query ||
+                tags != null ||
+                favorites != currentState.favorites) {
               offset = 0;
               recipes = [];
               hasReachedEnd = false;
@@ -92,6 +98,7 @@ class RecipesBloc extends Bloc<RecipesEvent, RecipesState> {
             offset: offset ?? 0,
             query: query ?? '',
             tags: tags ?? [],
+            favorites: favorites ?? false,
           );
 
           emit(LoadedRecipesState(
@@ -100,6 +107,7 @@ class RecipesBloc extends Bloc<RecipesEvent, RecipesState> {
             offset: offset,
             tags: tags,
             hasReachedEnd: newRecipes.length < 10,
+            favorites: favorites,
           ));
         } catch (error) {
           emit(ErrorLoadingRecipesState());

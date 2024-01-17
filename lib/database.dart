@@ -276,10 +276,25 @@ class DatabaseClient {
     required int offset,
     required String query,
     required List<Tag> tags,
+    required bool favorites,
   }) async {
     late final List<Map<String, dynamic>> recipes;
 
-    if (tags.isNotEmpty) {
+    if (favorites) {
+      if (tags.isNotEmpty) {
+        String tagIds = tags.map((t) => t.id).join(',');
+
+        recipes = await _database.rawQuery(
+            'SELECT recipes.* FROM recipes INNER JOIN recipe_tags ON recipes.id = recipe_tags.recipe_id WHERE (recipe_tags.tag_id IN ($tagIds) AND recipes.name LIKE ? AND recipes.favorite = 1) GROUP BY recipes.id HAVING COUNT(DISTINCT recipe_tags.tag_id) = ${tags.length} LIMIT 15 OFFSET ?',
+            ['%$query%', offset]);
+      } else {
+        recipes = await _database.query('recipes',
+            where: 'name LIKE ? AND favorite = 1',
+            whereArgs: ['%$query%'],
+            limit: 15,
+            offset: offset);
+      }
+    } else if (tags.isNotEmpty) {
       String tagIds = tags.map((t) => t.id).join(',');
 
       recipes = await _database.rawQuery(

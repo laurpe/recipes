@@ -55,6 +55,7 @@ class _RecipeListViewState extends State<RecipeListView> {
   bool _showFilters = false;
   List<Tag> tags = [];
   List<Tag> selectedTags = [];
+  bool _favoriteSelected = false;
 
   Future<List<Tag>> getTags() async {
     return await GetIt.I<DatabaseClient>().getTags();
@@ -113,6 +114,16 @@ class _RecipeListViewState extends State<RecipeListView> {
                       runSpacing: -4.0,
                       alignment: WrapAlignment.center,
                       children: [
+                        FilterChip(
+                            label: const Text('favorite'),
+                            selected: _favoriteSelected,
+                            onSelected: (selected) {
+                              setState(() {
+                                _favoriteSelected = selected;
+                                BlocProvider.of<RecipesBloc>(context).add(
+                                    GetRecipes(favorites: _favoriteSelected));
+                              });
+                            }),
                         for (final tag in tags)
                           FilterChip(
                             label: Text(tag.name),

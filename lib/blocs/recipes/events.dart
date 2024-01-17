@@ -12,8 +12,9 @@ class GetRecipes extends RecipesEvent {
   final int? offset;
   final String? query;
   final List<Tag>? tags;
+  final bool? favorites;
 
-  const GetRecipes({this.offset, this.query, this.tags});
+  const GetRecipes({this.offset, this.query, this.tags, this.favorites});
 }
 
 class RecipeUpdated extends RecipesEvent {
