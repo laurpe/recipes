@@ -221,15 +221,6 @@ class RecipeListTile extends StatelessWidget {
           }
         },
         title: Text(recipe.name),
-        trailing: IconButton(
-          onPressed: () {
-            BlocProvider.of<RecipesBloc>(context)
-                .add(ToggleFavoriteRecipe(recipe: recipe));
-          },
-          icon: recipe.favorite
-              ? const Icon(Icons.favorite)
-              : const Icon(Icons.favorite_outline),
-        ),
         subtitle: recipe.tags!.isNotEmpty
             ? Text(recipe.tags!.map((tag) => tag.name).join(', '))
             : null,

@@ -269,6 +269,14 @@ class SingleRecipeView extends StatelessWidget {
                           Navigator.of(context).pop(Updated(state.recipe)),
                       icon: const Icon(Icons.arrow_back_ios)),
                   actions: [
+                    IconButton(
+                        onPressed: () {
+                          BlocProvider.of<RecipeBloc>(context)
+                              .add(const ToggleFavoriteRecipe());
+                        },
+                        icon: state.recipe.favorite
+                            ? const Icon(Icons.favorite)
+                            : const Icon(Icons.favorite_border)),
                     MenuAnchor(
                       builder: (context, controller, child) {
                         return IconButton(

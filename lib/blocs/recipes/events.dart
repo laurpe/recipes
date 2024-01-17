@@ -16,12 +16,6 @@ class GetRecipes extends RecipesEvent {
   const GetRecipes({this.offset, this.query, this.tags});
 }
 
-class ToggleFavoriteRecipe extends RecipesEvent {
-  final Recipe recipe;
-
-  const ToggleFavoriteRecipe({required this.recipe});
-}
-
 class RecipeUpdated extends RecipesEvent {
   final Recipe recipe;
 

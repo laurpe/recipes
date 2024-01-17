@@ -15,3 +15,7 @@ class AddGroceries extends RecipeEvent {
 
   const AddGroceries({required this.ingredients});
 }
+
+class ToggleFavoriteRecipe extends RecipeEvent {
+  const ToggleFavoriteRecipe();
+}
