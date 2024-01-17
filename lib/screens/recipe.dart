@@ -269,20 +269,53 @@ class SingleRecipeView extends StatelessWidget {
                           Navigator.of(context).pop(Updated(state.recipe)),
                       icon: const Icon(Icons.arrow_back_ios)),
                   actions: [
-                    IconButton(
-                        onPressed: () => openEditRecipe(context, state.recipe),
-                        icon: const Icon(Icons.edit)),
-                    IconButton(
-                        onPressed: () async {
-                          final Result? result = await confirmRecipeDelete(
-                              context, state.recipe.id!);
-                          if (result is Deleted) {
-                            if (!context.mounted) return;
+                    MenuAnchor(
+                      builder: (context, controller, child) {
+                        return IconButton(
+                          onPressed: () {
+                            if (controller.isOpen) {
+                              controller.close();
+                            } else {
+                              controller.open();
+                            }
+                          },
+                          icon: const Icon(Icons.more_vert),
+                          tooltip: 'Show menu',
+                        );
+                      },
+                      menuChildren: [
+                        MenuItemButton(
+                          child: const Row(
+                            children: [
+                              Icon(Icons.edit),
+                              SizedBox(width: 8),
+                              Text('Edit'),
+                            ],
+                          ),
+                          onPressed: () {
+                            openEditRecipe(context, state.recipe);
+                          },
+                        ),
+                        MenuItemButton(
+                            child: const Row(
+                              children: [
+                                Icon(Icons.delete),
+                                SizedBox(width: 8),
+                                Text('Delete'),
+                              ],
+                            ),
+                            onPressed: () async {
+                              final Result? result = await confirmRecipeDelete(
+                                  context, state.recipe.id!);
+                              if (result is Deleted) {
+                                if (!context.mounted) return;
 
-                            Navigator.of(context).pop(Deleted(result.data!));
-                          }
-                        },
-                        icon: const Icon(Icons.delete))
+                                Navigator.of(context)
+                                    .pop(Deleted(result.data!));
+                              }
+                            }),
+                      ],
+                    )
                   ]),
               body: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,

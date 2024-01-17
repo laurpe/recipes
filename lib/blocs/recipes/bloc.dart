@@ -25,6 +25,7 @@ class RecipesBloc extends Bloc<RecipesEvent, RecipesState> {
                   instructions: recipe.instructions,
                   favorite: !recipe.favorite,
                   servings: recipe.servings,
+                  tags: recipe.tags,
                 );
               }
               return r;

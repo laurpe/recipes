@@ -70,11 +70,6 @@ class _RecipeListViewState extends State<RecipeListView> {
   Widget build(BuildContext context) {
     return Scaffold(
       floatingActionButton: FloatingActionButton(
-          shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.all(
-              Radius.circular(15.0),
-            ),
-          ),
           onPressed: () => openAddRecipe(context),
           child: const Icon(Icons.add)),
       appBar: AppBar(
