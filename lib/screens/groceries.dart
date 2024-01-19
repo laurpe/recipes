@@ -18,15 +18,56 @@ class GroceriesList extends StatelessWidget {
         return GroceriesBloc(databaseClient: databaseClient)
           ..add(GetGroceries());
       },
-      child: GroceriesListView(),
+      child: const GroceriesListView(),
     );
   }
 }
 
-class GroceriesListView extends StatelessWidget {
-  final GlobalKey<AnimatedListState> _listKey = GlobalKey<AnimatedListState>();
+class GroceriesListView extends StatefulWidget {
+  const GroceriesListView({super.key});
 
-  GroceriesListView({super.key});
+  @override
+  State<GroceriesListView> createState() => _GroceriesListViewState();
+}
+
+class _GroceriesListViewState extends State<GroceriesListView> {
+  final _groceriesFormKey = GlobalKey<FormState>();
+
+  String _name = '';
+  String _amount = '';
+  String _unit = '';
+
+  Future<void> _submitGrocery() async {
+    if (_groceriesFormKey.currentState!.validate()) {
+      _groceriesFormKey.currentState!.save();
+
+      final grocery = Grocery(
+        name: _name,
+        amount: _amount,
+        unit: _unit,
+        isBought: false,
+      );
+
+      _groceriesFormKey.currentState!.reset();
+      setState(() {
+        _name = '';
+        _amount = '';
+        _unit = '';
+      });
+
+      try {
+        await GetIt.I<DatabaseClient>().insertGrocery(grocery);
+        if (!context.mounted) return;
+        BlocProvider.of<GroceriesBloc>(context).add(GetGroceries());
+      } catch (error) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Could not add grocery, please try again!'),
+          ),
+        );
+      }
+    }
+  }
 
   Future<void> confirmGroceriesDelete(
       BuildContext context, GroceriesBloc bloc) async {
@@ -53,8 +94,6 @@ class GroceriesListView extends StatelessWidget {
             TextButton(
               child: const Text('Yes'),
               onPressed: () {
-                _listKey.currentState!
-                    .removeAllItems((context, animation) => Container());
                 bloc.add(DeleteGroceries());
                 Navigator.of(context).pop();
               },
@@ -90,48 +129,106 @@ class GroceriesListView extends StatelessWidget {
                 child: Text('Error loading groceries'),
               );
             case LoadedGroceriesState():
-              return AnimatedList(
-                key: _listKey,
-                initialItemCount: state.groceries.length,
-                itemBuilder: (context, index, animation) {
-                  return _buildItem(context, index, state.groceries.length,
-                      state.groceries[index], animation);
-                },
+              return Column(
+                children: [
+                  Form(
+                    key: _groceriesFormKey,
+                    child: Row(
+                      children: [
+                        SizedBox(
+                          width: 60,
+                          child: TextFormField(
+                            initialValue: _amount,
+                            decoration: const InputDecoration(
+                              labelText: 'Amount',
+                              floatingLabelBehavior:
+                                  FloatingLabelBehavior.always,
+                              contentPadding:
+                                  EdgeInsets.fromLTRB(10, 10, 0, 20),
+                            ),
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Please enter amount';
+                              }
+                              return null;
+                            },
+                            onSaved: (value) {
+                              _amount = value!;
+                            },
+                          ),
+                        ),
+                        SizedBox(
+                          width: 50,
+                          child: TextFormField(
+                            initialValue: _unit,
+                            decoration: const InputDecoration(
+                              labelText: 'Unit',
+                              floatingLabelBehavior:
+                                  FloatingLabelBehavior.always,
+                              contentPadding:
+                                  EdgeInsets.fromLTRB(10, 10, 0, 20),
+                            ),
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Please enter unit';
+                              }
+                              return null;
+                            },
+                            onSaved: (value) {
+                              _unit = value!;
+                            },
+                          ),
+                        ),
+                        Expanded(
+                          child: TextFormField(
+                            initialValue: _name,
+                            decoration: InputDecoration(
+                              labelText: 'Grocery name',
+                              floatingLabelBehavior:
+                                  FloatingLabelBehavior.always,
+                              contentPadding:
+                                  const EdgeInsets.fromLTRB(10, 10, 10, 20),
+                              suffixIcon: IconButton(
+                                icon: const Icon(Icons.add),
+                                onPressed: _submitGrocery,
+                              ),
+                            ),
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Please enter grocery name';
+                              }
+                              return null;
+                            },
+                            onSaved: (value) {
+                              _name = value!;
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Expanded(
+                    child: ListView.builder(
+                      itemCount: state.groceries.length,
+                      itemBuilder: (context, index) {
+                        final grocery = state.groceries[index];
+                        return Card(
+                          child: ListTile(
+                            title: Text(
+                                '${grocery.amount} ${grocery.unit} ${grocery.name}',
+                                style: grocery.isBought
+                                    ? const TextStyle(
+                                        decoration: TextDecoration.lineThrough)
+                                    : null),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
               );
           }
         },
-      ),
-    );
-  }
-
-  Widget _buildItem(context, int index, int length, Grocery item,
-      Animation<double> animation) {
-    return SizeTransition(
-      sizeFactor: animation,
-      child: GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onTap: () {
-          _listKey.currentState!.removeItem(
-            index,
-            (context, animation) =>
-                _buildItem(context, index, length, item, animation),
-          );
-
-          int insertIndex = item.isBought ? 0 : length - 1;
-
-          _listKey.currentState!.insertItem(insertIndex);
-
-          BlocProvider.of<GroceriesBloc>(context)
-              .add(ToggleGroceryBought(grocery: item));
-        },
-        child: Card(
-          child: ListTile(
-            title: Text('${item.amount} ${item.unit} ${item.name}',
-                style: item.isBought
-                    ? const TextStyle(decoration: TextDecoration.lineThrough)
-                    : null),
-          ),
-        ),
       ),
     );
   }
