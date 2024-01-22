@@ -368,6 +368,11 @@ class DatabaseClient {
         where: 'id = ?', whereArgs: [grocery.id]);
   }
 
+  Future<void> deleteGrocery(int groceryId) async {
+    await _database
+        .delete('groceries', where: 'id = ?', whereArgs: [groceryId]);
+  }
+
   Future<void> deleteGroceries() async {
     await _database.delete('groceries');
   }
