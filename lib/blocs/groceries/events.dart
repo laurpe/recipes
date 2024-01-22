@@ -17,3 +17,9 @@ class ToggleGroceryBought extends GroceriesEvent {
 }
 
 class DeleteGroceries extends GroceriesEvent {}
+
+class ReorderGroceries extends GroceriesEvent {
+  final List<Grocery> groceries;
+
+  const ReorderGroceries({required this.groceries});
+}

@@ -37,7 +37,8 @@ class DatabaseClient {
             name TEXT NOT NULL, 
             amount TEXT NOT NULL,
             unit TEXT NOT NULL,
-            is_bought BOOLEAN NOT NULL
+            is_bought BOOLEAN NOT NULL,
+            list_order INTEGER NOT NULL
             )''');
         await db.execute('''CREATE TABLE tags(
             id INTEGER PRIMARY KEY, 
@@ -327,7 +328,7 @@ class DatabaseClient {
 
   Future<List<Grocery>> getGroceries() async {
     final List<Map<String, dynamic>> groceriesMap =
-        await _database.query('groceries', orderBy: 'name');
+        await _database.query('groceries', orderBy: 'list_order ASC');
 
     List<Grocery> groceries = List.generate(groceriesMap.length, (i) {
       return Grocery(
@@ -336,25 +337,17 @@ class DatabaseClient {
         amount: groceriesMap[i]['amount'],
         unit: groceriesMap[i]['unit'],
         isBought: groceriesMap[i]['is_bought'] == 1 ? true : false,
+        listOrder: groceriesMap[i]['list_order'],
       );
     });
-
-    return groceries
-      ..sort((a, b) {
-        if (a.isBought && !b.isBought) {
-          return 1;
-        } else if (!a.isBought && b.isBought) {
-          return -1;
-        }
-        return 0;
-      });
+    return groceries;
   }
 
-  Future<void> insertGrocery(Grocery grocery) async {
+  Future<int> insertGrocery(Grocery grocery) async {
     var groceryMap = grocery.toMap();
     groceryMap['is_bought'] = grocery.isBought ? 1 : 0;
 
-    await _database.insert(
+    return await _database.insert(
       'groceries',
       groceryMap,
     );

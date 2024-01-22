@@ -32,6 +32,7 @@ Future<void> addGroceries(Recipe recipe, BuildContext context) async {
   final groceries = await databaseClient.getGroceries();
   final ingredients = recipe.ingredients;
   final List<Grocery> newGroceries = [];
+  final int timestamp = DateTime.now().millisecondsSinceEpoch;
 
   for (var ingredient in ingredients) {
     newGroceries.add(
@@ -40,6 +41,7 @@ Future<void> addGroceries(Recipe recipe, BuildContext context) async {
         amount: ingredient.amount,
         unit: ingredient.unit,
         isBought: false,
+        listOrder: timestamp + ingredients.indexOf(ingredient),
       ),
     );
   }
@@ -64,6 +66,7 @@ Future<void> addGroceries(Recipe recipe, BuildContext context) async {
           amount: amountToString((double.parse(grocery.amount) * 5)),
           unit: 'ml',
           isBought: grocery.isBought,
+          listOrder: grocery.listOrder,
         );
       case 'rkl':
         return Grocery(
@@ -72,6 +75,7 @@ Future<void> addGroceries(Recipe recipe, BuildContext context) async {
           amount: amountToString((double.parse(grocery.amount) * 15)),
           unit: 'ml',
           isBought: grocery.isBought,
+          listOrder: grocery.listOrder,
         );
       case 'cl':
         return Grocery(
@@ -80,6 +84,7 @@ Future<void> addGroceries(Recipe recipe, BuildContext context) async {
           amount: amountToString((double.parse(grocery.amount) * 10)),
           unit: 'ml',
           isBought: grocery.isBought,
+          listOrder: grocery.listOrder,
         );
       case 'dl':
         return Grocery(
@@ -88,6 +93,7 @@ Future<void> addGroceries(Recipe recipe, BuildContext context) async {
           amount: amountToString((double.parse(grocery.amount) * 100)),
           unit: 'ml',
           isBought: grocery.isBought,
+          listOrder: grocery.listOrder,
         );
       case 'l':
         return Grocery(
@@ -96,6 +102,7 @@ Future<void> addGroceries(Recipe recipe, BuildContext context) async {
           amount: amountToString((double.parse(grocery.amount) * 1000)),
           unit: 'ml',
           isBought: grocery.isBought,
+          listOrder: grocery.listOrder,
         );
       case 'kg':
         return Grocery(
@@ -104,6 +111,7 @@ Future<void> addGroceries(Recipe recipe, BuildContext context) async {
           amount: amountToString((double.parse(grocery.amount) * 1000)),
           unit: 'g',
           isBought: grocery.isBought,
+          listOrder: grocery.listOrder,
         );
       default:
         return grocery;
@@ -126,7 +134,8 @@ Future<void> addGroceries(Recipe recipe, BuildContext context) async {
               double.parse(accumulator[grocery.name]!.amount) +
                   double.parse(grocery.amount)),
           unit: accumulator[grocery.name]!.unit,
-          isBought: accumulator[grocery.name]!.isBought);
+          isBought: accumulator[grocery.name]!.isBought,
+          listOrder: accumulator[grocery.name]!.listOrder);
       return accumulator;
     }
     accumulator[grocery.name] = grocery;

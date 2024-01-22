@@ -10,6 +10,7 @@ class GroceriesBloc extends Bloc<GroceriesEvent, GroceriesState> {
   GroceriesBloc({required this.databaseClient})
       : super(LoadingGroceriesState()) {
     on<ToggleGroceryBought>((event, emit) async {
+      // TODO: fix this to work with reorderable list
       try {
         final grocery = event.grocery;
 
@@ -21,6 +22,7 @@ class GroceriesBloc extends Bloc<GroceriesEvent, GroceriesState> {
           amount: grocery.amount,
           unit: grocery.unit,
           isBought: !grocery.isBought,
+          listOrder: grocery.listOrder,
         );
 
         if (state is LoadedGroceriesState) {
@@ -59,6 +61,28 @@ class GroceriesBloc extends Bloc<GroceriesEvent, GroceriesState> {
       try {
         await databaseClient.deleteGroceries();
         emit(const LoadedGroceriesState(groceries: []));
+      } catch (error) {
+        emit(ErrorLoadingGroceriesState());
+      }
+    });
+    on<ReorderGroceries>((event, emit) async {
+      List<Grocery> reorderedGroceries = [];
+
+      for (var grocery in event.groceries) {
+        reorderedGroceries.add(Grocery(
+            id: grocery.id,
+            amount: grocery.amount,
+            unit: grocery.unit,
+            name: grocery.name,
+            isBought: grocery.isBought,
+            listOrder: event.groceries.indexOf(grocery)));
+      }
+
+      try {
+        for (var grocery in reorderedGroceries) {
+          await databaseClient.updateGrocery(grocery);
+        }
+        emit(LoadedGroceriesState(groceries: event.groceries));
       } catch (error) {
         emit(ErrorLoadingGroceriesState());
       }
