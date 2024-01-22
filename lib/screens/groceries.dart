@@ -214,6 +214,10 @@ class _GroceriesListViewState extends State<GroceriesListView> {
                         final grocery = state.groceries[index];
                         return Card(
                           child: ListTile(
+                            onTap: () {
+                              BlocProvider.of<GroceriesBloc>(context)
+                                  .add(ToggleGroceryBought(grocery: grocery));
+                            },
                             title: Text(
                                 '${grocery.amount} ${grocery.unit} ${grocery.name}',
                                 style: grocery.isBought
