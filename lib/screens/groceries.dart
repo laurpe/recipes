@@ -252,6 +252,7 @@ class ReorderableGroceryListState extends State<ReorderableGroceryList> {
         Expanded(
           child: ReorderableListView(
             onReorder: (oldIndex, newIndex) {
+              if (_groceries[oldIndex].isBought) return;
               setState(() {
                 if (newIndex > oldIndex) {
                   newIndex -= 1;
