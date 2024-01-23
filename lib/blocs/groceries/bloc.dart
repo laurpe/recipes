@@ -11,8 +11,17 @@ class GroceriesBloc extends Bloc<GroceriesEvent, GroceriesState> {
       : super(LoadingGroceriesState()) {
     on<GetGroceries>((event, emit) async {
       try {
-        emit(LoadedGroceriesState(
-            groceries: await databaseClient.getGroceries()));
+        List<Grocery> groceries = await databaseClient.getGroceries();
+        groceries.sort((a, b) {
+          if (a.isBought && !b.isBought) {
+            return 1;
+          } else if (!a.isBought && b.isBought) {
+            return -1;
+          }
+          return 0;
+        });
+
+        emit(LoadedGroceriesState(groceries: groceries));
       } catch (error) {
         emit(ErrorLoadingGroceriesState());
       }

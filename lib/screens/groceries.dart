@@ -163,6 +163,14 @@ class ReorderableGroceryListState extends State<ReorderableGroceryList> {
 
         setState(() {
           _groceries.add(newGrocery);
+          _groceries.sort((a, b) {
+            if (a.isBought && !b.isBought) {
+              return 1;
+            } else if (!a.isBought && b.isBought) {
+              return -1;
+            }
+            return 0;
+          });
         });
       } catch (error) {
         if (!context.mounted) return;
@@ -338,11 +346,9 @@ class ReorderableGroceryListState extends State<ReorderableGroceryList> {
                               ),
                               onPressed: () async {
                                 setState(() {
-                                  _groceries.remove(grocery);
                                   GetIt.I<DatabaseClient>()
                                       .deleteGrocery(grocery.id!);
-                                  BlocProvider.of<GroceriesBloc>(context)
-                                      .add(GetGroceries());
+                                  _groceries.remove(grocery);
                                 });
                               }),
                         ],
