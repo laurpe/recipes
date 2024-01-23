@@ -267,8 +267,44 @@ class ReorderableGroceryListState extends State<ReorderableGroceryList> {
                   (grocery) => Card(
                     key: Key('${grocery.id}'),
                     child: ListTile(
-                      onTap: () {
-                        // TODO: implement this
+                      onTap: () async {
+                        if (!grocery.isBought) {
+                          /// if a grocery is marked bought, move it to the bottom of the list
+                          /// no need to update the whole list order
+                          Grocery updatedGrocery = Grocery(
+                            id: grocery.id,
+                            name: grocery.name,
+                            amount: grocery.amount,
+                            unit: grocery.unit,
+                            isBought: true,
+                            listOrder: DateTime.now().millisecondsSinceEpoch,
+                          );
+                          await GetIt.I<DatabaseClient>()
+                              .updateGrocery(updatedGrocery);
+                          setState(() {
+                            _groceries.remove(grocery);
+                            _groceries.add(updatedGrocery);
+                          });
+                        } else if (grocery.isBought) {
+                          /// if a grocery is marked not bought, move it to the top of the list
+                          /// need to update the list order
+                          Grocery updatedGrocery = Grocery(
+                            id: grocery.id,
+                            name: grocery.name,
+                            amount: grocery.amount,
+                            unit: grocery.unit,
+                            isBought: false,
+                            listOrder: grocery.listOrder,
+                          );
+                          await GetIt.I<DatabaseClient>()
+                              .updateGrocery(updatedGrocery);
+                          setState(() {
+                            _groceries.remove(grocery);
+                            _groceries.insert(0, updatedGrocery);
+                            BlocProvider.of<GroceriesBloc>(context)
+                                .add(ReorderGroceries(groceries: _groceries));
+                          });
+                        }
                       },
                       title: Text(
                           '${grocery.amount} ${grocery.unit} ${grocery.name}',

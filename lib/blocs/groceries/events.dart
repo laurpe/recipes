@@ -10,12 +10,6 @@ abstract class GroceriesEvent extends Equatable {
 
 class GetGroceries extends GroceriesEvent {}
 
-class ToggleGroceryBought extends GroceriesEvent {
-  final Grocery grocery;
-
-  const ToggleGroceryBought({required this.grocery});
-}
-
 class DeleteGroceries extends GroceriesEvent {}
 
 class ReorderGroceries extends GroceriesEvent {
