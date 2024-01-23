@@ -231,7 +231,15 @@ class RecipeListTile extends StatelessWidget {
                 .add(RecipeUpdated(recipe: result.data!));
           }
         },
-        title: Text(recipe.name),
+        title: Row(
+          children: [
+            Text(recipe.name),
+            const SizedBox(width: 8.0),
+            recipe.favorite
+                ? Icon(Icons.favorite, size: 16, color: Colors.orange[700])
+                : Container(),
+          ],
+        ),
         subtitle: recipe.tags!.isNotEmpty
             ? Text(recipe.tags!.map((tag) => tag.name).join(', '))
             : null,
