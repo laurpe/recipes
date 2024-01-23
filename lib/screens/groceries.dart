@@ -63,7 +63,6 @@ class GroceriesListView extends StatelessWidget {
     );
   }
 
-// TODO: deleting all groceries doesn't work with reorderable list
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -92,8 +91,10 @@ class GroceriesListView extends StatelessWidget {
               return Column(
                 children: [
                   Expanded(
-                      child:
-                          ReorderableGroceryList(groceries: state.groceries)),
+                      child: ReorderableGroceryList(
+                          key: Key(
+                              DateTime.now().microsecondsSinceEpoch.toString()),
+                          groceries: state.groceries)),
                 ],
               );
           }
