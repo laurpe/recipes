@@ -331,6 +331,18 @@ class SingleRecipeView extends StatelessWidget {
                                     .pop(Deleted(result.data!));
                               }
                             }),
+                        MenuItemButton(
+                          child: const Row(
+                            children: [
+                              Icon(Icons.add_shopping_cart),
+                              SizedBox(width: 8),
+                              Text('Add to groceries'),
+                            ],
+                          ),
+                          onPressed: () {
+                            addGroceries(state.recipe, context);
+                          },
+                        ),
                       ],
                     )
                   ]),
@@ -349,19 +361,9 @@ class SingleRecipeView extends StatelessWidget {
                         : null,
                   ),
                   Padding(
-                    padding: const EdgeInsets.fromLTRB(8.0, 0, 0, 0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text('Ingredients',
-                            style: Theme.of(context).textTheme.headlineMedium),
-                        IconButton(
-                            onPressed: () {
-                              addGroceries(state.recipe, context);
-                            },
-                            icon: const Icon(Icons.add_shopping_cart))
-                      ],
-                    ),
+                    padding: const EdgeInsets.fromLTRB(8.0, 8.0, 8.0, 0),
+                    child: Text('Ingredients',
+                        style: Theme.of(context).textTheme.headlineMedium),
                   ),
                   Card(
                     margin: const EdgeInsets.fromLTRB(8.0, 0, 8.0, 8.0),
