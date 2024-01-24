@@ -57,14 +57,14 @@ class _RecipeListViewState extends State<RecipeListView> {
   List<Tag> selectedTags = [];
   bool _favoriteSelected = false;
 
-  Future<List<Tag>> getTags() async {
-    return await GetIt.I<DatabaseClient>().getTags();
+  Future<List<Tag>> getUsedTags() async {
+    return await GetIt.I<DatabaseClient>().getUsedTags();
   }
 
   @override
   void initState() {
     super.initState();
-    getTags().then((value) => setState(() => tags = value));
+    getUsedTags().then((value) => setState(() => tags = value));
   }
 
   @override
