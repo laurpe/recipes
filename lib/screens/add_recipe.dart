@@ -42,7 +42,7 @@ class RecipeFormState extends State<RecipeForm> {
 
   final TextEditingController _controller = TextEditingController();
 
-  RegExp tagFieldRegex = RegExp(r'^[a-zA-Z0-9-]+[ ,]?$');
+  RegExp tagFieldRegex = RegExp(r'^[A-Za-zÀ-ÖØ-öø-ÿ0-9-]+[ ,]?$');
 
   @override
   void initState() {
