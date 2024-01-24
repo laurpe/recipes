@@ -38,13 +38,8 @@ class GroceriesBloc extends Bloc<GroceriesEvent, GroceriesState> {
       List<Grocery> reorderedGroceries = [];
 
       for (var grocery in event.groceries) {
-        reorderedGroceries.add(Grocery(
-            id: grocery.id,
-            amount: grocery.amount,
-            unit: grocery.unit,
-            name: grocery.name,
-            isBought: grocery.isBought,
-            listOrder: event.groceries.indexOf(grocery)));
+        reorderedGroceries
+            .add(grocery.copyWith(listOrder: event.groceries.indexOf(grocery)));
       }
 
       try {

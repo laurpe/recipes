@@ -33,6 +33,24 @@ class Grocery extends Equatable {
     return map;
   }
 
+  Grocery copyWith({
+    int? id,
+    String? amount,
+    String? unit,
+    String? name,
+    bool? isBought,
+    int? listOrder,
+  }) {
+    return Grocery(
+      id: id ?? this.id,
+      amount: amount ?? this.amount,
+      unit: unit ?? this.unit,
+      name: name ?? this.name,
+      isBought: isBought ?? this.isBought,
+      listOrder: listOrder ?? this.listOrder,
+    );
+  }
+
   @override
   List<Object?> get props => [id, amount, unit, name, isBought, listOrder];
 }

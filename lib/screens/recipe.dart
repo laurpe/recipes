@@ -60,59 +60,29 @@ Future<void> addGroceries(Recipe recipe, BuildContext context) async {
   Grocery unitsToDefaults(Grocery grocery) {
     switch (grocery.unit) {
       case 'tl':
-        return Grocery(
-          id: grocery.id,
-          name: grocery.name,
-          amount: amountToString((double.parse(grocery.amount) * 5)),
-          unit: 'ml',
-          isBought: grocery.isBought,
-          listOrder: grocery.listOrder,
-        );
+        return grocery.copyWith(
+            amount: amountToString(double.parse(grocery.amount) * 5),
+            unit: 'ml');
       case 'rkl':
-        return Grocery(
-          id: grocery.id,
-          name: grocery.name,
-          amount: amountToString((double.parse(grocery.amount) * 15)),
-          unit: 'ml',
-          isBought: grocery.isBought,
-          listOrder: grocery.listOrder,
-        );
+        return grocery.copyWith(
+            amount: amountToString(double.parse(grocery.amount) * 15),
+            unit: 'ml');
       case 'cl':
-        return Grocery(
-          id: grocery.id,
-          name: grocery.name,
-          amount: amountToString((double.parse(grocery.amount) * 10)),
-          unit: 'ml',
-          isBought: grocery.isBought,
-          listOrder: grocery.listOrder,
-        );
+        return grocery.copyWith(
+            amount: amountToString(double.parse(grocery.amount) * 10),
+            unit: 'ml');
       case 'dl':
-        return Grocery(
-          id: grocery.id,
-          name: grocery.name,
-          amount: amountToString((double.parse(grocery.amount) * 100)),
-          unit: 'ml',
-          isBought: grocery.isBought,
-          listOrder: grocery.listOrder,
-        );
+        return grocery.copyWith(
+            amount: amountToString(double.parse(grocery.amount) * 100),
+            unit: 'ml');
       case 'l':
-        return Grocery(
-          id: grocery.id,
-          name: grocery.name,
-          amount: amountToString((double.parse(grocery.amount) * 1000)),
-          unit: 'ml',
-          isBought: grocery.isBought,
-          listOrder: grocery.listOrder,
-        );
+        return grocery.copyWith(
+            amount: amountToString(double.parse(grocery.amount) * 1000),
+            unit: 'ml');
       case 'kg':
-        return Grocery(
-          id: grocery.id,
-          name: grocery.name,
-          amount: amountToString((double.parse(grocery.amount) * 1000)),
-          unit: 'g',
-          isBought: grocery.isBought,
-          listOrder: grocery.listOrder,
-        );
+        return grocery.copyWith(
+            amount: amountToString(double.parse(grocery.amount) * 1000),
+            unit: 'g');
       default:
         return grocery;
     }

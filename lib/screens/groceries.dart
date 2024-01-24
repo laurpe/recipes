@@ -153,14 +153,7 @@ class ReorderableGroceryListState extends State<ReorderableGroceryList> {
       try {
         int id = await GetIt.I<DatabaseClient>().insertGrocery(grocery);
 
-        Grocery newGrocery = Grocery(
-          id: id,
-          name: grocery.name,
-          amount: grocery.amount,
-          unit: grocery.unit,
-          isBought: grocery.isBought,
-          listOrder: grocery.listOrder,
-        );
+        Grocery newGrocery = grocery.copyWith(id: id);
 
         setState(() {
           _groceries.add(newGrocery);
@@ -281,14 +274,10 @@ class ReorderableGroceryListState extends State<ReorderableGroceryList> {
                         if (!grocery.isBought) {
                           /// if a grocery is marked bought, move it to the bottom of the list
                           /// no need to update the whole list order
-                          Grocery updatedGrocery = Grocery(
-                            id: grocery.id,
-                            name: grocery.name,
-                            amount: grocery.amount,
-                            unit: grocery.unit,
-                            isBought: true,
-                            listOrder: DateTime.now().millisecondsSinceEpoch,
-                          );
+                          Grocery updatedGrocery = grocery.copyWith(
+                              isBought: true,
+                              listOrder: DateTime.now().millisecondsSinceEpoch);
+
                           await GetIt.I<DatabaseClient>()
                               .updateGrocery(updatedGrocery);
                           setState(() {
@@ -298,14 +287,9 @@ class ReorderableGroceryListState extends State<ReorderableGroceryList> {
                         } else if (grocery.isBought) {
                           /// if a grocery is marked not bought, move it to the top of the list
                           /// need to update the list order
-                          Grocery updatedGrocery = Grocery(
-                            id: grocery.id,
-                            name: grocery.name,
-                            amount: grocery.amount,
-                            unit: grocery.unit,
-                            isBought: false,
-                            listOrder: grocery.listOrder,
-                          );
+                          Grocery updatedGrocery =
+                              grocery.copyWith(isBought: false);
+
                           await GetIt.I<DatabaseClient>()
                               .updateGrocery(updatedGrocery);
                           setState(() {
