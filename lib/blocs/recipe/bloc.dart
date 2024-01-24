@@ -2,7 +2,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:recipes/blocs/recipe/events.dart';
 import 'package:recipes/blocs/recipe/state.dart';
 import 'package:recipes/database.dart';
-import 'package:recipes/recipe.dart';
 
 class RecipeBloc extends Bloc<RecipeEvent, RecipeState> {
   final DatabaseClient databaseClient;
@@ -19,14 +18,8 @@ class RecipeBloc extends Bloc<RecipeEvent, RecipeState> {
             await databaseClient.toggleFavoriteRecipe(
                 currentState.recipe, !currentState.recipe.favorite);
 
-            final updatedRecipe = Recipe(
-              id: currentState.recipe.id,
-              name: currentState.recipe.name,
-              ingredients: currentState.recipe.ingredients,
-              instructions: currentState.recipe.instructions,
+            final updatedRecipe = currentState.recipe.copyWith(
               favorite: !currentState.recipe.favorite,
-              servings: currentState.recipe.servings,
-              tags: currentState.recipe.tags,
             );
 
             emit(LoadedRecipeState(

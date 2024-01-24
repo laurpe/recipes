@@ -83,6 +83,26 @@ class Recipe extends Equatable {
     return map;
   }
 
+  Recipe copyWith({
+    int? id,
+    String? name,
+    List<Ingredient>? ingredients,
+    String? instructions,
+    bool? favorite,
+    int? servings,
+    List<Tag>? tags,
+  }) {
+    return Recipe(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      ingredients: ingredients ?? this.ingredients,
+      instructions: instructions ?? this.instructions,
+      favorite: favorite ?? this.favorite,
+      servings: servings ?? this.servings,
+      tags: tags ?? this.tags,
+    );
+  }
+
   @override
   List<Object?> get props =>
       [id, name, ingredients, instructions, favorite, servings, tags];
