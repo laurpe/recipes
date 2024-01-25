@@ -71,7 +71,12 @@ class _RecipeListViewState extends State<RecipeListView> {
   Widget build(BuildContext context) {
     return Scaffold(
       floatingActionButton: FloatingActionButton(
-          onPressed: () => openAddRecipe(context),
+          onPressed: () async {
+            await openAddRecipe(context);
+
+            ///TODO: refactor this to use bloc.
+            await getUsedTags().then((value) => setState(() => tags = value));
+          },
           child: const Icon(Icons.add)),
       appBar: AppBar(
         title: const Text('Recipes'),
