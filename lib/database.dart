@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:path/path.dart';
 import 'package:recipes/grocery.dart';
+import 'package:recipes/meal_plan.dart';
 import 'package:recipes/seed_data.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:recipes/recipe.dart';
@@ -50,6 +51,32 @@ class DatabaseClient {
             PRIMARY KEY(recipe_id, tag_id),
             FOREIGN KEY(recipe_id) REFERENCES recipes(id) ON DELETE CASCADE,
             FOREIGN KEY(tag_id) REFERENCES tags(id)
+            )''');
+        await db.execute('''CREATE TABLE meal_plans(
+            id INTEGER PRIMARY KEY,
+            name TEXT NOT NULL
+            )''');
+        await db.execute('INSERT INTO meal_plans VALUES (1, "Viikon ruoat")');
+
+        await db.execute('''CREATE TABLE days(
+            id INTEGER PRIMARY KEY,
+            name TEXT NOT NULL,
+            meal_plan_id INTEGER NOT NULL,
+            FOREIGN KEY(meal_plan_id) REFERENCES meal_plans(id) ON DELETE CASCADE
+            )''');
+        await db.execute('INSERT INTO days VALUES (1, "Maanantai", 1)');
+        await db.execute('INSERT INTO days VALUES (2, "Tiistai", 1)');
+        await db.execute('INSERT INTO days VALUES (3, "Keskiviikko", 1)');
+        await db.execute('INSERT INTO days VALUES (4, "Torstai", 1)');
+        await db.execute('INSERT INTO days VALUES (5, "Perjantai", 1)');
+
+        await db.execute('''CREATE TABLE meals(
+            id INTEGER PRIMARY KEY,
+            name TEXT NOT NULL,
+            day_id INTEGER NOT NULL,
+            recipe_id INTEGER NOT NULL,
+            FOREIGN KEY(day_id) REFERENCES days(id) ON DELETE CASCADE,
+            FOREIGN KEY(recipe_id) REFERENCES recipes(id) ON DELETE CASCADE
             )''');
 
         await _seedRecipes(db, seedRecipes);
@@ -392,5 +419,18 @@ class DatabaseClient {
 
     await _database.update('groceries', groceryMap,
         where: 'id = ?', whereArgs: [grocery.id]);
+  }
+
+  Future<List<MealPlan>> getMealPlans() async {
+    final List<Map<String, dynamic>> mealPlansMap =
+        await _database.query('meal_plans');
+
+    List<MealPlan> mealPlans = List.generate(mealPlansMap.length, (i) {
+      return MealPlan(
+        id: mealPlansMap[i]['id'],
+        name: mealPlansMap[i]['name'],
+      );
+    });
+    return mealPlans;
   }
 }

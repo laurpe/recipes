@@ -8,6 +8,7 @@ import 'package:recipes/database.dart';
 import 'package:recipes/recipe.dart';
 import 'package:recipes/screens/add_recipe.dart';
 import 'package:recipes/screens/groceries.dart';
+import 'package:recipes/screens/meal_plan_list.dart';
 import 'package:recipes/screens/recipe.dart';
 
 Future<void> openAddRecipe(BuildContext context) async {
@@ -96,7 +97,16 @@ class _RecipeListViewState extends State<RecipeListView> {
                       builder: (context) => const GroceriesList(),
                     ));
               },
-              icon: const Icon(Icons.shopping_cart))
+              icon: const Icon(Icons.shopping_cart)),
+          IconButton(
+              onPressed: () {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const MealPlanList(),
+                    ));
+              },
+              icon: const Icon(Icons.calendar_today))
         ],
       ),
       body: Column(
