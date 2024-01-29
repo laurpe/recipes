@@ -5,6 +5,7 @@ import 'package:recipes/blocs/meal_plans/bloc.dart';
 import 'package:recipes/blocs/meal_plans/events.dart';
 import 'package:recipes/blocs/meal_plans/state.dart';
 import 'package:recipes/database.dart';
+import 'package:recipes/screens/meal_plan.dart';
 
 class MealPlanList extends StatelessWidget {
   const MealPlanList({super.key});
@@ -38,7 +39,7 @@ class MealPlansListView extends StatelessWidget {
           case LoadedMealPlansState():
             return Scaffold(
               appBar: AppBar(
-                title: const Text('Meal Plans'),
+                title: const Text('Meal plans'),
               ),
               body: ListView.builder(
                 itemCount: state.mealPlans.length,
@@ -46,8 +47,16 @@ class MealPlansListView extends StatelessWidget {
                   final mealPlan = state.mealPlans[index];
                   return Card(
                     child: ListTile(
-                      title: Text(mealPlan.name),
-                    ),
+                        title: Text(mealPlan.name),
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => MealPlan(
+                                  id: mealPlan.id!, name: mealPlan.name),
+                            ),
+                          );
+                        }),
                   );
                 },
               ),

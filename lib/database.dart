@@ -78,10 +78,20 @@ class DatabaseClient {
             FOREIGN KEY(day_id) REFERENCES days(id) ON DELETE CASCADE,
             FOREIGN KEY(recipe_id) REFERENCES recipes(id) ON DELETE CASCADE
             )''');
-
         await _seedRecipes(db, seedRecipes);
         await _seedTags(db, seedTags);
         await _seedRecipeTags(db);
+
+        await db.execute('INSERT INTO meals VALUES (1, "Lounas", 1, 1)');
+        await db.execute('INSERT INTO meals VALUES (2, "Päivällinen", 1, 2)');
+        await db.execute('INSERT INTO meals VALUES (3, "Lounas", 2, 3)');
+        await db.execute('INSERT INTO meals VALUES (4, "Päivällinen", 2, 4)');
+        await db.execute('INSERT INTO meals VALUES (5, "Lounas", 3, 1)');
+        await db.execute('INSERT INTO meals VALUES (6, "Päivällinen", 3, 2)');
+        await db.execute('INSERT INTO meals VALUES (7, "Lounas", 4, 3)');
+        await db.execute('INSERT INTO meals VALUES (8, "Päivällinen", 4, 4)');
+        await db.execute('INSERT INTO meals VALUES (9, "Lounas", 5, 1)');
+        await db.execute('INSERT INTO meals VALUES (10, "Päivällinen", 5, 2)');
       },
       // onUpgrade: (db, oldVersion, newVersion) async {
       // },
@@ -421,7 +431,7 @@ class DatabaseClient {
         where: 'id = ?', whereArgs: [grocery.id]);
   }
 
-  Future<List<MealPlan>> getMealPlans() async {
+  Future<List<MealPlan>> getMealPlansList() async {
     final List<Map<String, dynamic>> mealPlansMap =
         await _database.query('meal_plans');
 
@@ -429,8 +439,59 @@ class DatabaseClient {
       return MealPlan(
         id: mealPlansMap[i]['id'],
         name: mealPlansMap[i]['name'],
+        days: null,
       );
     });
     return mealPlans;
+  }
+
+  Future<String> getRecipeName(int recipeId) async {
+    final List<Map<String, dynamic>> recipe = await _database
+        .query('recipes', where: 'id = ?', whereArgs: [recipeId]);
+
+    return recipe[0]['name'];
+  }
+
+  Future<List<Day>> getMealPlan(int mealPlanId) async {
+    final List<Map<String, dynamic>> daysMap = await _database
+        .query('days', where: 'meal_plan_id = ?', whereArgs: [mealPlanId]);
+
+    final List<Map<String, dynamic>> daysMealsMap = await _database.query(
+        'meals',
+        where: 'day_id IN (${daysMap.map((d) => d['id']).join(',')})');
+
+    final recipeNames = [];
+    for (var meal in daysMealsMap) {
+      recipeNames.add({
+        'id': meal['recipe_id'],
+        'name': await getRecipeName(meal['recipe_id'])
+      });
+    }
+
+    String findRecipeName(int recipeId) {
+      return recipeNames.firstWhere((r) => r['id'] == recipeId)['name'];
+    }
+
+    List<Day> days = daysMap.fold(<Day>[], (accumulator, day) {
+      if (accumulator.any((d) => d.id == day['id'])) {
+        return accumulator;
+      }
+      accumulator.add(Day(
+        id: day['id'],
+        name: day['name'],
+        meals:
+            daysMealsMap.where((meal) => meal['day_id'] == day['id']).map((m) {
+          return Meal(
+            id: m['id'],
+            name: m['name'],
+            recipeId: m['recipe_id'],
+            recipeName: findRecipeName(m['recipe_id']),
+          );
+        }).toList(),
+      ));
+      return accumulator;
+    });
+
+    return days;
   }
 }

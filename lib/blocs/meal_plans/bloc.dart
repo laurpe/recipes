@@ -12,7 +12,7 @@ class MealPlansBloc extends Bloc<MealPlansEvent, MealPlansState> {
       try {
         emit(LoadingMealPlansState());
         emit(LoadedMealPlansState(
-            mealPlans: await databaseClient.getMealPlans()));
+            mealPlans: await databaseClient.getMealPlansList()));
       } catch (error) {
         emit(ErrorLoadingMealPlansState());
       }
