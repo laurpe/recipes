@@ -379,6 +379,20 @@ class DatabaseClient {
     return recipeList;
   }
 
+  Future<List<RecipeListItem>> getRecipeList() async {
+    final List<Map<String, dynamic>> recipes = await _database.query('recipes');
+    List<RecipeListItem> recipeList = [];
+
+    for (var recipe in recipes) {
+      recipeList.add(RecipeListItem(
+        id: recipe['id'],
+        name: recipe['name'],
+      ));
+    }
+
+    return recipeList;
+  }
+
   Future<List<Grocery>> getGroceries() async {
     final List<Map<String, dynamic>> groceriesMap =
         await _database.query('groceries', orderBy: 'list_order ASC');

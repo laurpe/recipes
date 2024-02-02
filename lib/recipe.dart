@@ -107,3 +107,16 @@ class Recipe extends Equatable {
   List<Object?> get props =>
       [id, name, ingredients, instructions, favorite, servings, tags];
 }
+
+class RecipeListItem extends Equatable {
+  final int id;
+  final String name;
+
+  const RecipeListItem({
+    required this.id,
+    required this.name,
+  });
+
+  @override
+  List<Object?> get props => [id, name];
+}

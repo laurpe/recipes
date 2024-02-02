@@ -5,6 +5,7 @@ import 'package:recipes/blocs/meal_plans/bloc.dart';
 import 'package:recipes/blocs/meal_plans/events.dart';
 import 'package:recipes/blocs/meal_plans/state.dart';
 import 'package:recipes/database.dart';
+import 'package:recipes/screens/add_meal_plan.dart';
 import 'package:recipes/screens/meal_plan.dart';
 
 class MealPlanList extends StatelessWidget {
@@ -38,6 +39,17 @@ class MealPlansListView extends StatelessWidget {
             return const Center(child: Text('Error loading meal plans'));
           case LoadedMealPlansState():
             return Scaffold(
+              floatingActionButton: FloatingActionButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const MealPlanFormView(),
+                    ),
+                  );
+                },
+                child: const Icon(Icons.add),
+              ),
               appBar: AppBar(
                 title: const Text('Meal plans'),
               ),
