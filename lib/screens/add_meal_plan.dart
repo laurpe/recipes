@@ -33,7 +33,7 @@ class MealPlanFormState extends State<MealPlanForm> {
   final _formKey = GlobalKey<FormState>();
   late List<RecipeListItem> _recipes = [];
 
-  MealPlan mealPlan = const MealPlan(name: 'meal plan', days: [
+  MealPlan mealPlan = const MealPlan(name: 'Meal plan', days: [
     Day(name: 'Monday', meals: [
       Meal(name: 'Lunch', recipeId: null),
       Meal(name: 'Dinner', recipeId: null),
@@ -78,66 +78,102 @@ class MealPlanFormState extends State<MealPlanForm> {
   Widget build(BuildContext context) {
     return Form(
       key: _formKey,
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        for (int i = 0; i < mealPlan.days!.length; i++)
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(mealPlan.days![i].name),
-                for (int j = 0; j < mealPlan.days![i].meals.length; j++)
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(0, 8.0, 0, 0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(mealPlan.days![i].meals[j].name),
-                        DropdownMenu(
-                          width: 250,
-                          requestFocusOnTap: true,
-                          enableFilter: true,
-                          onSelected: (value) {
-                            Meal meal = mealPlan.days![i].meals[j]
-                                .copyWith(recipeId: value);
-
-                            Day day = mealPlan.days![i].copyWith(
-                              meals: [
-                                ...mealPlan.days![i].meals.sublist(0, j),
-                                meal,
-                                ...mealPlan.days![i].meals.sublist(j + 1),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          TextFormField(
+            decoration: const InputDecoration(
+              labelText: 'Meal plan name',
+              floatingLabelBehavior: FloatingLabelBehavior.always,
+              contentPadding: EdgeInsets.fromLTRB(10, 20, 10, 20),
+            ),
+            onChanged: (value) {
+              setState(() {
+                mealPlan = mealPlan.copyWith(name: value);
+              });
+            },
+          ),
+          for (int i = 0; i < mealPlan.days!.length; i++)
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(mealPlan.days![i].name,
+                      style: Theme.of(context).textTheme.headlineMedium),
+                  for (int j = 0; j < mealPlan.days![i].meals.length; j++)
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(0, 8.0, 0, 0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(mealPlan.days![i].meals[j].name),
+                          SizedBox(
+                            width: 250,
+                            child: DropdownButtonFormField(
+                              items: [
+                                for (var recipe in _recipes)
+                                  DropdownMenuItem(
+                                    value: recipe.id,
+                                    child: Text(recipe.name),
+                                  )
                               ],
-                            );
+                              onChanged: (value) {
+                                setState(
+                                  () {
+                                    Meal meal = mealPlan.days![i].meals[j]
+                                        .copyWith(recipeId: value);
 
-                            MealPlan newMealPlan = mealPlan.copyWith(
-                              days: [
-                                ...mealPlan.days!.sublist(0, i),
-                                day,
-                                ...mealPlan.days!.sublist(i + 1),
-                              ],
-                            );
+                                    Day day = mealPlan.days![i].copyWith(
+                                      meals: [
+                                        ...mealPlan.days![i].meals
+                                            .sublist(0, j),
+                                        meal,
+                                        ...mealPlan.days![i].meals
+                                            .sublist(j + 1),
+                                      ],
+                                    );
 
-                            setState(() {
-                              mealPlan = newMealPlan;
-                            });
-                          },
-                          dropdownMenuEntries: _recipes
-                              .map((recipe) => DropdownMenuEntry(
-                                  value: recipe.id, label: recipe.name))
-                              .toList(),
-                        ),
-                      ],
+                                    MealPlan newMealPlan = mealPlan.copyWith(
+                                      days: [
+                                        ...mealPlan.days!.sublist(0, i),
+                                        day,
+                                        ...mealPlan.days!.sublist(i + 1),
+                                      ],
+                                    );
+
+                                    setState(
+                                      () {
+                                        mealPlan = newMealPlan;
+                                      },
+                                    );
+                                  },
+                                );
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
+                ],
+              ),
+            ),
+          Padding(
+            padding: const EdgeInsets.all(4.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                ElevatedButton(
+                  onPressed: () {
+                    onSubmit();
+                  },
+                  child: const Text('Submit'),
+                ),
               ],
             ),
-          ),
-        ElevatedButton(
-            child: const Text('Submit'),
-            onPressed: () {
-              onSubmit();
-            }),
-      ]),
+          )
+        ],
+      ),
     );
   }
 }
