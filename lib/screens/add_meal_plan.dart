@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:recipes/database.dart';
+import 'package:recipes/meal_plan.dart';
 import 'package:recipes/recipe.dart';
 
 class MealPlanFormView extends StatelessWidget {
@@ -30,104 +31,30 @@ class MealPlanForm extends StatefulWidget {
 
 class MealPlanFormState extends State<MealPlanForm> {
   final _formKey = GlobalKey<FormState>();
-  final List<String> days = [
-    'Maanantai',
-    'Tiistai',
-    'Keskiviikko',
-    'Torstai',
-    'Perjantai'
-  ];
-  final List<String> meals = ['Lounas', 'Päivällinen'];
-  Map<String, Map<String, TextEditingController>> dayMealControllers = {};
-
-  @override
-  void initState() {
-    super.initState();
-    for (var day in days) {
-      Map<String, TextEditingController> mealControllers = {};
-      for (var meal in meals) {
-        mealControllers[meal] = TextEditingController();
-      }
-      dayMealControllers[day] = mealControllers;
-    }
-  }
-
-  void onSubmit() {
-    if (_formKey.currentState!.validate()) {
-      for (var day in days) {
-        for (var meal in meals) {
-          print(
-              'Day: $day, Meal: $meal, Recipe: ${dayMealControllers[day]![meal]!.text}');
-        }
-      }
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Form(
-      key: _formKey,
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        for (var day in days)
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: DaysMealSelect(
-                day: day, meals: meals, controllers: dayMealControllers[day]!),
-          ),
-        ElevatedButton(
-            child: const Text('Submit'),
-            onPressed: () {
-              onSubmit();
-            }),
-      ]),
-    );
-  }
-}
-
-class DaysMealSelect extends StatelessWidget {
-  final String day;
-  final List<String> meals;
-  final Map<String, TextEditingController> controllers;
-
-  const DaysMealSelect(
-      {super.key,
-      required this.day,
-      required this.meals,
-      required this.controllers});
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(day, style: Theme.of(context).textTheme.headlineMedium),
-        for (var meal in meals)
-          Padding(
-            padding: const EdgeInsets.fromLTRB(0, 8.0, 0, 0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(meal),
-                RecipeDropDown(controller: controllers[meal]!),
-              ],
-            ),
-          ),
-      ],
-    );
-  }
-}
-
-class RecipeDropDown extends StatefulWidget {
-  final TextEditingController controller;
-  const RecipeDropDown({super.key, required this.controller});
-
-  @override
-  State<RecipeDropDown> createState() => RecipeDropDownState();
-}
-
-class RecipeDropDownState extends State<RecipeDropDown> {
-  final TextEditingController textController = TextEditingController();
   late List<RecipeListItem> _recipes = [];
+
+  MealPlan mealPlan = const MealPlan(name: 'meal plan', days: [
+    Day(name: 'Monday', meals: [
+      Meal(name: 'Lunch', recipeId: null),
+      Meal(name: 'Dinner', recipeId: null),
+    ]),
+    Day(name: 'Tuesday', meals: [
+      Meal(name: 'Lunch', recipeId: null),
+      Meal(name: 'Dinner', recipeId: null),
+    ]),
+    Day(name: 'Wednesday', meals: [
+      Meal(name: 'Lunch', recipeId: null),
+      Meal(name: 'Dinner', recipeId: null),
+    ]),
+    Day(name: 'Thursday', meals: [
+      Meal(name: 'Lunch', recipeId: null),
+      Meal(name: 'Dinner', recipeId: null),
+    ]),
+    Day(name: 'Friday', meals: [
+      Meal(name: 'Lunch', recipeId: null),
+      Meal(name: 'Dinner', recipeId: null),
+    ]),
+  ]);
 
   Future<List<RecipeListItem>> getRecipeList() async {
     return await GetIt.I<DatabaseClient>().getRecipeList();
@@ -136,19 +63,81 @@ class RecipeDropDownState extends State<RecipeDropDown> {
   @override
   void initState() {
     super.initState();
+
     getRecipeList().then((value) => setState(() => _recipes = value));
+  }
+
+  void onSubmit() async {
+    if (_formKey.currentState!.validate()) {
+      GetIt.I<DatabaseClient>().insertMealPlan(mealPlan);
+      Navigator.of(context).pop();
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return DropdownMenu(
-        width: 250,
-        controller: widget.controller,
-        requestFocusOnTap: true,
-        enableFilter: true,
-        dropdownMenuEntries: _recipes
-            .map((recipe) => DropdownMenuEntry(
-                value: recipe.id.toString(), label: recipe.name))
-            .toList());
+    return Form(
+      key: _formKey,
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        for (int i = 0; i < mealPlan.days!.length; i++)
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(mealPlan.days![i].name),
+                for (int j = 0; j < mealPlan.days![i].meals.length; j++)
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(0, 8.0, 0, 0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(mealPlan.days![i].meals[j].name),
+                        DropdownMenu(
+                          width: 250,
+                          requestFocusOnTap: true,
+                          enableFilter: true,
+                          onSelected: (value) {
+                            Meal meal = mealPlan.days![i].meals[j]
+                                .copyWith(recipeId: value);
+
+                            Day day = mealPlan.days![i].copyWith(
+                              meals: [
+                                ...mealPlan.days![i].meals.sublist(0, j),
+                                meal,
+                                ...mealPlan.days![i].meals.sublist(j + 1),
+                              ],
+                            );
+
+                            MealPlan newMealPlan = mealPlan.copyWith(
+                              days: [
+                                ...mealPlan.days!.sublist(0, i),
+                                day,
+                                ...mealPlan.days!.sublist(i + 1),
+                              ],
+                            );
+
+                            setState(() {
+                              mealPlan = newMealPlan;
+                            });
+                          },
+                          dropdownMenuEntries: _recipes
+                              .map((recipe) => DropdownMenuEntry(
+                                  value: recipe.id, label: recipe.name))
+                              .toList(),
+                        ),
+                      ],
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ElevatedButton(
+            child: const Text('Submit'),
+            onPressed: () {
+              onSubmit();
+            }),
+      ]),
+    );
   }
 }

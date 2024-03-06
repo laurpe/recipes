@@ -508,4 +508,32 @@ class DatabaseClient {
 
     return days;
   }
+
+  Future<int> insertDay(Day day, int mealPlanId) async {
+    return await _database.insert(
+      'days',
+      {...day.toMap(), 'meal_plan_id': mealPlanId},
+    );
+  }
+
+  Future<int> insertMeal(Meal meal, int dayId) async {
+    return await _database.insert(
+      'meals',
+      {...meal.toMap(), 'day_id': dayId},
+    );
+  }
+
+  Future<void> insertMealPlan(MealPlan mealPlan) async {
+    int mealPlanId = await _database.insert(
+      'meal_plans',
+      {'name': mealPlan.name},
+    );
+
+    for (var day in mealPlan.days!) {
+      var dayId = await insertDay(day, mealPlanId);
+      for (var meal in day.meals) {
+        await insertMeal(meal, dayId);
+      }
+    }
+  }
 }
