@@ -33,7 +33,7 @@ class MealPlanFormState extends State<MealPlanForm> {
   final _formKey = GlobalKey<FormState>();
   late List<RecipeListItem> _recipes = [];
 
-  MealPlan mealPlan = const MealPlan(name: 'Meal plan', days: [
+  MealPlan mealPlan = const MealPlan(name: '', days: [
     Day(name: 'Monday', meals: [
       Meal(name: 'Lunch', recipeId: null),
       Meal(name: 'Dinner', recipeId: null),
@@ -82,8 +82,14 @@ class MealPlanFormState extends State<MealPlanForm> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           TextFormField(
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Please enter a name';
+              }
+              return null;
+            },
             decoration: const InputDecoration(
-              labelText: 'Meal plan name',
+              labelText: 'Name',
               floatingLabelBehavior: FloatingLabelBehavior.always,
               contentPadding: EdgeInsets.fromLTRB(10, 20, 10, 20),
             ),
@@ -108,38 +114,51 @@ class MealPlanFormState extends State<MealPlanForm> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(mealPlan.days![i].meals[j].name),
-                          DropdownMenu(
-                            width: 250,
-                            requestFocusOnTap: true,
-                            enableFilter: true,
-                            onSelected: (value) {
-                              Meal meal = mealPlan.days![i].meals[j]
-                                  .copyWith(recipeId: value);
-
-                              Day day = mealPlan.days![i].copyWith(
-                                meals: [
-                                  ...mealPlan.days![i].meals.sublist(0, j),
-                                  meal,
-                                  ...mealPlan.days![i].meals.sublist(j + 1),
-                                ],
-                              );
-
-                              MealPlan newMealPlan = mealPlan.copyWith(
-                                days: [
-                                  ...mealPlan.days!.sublist(0, i),
-                                  day,
-                                  ...mealPlan.days!.sublist(i + 1),
-                                ],
-                              );
-
-                              setState(() {
-                                mealPlan = newMealPlan;
-                              });
+                          FormField(
+                            validator: (value) {
+                              // TODO: show error when text is emptied
+                              if (mealPlan.days![i].meals[j].recipeId == null) {
+                                return 'Please select a recipe';
+                              }
+                              return null;
                             },
-                            dropdownMenuEntries: _recipes
-                                .map((recipe) => DropdownMenuEntry(
-                                    value: recipe.id, label: recipe.name))
-                                .toList(),
+                            builder: (FormFieldState state) => DropdownMenu(
+                              inputDecorationTheme: const InputDecorationTheme(
+                                isDense: true,
+                              ),
+                              width: 250,
+                              requestFocusOnTap: true,
+                              enableFilter: true,
+                              errorText: state.errorText,
+                              onSelected: (value) {
+                                Meal meal = mealPlan.days![i].meals[j]
+                                    .copyWith(recipeId: value);
+
+                                Day day = mealPlan.days![i].copyWith(
+                                  meals: [
+                                    ...mealPlan.days![i].meals.sublist(0, j),
+                                    meal,
+                                    ...mealPlan.days![i].meals.sublist(j + 1),
+                                  ],
+                                );
+
+                                MealPlan newMealPlan = mealPlan.copyWith(
+                                  days: [
+                                    ...mealPlan.days!.sublist(0, i),
+                                    day,
+                                    ...mealPlan.days!.sublist(i + 1),
+                                  ],
+                                );
+
+                                setState(() {
+                                  mealPlan = newMealPlan;
+                                });
+                              },
+                              dropdownMenuEntries: _recipes
+                                  .map((recipe) => DropdownMenuEntry(
+                                      value: recipe.id, label: recipe.name))
+                                  .toList(),
+                            ),
                           ),
                         ],
                       ),
