@@ -42,6 +42,51 @@ class MealPlanView extends StatelessWidget {
             return Scaffold(
               appBar: AppBar(
                 title: Text(state.name),
+                actions: [
+                  MenuAnchor(
+                    builder: (context, controller, child) {
+                      return IconButton(
+                        onPressed: () {
+                          if (controller.isOpen) {
+                            controller.close();
+                          } else {
+                            controller.open();
+                          }
+                        },
+                        icon: const Icon(Icons.more_vert),
+                        tooltip: 'Show menu',
+                      );
+                    },
+                    menuChildren: [
+                      MenuItemButton(
+                        child: const Row(
+                          children: [
+                            Icon(Icons.edit),
+                            SizedBox(width: 8),
+                            Text('Edit'),
+                          ],
+                        ),
+                        onPressed: () {},
+                        // TODO: implement edit meal plan
+                      ),
+                      MenuItemButton(
+                        child: const Row(
+                          children: [
+                            Icon(Icons.delete),
+                            SizedBox(width: 8),
+                            Text('Delete'),
+                          ],
+                        ),
+                        onPressed: () async {
+                          await GetIt.I<DatabaseClient>()
+                              .deleteMealPlan(state.id);
+                          if (!context.mounted) return;
+                          Navigator.of(context).pop();
+                        },
+                      ),
+                    ],
+                  )
+                ],
               ),
               body: ListView.builder(
                 itemCount: state.mealPlan.length,

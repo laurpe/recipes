@@ -536,4 +536,9 @@ class DatabaseClient {
       }
     }
   }
+
+  Future<void> deleteMealPlan(int mealPlanId) {
+    return _database
+        .delete('meal_plans', where: 'id = ?', whereArgs: [mealPlanId]);
+  }
 }

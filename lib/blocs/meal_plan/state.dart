@@ -9,10 +9,12 @@ sealed class MealPlanState extends Equatable {
 }
 
 class LoadedMealPlanState extends MealPlanState {
-  final List<Day> mealPlan;
+  final int id;
   final String name;
+  final List<Day> mealPlan;
 
-  const LoadedMealPlanState({required this.mealPlan, required this.name});
+  const LoadedMealPlanState(
+      {required this.id, required this.name, required this.mealPlan});
 
   @override
   get props => [mealPlan];
