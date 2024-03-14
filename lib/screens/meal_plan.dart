@@ -5,12 +5,12 @@ import 'package:recipes/blocs/meal_plan/bloc.dart';
 import 'package:recipes/blocs/meal_plan/events.dart';
 import 'package:recipes/blocs/meal_plan/state.dart';
 import 'package:recipes/database.dart';
+import 'package:recipes/screens/edit_meal_plan.dart';
 
 class MealPlan extends StatelessWidget {
   final int id;
-  final String name;
 
-  const MealPlan({super.key, required this.id, required this.name});
+  const MealPlan({super.key, required this.id});
 
   @override
   Widget build(BuildContext context) {
@@ -18,7 +18,7 @@ class MealPlan extends StatelessWidget {
         create: (_) {
           final databaseClient = GetIt.I<DatabaseClient>();
           return MealPlanBloc(databaseClient: databaseClient)
-            ..add(GetMealPlan(id: id, name: name));
+            ..add(GetMealPlan(id: id));
         },
         child: const MealPlanView());
   }
@@ -41,7 +41,7 @@ class MealPlanView extends StatelessWidget {
           case LoadedMealPlanState():
             return Scaffold(
               appBar: AppBar(
-                title: Text(state.name),
+                title: Text(state.mealPlan.name),
                 actions: [
                   MenuAnchor(
                     builder: (context, controller, child) {
@@ -66,8 +66,15 @@ class MealPlanView extends StatelessWidget {
                             Text('Edit'),
                           ],
                         ),
-                        onPressed: () {},
-                        // TODO: implement edit meal plan
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  EditMealPlan(id: state.mealPlan.id!),
+                            ),
+                          );
+                        },
                       ),
                       MenuItemButton(
                         child: const Row(
@@ -79,7 +86,7 @@ class MealPlanView extends StatelessWidget {
                         ),
                         onPressed: () async {
                           await GetIt.I<DatabaseClient>()
-                              .deleteMealPlan(state.id);
+                              .deleteMealPlan(state.mealPlan.id!);
                           if (!context.mounted) return;
                           Navigator.of(context).pop();
                         },
@@ -89,9 +96,9 @@ class MealPlanView extends StatelessWidget {
                 ],
               ),
               body: ListView.builder(
-                itemCount: state.mealPlan.length,
+                itemCount: state.mealPlan.days!.length,
                 itemBuilder: (context, index) {
-                  final day = state.mealPlan[index];
+                  final day = state.mealPlan.days![index];
                   return Card(
                     child: ListTile(
                       title: Text(day.name),

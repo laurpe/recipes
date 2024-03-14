@@ -466,16 +466,18 @@ class DatabaseClient {
     return recipe[0]['name'];
   }
 
-  Future<List<Day>> getMealPlan(int mealPlanId) async {
+  Future<MealPlan> getMealPlan(int mealPlanId) async {
+    final List<Map<String, dynamic>> mealPlanMap = await _database
+        .query('meal_plans', where: 'id = ?', whereArgs: [mealPlanId]);
+
     final List<Map<String, dynamic>> daysMap = await _database
         .query('days', where: 'meal_plan_id = ?', whereArgs: [mealPlanId]);
 
-    final List<Map<String, dynamic>> daysMealsMap = await _database.query(
-        'meals',
+    final List<Map<String, dynamic>> mealsMap = await _database.query('meals',
         where: 'day_id IN (${daysMap.map((d) => d['id']).join(',')})');
 
     final recipeNames = [];
-    for (var meal in daysMealsMap) {
+    for (var meal in mealsMap) {
       recipeNames.add({
         'id': meal['recipe_id'],
         'name': await getRecipeName(meal['recipe_id'])
@@ -493,8 +495,7 @@ class DatabaseClient {
       accumulator.add(Day(
         id: day['id'],
         name: day['name'],
-        meals:
-            daysMealsMap.where((meal) => meal['day_id'] == day['id']).map((m) {
+        meals: mealsMap.where((meal) => meal['day_id'] == day['id']).map((m) {
           return Meal(
             id: m['id'],
             name: m['name'],
@@ -506,7 +507,11 @@ class DatabaseClient {
       return accumulator;
     });
 
-    return days;
+    MealPlan mealPlan =
+        MealPlan(id: mealPlanId, name: mealPlanMap[0]['name'], days: days);
+
+    print(mealPlan);
+    return mealPlan;
   }
 
   Future<int> insertDay(Day day, int mealPlanId) async {

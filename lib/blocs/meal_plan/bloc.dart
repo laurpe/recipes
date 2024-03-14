@@ -10,10 +10,11 @@ class MealPlanBloc extends Bloc<MealPlanEvent, MealPlanState> {
     on<GetMealPlan>((event, emit) async {
       try {
         emit(LoadingMealPlanState());
-        emit(LoadedMealPlanState(
+        emit(
+          LoadedMealPlanState(
             mealPlan: await databaseClient.getMealPlan(event.id),
-            name: event.name,
-            id: event.id));
+          ),
+        );
       } catch (error) {
         emit(ErrorLoadingMealPlanState());
       }
