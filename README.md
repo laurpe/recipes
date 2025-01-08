@@ -1,16 +1,11 @@
-# recipes
+# Recipes
 
-A new Flutter project.
+Recipe & groceries management app.
 
 ## Getting Started
 
-This project is a starting point for a Flutter application.
+Run
 
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+- `fvm flutter` to install correct flutter sdk version
+- `fvm flutter pub get` to install dependencies
+- `fvm flutter doctor` to check for possible problems
