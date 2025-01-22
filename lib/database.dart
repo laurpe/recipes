@@ -542,6 +542,38 @@ class DatabaseClient {
     }
   }
 
+  Future<int> updateMeal(Meal meal, int dayId) async {
+    return await _database.update(
+      'meals',
+      {...meal.toMap(), 'day_id': dayId},
+      where: 'id = ?',
+      whereArgs: [meal.id],
+    );
+  }
+
+  Future<int> updateDay(Day day, int mealPlanId) async {
+    return await _database.update(
+      'days',
+      {...day.toMap(), 'meal_plan_id': mealPlanId},
+      where: 'id = ?',
+      whereArgs: [day.id],
+    );
+  }
+
+  Future<void> updateMealPlan(MealPlan mealPlan) async {
+    int mealPlanId = await _database.update(
+        'meal_plans', {'name': mealPlan.name},
+        where: 'id = ?', whereArgs: [mealPlan.id]);
+
+    for (var day in mealPlan.days!) {
+      await updateDay(day, mealPlanId);
+      for (var meal in day.meals) {
+        await updateMeal(meal, day.id!);
+      }
+    }
+  }
+
+  // TODO: later might want to also delete days and meals
   Future<void> deleteMealPlan(int mealPlanId) {
     return _database
         .delete('meal_plans', where: 'id = ?', whereArgs: [mealPlanId]);

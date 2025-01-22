@@ -72,7 +72,7 @@ class EditMealPlanFormState extends State<EditMealPlanForm> {
 
   void onSubmit() async {
     if (_formKey.currentState!.validate()) {
-      GetIt.I<DatabaseClient>().insertMealPlan(_mealPlan);
+      GetIt.I<DatabaseClient>().updateMealPlan(_mealPlan);
       Navigator.of(context).pop();
     }
   }
