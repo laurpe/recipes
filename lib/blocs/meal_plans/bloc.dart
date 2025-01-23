@@ -17,5 +17,50 @@ class MealPlansBloc extends Bloc<MealPlansEvent, MealPlansState> {
         emit(ErrorLoadingMealPlansState());
       }
     });
+    on<MealPlanUpdated>(
+      (event, emit) async {
+        try {
+          final mealPlan = event.mealPlan;
+
+          if (state is LoadedMealPlansState) {
+            final currentState = state as LoadedMealPlansState;
+
+            final mealPlans = currentState.mealPlans.map((r) {
+              if (r.id == mealPlan.id) {
+                return mealPlan;
+              }
+              return r;
+            }).toList();
+
+            emit(LoadedMealPlansState(
+              mealPlans: mealPlans,
+            ));
+          }
+        } catch (error) {
+          emit(ErrorLoadingMealPlansState());
+        }
+      },
+    );
+    on<MealPlanDeleted>(
+      (event, emit) async {
+        try {
+          final mealPlanId = event.mealPlanId;
+
+          if (state is LoadedMealPlansState) {
+            final currentState = state as LoadedMealPlansState;
+
+            final mealPlans = currentState.mealPlans
+                .where((r) => r.id != mealPlanId)
+                .toList();
+
+            emit(LoadedMealPlansState(
+              mealPlans: mealPlans,
+            ));
+          }
+        } catch (error) {
+          emit(ErrorLoadingMealPlansState());
+        }
+      },
+    );
   }
 }

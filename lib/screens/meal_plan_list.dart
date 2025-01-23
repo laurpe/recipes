@@ -8,6 +8,22 @@ import 'package:recipes/database.dart';
 import 'package:recipes/screens/add_meal_plan.dart';
 import 'package:recipes/screens/meal_plan.dart';
 
+Future<void> openAddMealPlan(BuildContext context) async {
+  final Result? result = await Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (context) => const MealPlanFormView(),
+    ),
+  );
+
+  if (!context.mounted) return;
+  if (result is Added) {
+    ScaffoldMessenger.of(context)
+        .showSnackBar(const SnackBar(content: Text('Meal plan added!')));
+    BlocProvider.of<MealPlansBloc>(context).add(GetMealPlans());
+  }
+}
+
 class MealPlanList extends StatelessWidget {
   const MealPlanList({super.key});
 
@@ -40,13 +56,8 @@ class MealPlansListView extends StatelessWidget {
           case LoadedMealPlansState():
             return Scaffold(
               floatingActionButton: FloatingActionButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const MealPlanFormView(),
-                    ),
-                  );
+                onPressed: () async {
+                  await openAddMealPlan(context);
                 },
                 child: const Icon(Icons.add),
               ),
@@ -60,14 +71,33 @@ class MealPlansListView extends StatelessWidget {
                   return Card(
                     child: ListTile(
                         title: Text(mealPlan.name),
-                        onTap: () {
-                          Navigator.push(
+                        onTap: () async {
+                          final Result result = await Navigator.push(
                             context,
                             MaterialPageRoute(
                               builder: (context) =>
                                   SingleMealPlan(mealPlanId: mealPlan.id!),
                             ),
                           );
+
+                          if (result is Deleted) {
+                            if (!context.mounted) return;
+
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Meal plan deleted!'),
+                              ),
+                            );
+                            BlocProvider.of<MealPlansBloc>(context)
+                                .add(MealPlanDeleted(mealPlanId: result.data!));
+                          }
+
+                          if (result is Updated) {
+                            if (!context.mounted) return;
+
+                            BlocProvider.of<MealPlansBloc>(context)
+                                .add(MealPlanUpdated(mealPlan: result.data!));
+                          }
                         }),
                   );
                 },

@@ -3,6 +3,7 @@ import 'package:get_it/get_it.dart';
 import 'package:recipes/database.dart';
 import 'package:recipes/meal_plan.dart';
 import 'package:recipes/recipe.dart';
+import 'package:recipes/screens/meal_plan.dart';
 
 class EditMealPlan extends StatelessWidget {
   final MealPlan mealPlan;
@@ -54,8 +55,16 @@ class EditMealPlanFormState extends State<EditMealPlanForm> {
 
   void onSubmit() async {
     if (_formKey.currentState!.validate()) {
-      GetIt.I<DatabaseClient>().updateMealPlan(_mealPlan);
-      Navigator.of(context).pop();
+      try {
+        await GetIt.I<DatabaseClient>().updateMealPlan(_mealPlan);
+
+        if (!context.mounted) return;
+        Navigator.of(context).pop(Updated(_mealPlan));
+      } catch (error) {
+        if (!context.mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+            content: Text('Something went wrong! Please try again.')));
+      }
     }
   }
 

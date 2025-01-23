@@ -16,15 +16,15 @@ sealed class Result<T> {
 }
 
 class Updated extends Result<MealPlan> {
-  Updated(MealPlan data) : super(data);
+  Updated(MealPlan super.data);
 }
 
 class Deleted extends Result<int> {
-  Deleted(int data) : super(data);
+  Deleted(int super.data);
 }
 
 class Added extends Result<MealPlan> {
-  Added(MealPlan data) : super(data);
+  Added(MealPlan super.data);
 }
 
 Future<void> openEditMealPlan(BuildContext context, MealPlan mealPlan) async {
@@ -46,6 +46,49 @@ Future<void> openEditMealPlan(BuildContext context, MealPlan mealPlan) async {
       ),
     );
   }
+}
+
+Future confirmMealPlanDelete(BuildContext context, int mealPlanId) async {
+  return showDialog(
+    context: context,
+    barrierDismissible: false,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: const Text('Confirm delete'),
+        content: const SingleChildScrollView(
+          child: ListBody(
+            children: <Widget>[
+              Text('Are you sure you want to delete this meal plan?'),
+            ],
+          ),
+        ),
+        actions: <Widget>[
+          TextButton(
+            child: const Text('Cancel'),
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+          ),
+          TextButton(
+            child: const Text('Yes'),
+            onPressed: () async {
+              try {
+                await GetIt.I<DatabaseClient>().deleteMealPlan(mealPlanId);
+
+                if (!context.mounted) return;
+
+                Navigator.of(context).pop(Deleted(mealPlanId));
+              } catch (error) {
+                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                    content:
+                        Text('Could not delete meal plan! Please try again.')));
+              }
+            },
+          )
+        ],
+      );
+    },
+  );
 }
 
 class SingleMealPlan extends StatelessWidget {
@@ -84,6 +127,11 @@ class SingleMealPlanView extends StatelessWidget {
             return Scaffold(
               appBar: AppBar(
                 title: Text(state.mealPlan.name),
+                centerTitle: false,
+                leading: IconButton(
+                    onPressed: () =>
+                        Navigator.of(context).pop(Updated(state.mealPlan)),
+                    icon: const Icon(Icons.arrow_back_ios)),
                 actions: [
                   MenuAnchor(
                     builder: (context, controller, child) {
@@ -121,10 +169,13 @@ class SingleMealPlanView extends StatelessWidget {
                           ],
                         ),
                         onPressed: () async {
-                          await GetIt.I<DatabaseClient>()
-                              .deleteMealPlan(state.mealPlan.id!);
-                          if (!context.mounted) return;
-                          Navigator.of(context).pop();
+                          final Result? result = await confirmMealPlanDelete(
+                              context, state.mealPlan.id!);
+                          if (result is Deleted) {
+                            if (!context.mounted) return;
+
+                            Navigator.of(context).pop(Deleted(result.data!));
+                          }
                         },
                       ),
                     ],
