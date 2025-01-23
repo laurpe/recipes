@@ -64,7 +64,8 @@ class MealPlansListView extends StatelessWidget {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => MealPlan(id: mealPlan.id!),
+                              builder: (context) =>
+                                  SingleMealPlan(mealPlanId: mealPlan.id!),
                             ),
                           );
                         }),

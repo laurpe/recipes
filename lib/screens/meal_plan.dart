@@ -5,27 +5,69 @@ import 'package:recipes/blocs/meal_plan/bloc.dart';
 import 'package:recipes/blocs/meal_plan/events.dart';
 import 'package:recipes/blocs/meal_plan/state.dart';
 import 'package:recipes/database.dart';
+import 'package:recipes/meal_plan.dart';
 import 'package:recipes/screens/edit_meal_plan.dart';
 
-class MealPlan extends StatelessWidget {
-  final int id;
+// TODO: make this and recipe result use same class
+sealed class Result<T> {
+  final T? data;
 
-  const MealPlan({super.key, required this.id});
+  Result(this.data);
+}
+
+class Updated extends Result<MealPlan> {
+  Updated(MealPlan data) : super(data);
+}
+
+class Deleted extends Result<int> {
+  Deleted(int data) : super(data);
+}
+
+class Added extends Result<MealPlan> {
+  Added(MealPlan data) : super(data);
+}
+
+Future<void> openEditMealPlan(BuildContext context, MealPlan mealPlan) async {
+  final Result? result = await Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (context) => EditMealPlan(mealPlan: mealPlan),
+    ),
+  );
+
+  if (!context.mounted) return;
+
+  if (result is Updated) {
+    BlocProvider.of<MealPlanBloc>(context).add(GetMealPlan());
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Meal Plan updated!'),
+      ),
+    );
+  }
+}
+
+class SingleMealPlan extends StatelessWidget {
+  final int mealPlanId;
+
+  const SingleMealPlan({super.key, required this.mealPlanId});
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
         create: (_) {
           final databaseClient = GetIt.I<DatabaseClient>();
-          return MealPlanBloc(databaseClient: databaseClient)
-            ..add(GetMealPlan(id: id));
+          return MealPlanBloc(
+              databaseClient: databaseClient, mealPlanId: mealPlanId)
+            ..add(GetMealPlan());
         },
-        child: const MealPlanView());
+        child: const SingleMealPlanView());
   }
 }
 
-class MealPlanView extends StatelessWidget {
-  const MealPlanView({
+class SingleMealPlanView extends StatelessWidget {
+  const SingleMealPlanView({
     super.key,
   });
 
@@ -67,13 +109,7 @@ class MealPlanView extends StatelessWidget {
                           ],
                         ),
                         onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) =>
-                                  EditMealPlan(id: state.mealPlan.id!),
-                            ),
-                          );
+                          openEditMealPlan(context, state.mealPlan);
                         },
                       ),
                       MenuItemButton(

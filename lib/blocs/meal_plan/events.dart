@@ -7,11 +7,4 @@ abstract class MealPlanEvent extends Equatable {
   get props => [];
 }
 
-class GetMealPlan extends MealPlanEvent {
-  final int id;
-
-  const GetMealPlan({required this.id});
-
-  @override
-  get props => [id];
-}
+class GetMealPlan extends MealPlanEvent {}

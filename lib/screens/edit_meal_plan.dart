@@ -4,28 +4,10 @@ import 'package:recipes/database.dart';
 import 'package:recipes/meal_plan.dart';
 import 'package:recipes/recipe.dart';
 
-class EditMealPlan extends StatefulWidget {
-  final int id;
+class EditMealPlan extends StatelessWidget {
+  final MealPlan mealPlan;
 
-  const EditMealPlan({super.key, required this.id});
-
-  @override
-  State<EditMealPlan> createState() => _EditMealPlanState();
-}
-
-class _EditMealPlanState extends State<EditMealPlan> {
-  late MealPlan mealPlan;
-
-  Future<MealPlan> getMealPlan() async {
-    return GetIt.I<DatabaseClient>().getMealPlan(widget.id);
-  }
-
-  @override
-  void initState() {
-    super.initState();
-
-    getMealPlan().then((value) => setState(() => mealPlan = value));
-  }
+  const EditMealPlan({super.key, required this.mealPlan});
 
   @override
   Widget build(BuildContext context) {
