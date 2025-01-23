@@ -121,6 +121,7 @@ Future<void> addGroceries(Recipe recipe, BuildContext context) async {
           : await databaseClient.updateGrocery(grocery);
     }
     if (!context.mounted) return;
+
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text('Ingredients added to grocery list!'),
@@ -128,6 +129,7 @@ Future<void> addGroceries(Recipe recipe, BuildContext context) async {
     );
   } catch (error) {
     if (!context.mounted) return;
+
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text('Could not add ingredients to grocery list!'),

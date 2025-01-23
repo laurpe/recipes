@@ -17,6 +17,7 @@ Future<void> openAddMealPlan(BuildContext context) async {
   );
 
   if (!context.mounted) return;
+
   if (result is Added) {
     ScaffoldMessenger.of(context)
         .showSnackBar(const SnackBar(content: Text('Meal plan added!')));

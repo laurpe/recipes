@@ -118,12 +118,14 @@ class EditRecipeFormState extends State<EditRecipeForm> {
 
         _formKey.currentState!.reset();
 
-        if (!context.mounted) return;
-
-        Navigator.of(context).pop(Updated(recipe));
+        if (mounted) {
+          Navigator.of(context).pop(Updated(recipe));
+        }
       } catch (error) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-            content: Text('Something went wrong! Please try again.')));
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+              content: Text('Something went wrong! Please try again.')));
+        }
       }
     }
   }

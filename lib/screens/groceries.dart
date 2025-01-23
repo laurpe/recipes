@@ -167,12 +167,13 @@ class ReorderableGroceryListState extends State<ReorderableGroceryList> {
           });
         });
       } catch (error) {
-        if (!context.mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Could not add grocery, please try again!'),
-          ),
-        );
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Could not add grocery, please try again!'),
+            ),
+          );
+        }
       }
     }
   }

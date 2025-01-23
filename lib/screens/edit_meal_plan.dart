@@ -58,12 +58,14 @@ class EditMealPlanFormState extends State<EditMealPlanForm> {
       try {
         await GetIt.I<DatabaseClient>().updateMealPlan(_mealPlan);
 
-        if (!context.mounted) return;
-        Navigator.of(context).pop(Updated(_mealPlan));
+        if (mounted) {
+          Navigator.of(context).pop(Updated(_mealPlan));
+        }
       } catch (error) {
-        if (!context.mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-            content: Text('Something went wrong! Please try again.')));
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+              content: Text('Something went wrong! Please try again.')));
+        }
       }
     }
   }
