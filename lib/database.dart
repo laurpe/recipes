@@ -510,8 +510,23 @@ class DatabaseClient {
     MealPlan mealPlan =
         MealPlan(id: mealPlanId, name: mealPlanMap[0]['name'], days: days);
 
-    print(mealPlan);
     return mealPlan;
+  }
+
+  Future<List<Recipe>> getMealPlanRecipes(int mealPlanId) async {
+    final List<Map<String, dynamic>> daysMap = await _database
+        .query('days', where: 'meal_plan_id = ?', whereArgs: [mealPlanId]);
+
+    final List<Map<String, dynamic>> mealsMap = await _database.query('meals',
+        where: 'day_id IN (${daysMap.map((d) => d['id']).join(',')})');
+
+    final List<Recipe> recipes = [];
+
+    for (var meal in mealsMap) {
+      recipes.add(await getRecipe(meal['recipe_id']));
+    }
+
+    return recipes;
   }
 
   Future<int> insertDay(Day day, int mealPlanId) async {

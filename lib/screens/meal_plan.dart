@@ -5,7 +5,9 @@ import 'package:recipes/blocs/meal_plan/bloc.dart';
 import 'package:recipes/blocs/meal_plan/events.dart';
 import 'package:recipes/blocs/meal_plan/state.dart';
 import 'package:recipes/database.dart';
+import 'package:recipes/grocery.dart';
 import 'package:recipes/meal_plan.dart';
+import 'package:recipes/recipe.dart';
 import 'package:recipes/screens/edit_meal_plan.dart';
 
 // TODO: make this and recipe result use same class
@@ -25,6 +27,130 @@ class Deleted extends Result<int> {
 
 class Added extends Result<MealPlan> {
   Added(MealPlan super.data);
+}
+
+// TODO: every recipe gives notification 'ingredients added to grocery list'
+// TODO: serving sizes for meal plan meals for correct amount of groceries
+Future<void> addGroceriesFromMealPlan(
+    MealPlan mealPlan, BuildContext context) async {
+  final databaseClient = GetIt.I<DatabaseClient>();
+  final recipes = await databaseClient.getMealPlanRecipes(mealPlan.id!);
+
+  for (var recipe in recipes) {
+    if (!context.mounted) return;
+    await addGroceries(recipe, context);
+  }
+}
+
+Future<void> addGroceries(Recipe recipe, BuildContext context) async {
+  final databaseClient = GetIt.I<DatabaseClient>();
+  final groceries = await databaseClient.getGroceries();
+  final ingredients = recipe.ingredients;
+  final List<Grocery> newGroceries = [];
+  final int timestamp = DateTime.now().millisecondsSinceEpoch;
+
+  for (var ingredient in ingredients) {
+    newGroceries.add(
+      Grocery(
+        name: ingredient.name,
+        amount: ingredient.amount,
+        unit: ingredient.unit,
+        isBought: false,
+        listOrder: timestamp + ingredients.indexOf(ingredient),
+      ),
+    );
+  }
+
+  final allGroceries = groceries + newGroceries;
+
+  /// Converts amount to string without decimal places if it's a whole number
+  String amountToString(double amount) {
+    String amountAsString = amount.toString();
+    return amountAsString.contains('.0')
+        ? amountAsString.split('.0')[0]
+        : amountAsString;
+  }
+
+  /// Converts grocery units to default units
+  Grocery unitsToDefaults(Grocery grocery) {
+    switch (grocery.unit) {
+      case 'tl':
+        return grocery.copyWith(
+            amount: amountToString(double.parse(grocery.amount) * 5),
+            unit: 'ml');
+      case 'rkl':
+        return grocery.copyWith(
+            amount: amountToString(double.parse(grocery.amount) * 15),
+            unit: 'ml');
+      case 'cl':
+        return grocery.copyWith(
+            amount: amountToString(double.parse(grocery.amount) * 10),
+            unit: 'ml');
+      case 'dl':
+        return grocery.copyWith(
+            amount: amountToString(double.parse(grocery.amount) * 100),
+            unit: 'ml');
+      case 'l':
+        return grocery.copyWith(
+            amount: amountToString(double.parse(grocery.amount) * 1000),
+            unit: 'ml');
+      case 'kg':
+        return grocery.copyWith(
+            amount: amountToString(double.parse(grocery.amount) * 1000),
+            unit: 'g');
+      default:
+        return grocery;
+    }
+  }
+
+  List<Grocery> unitCorrectedGroceries = [];
+
+  for (var grocery in allGroceries) {
+    unitCorrectedGroceries.add(unitsToDefaults(grocery));
+  }
+
+  Map<String, Grocery> resultMap =
+      unitCorrectedGroceries.fold(<String, Grocery>{}, (accumulator, grocery) {
+    if (accumulator.containsKey(grocery.name)) {
+      accumulator[grocery.name] = Grocery(
+          id: accumulator[grocery.name]!.id,
+          name: grocery.name,
+          amount: amountToString(
+              double.parse(accumulator[grocery.name]!.amount) +
+                  double.parse(grocery.amount)),
+          unit: accumulator[grocery.name]!.unit,
+          isBought: accumulator[grocery.name]!.isBought,
+          listOrder: accumulator[grocery.name]!.listOrder);
+      return accumulator;
+    }
+    accumulator[grocery.name] = grocery;
+    return accumulator;
+  });
+
+  List<Grocery> finalList = resultMap.values.toList();
+
+  try {
+    for (var grocery in finalList) {
+      grocery.id == null
+          ? await databaseClient.insertGrocery(grocery)
+          : await databaseClient.updateGrocery(grocery);
+    }
+    if (!context.mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Ingredients added to grocery list!'),
+      ),
+    );
+  } catch (error) {
+    if (!context.mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Could not add ingredients to grocery list!'),
+      ),
+    );
+  }
 }
 
 Future<void> openEditMealPlan(BuildContext context, MealPlan mealPlan) async {
@@ -176,6 +302,18 @@ class SingleMealPlanView extends StatelessWidget {
 
                             Navigator.of(context).pop(Deleted(result.data!));
                           }
+                        },
+                      ),
+                      MenuItemButton(
+                        child: const Row(
+                          children: [
+                            Icon(Icons.add_shopping_cart),
+                            SizedBox(width: 8),
+                            Text('Add to groceries'),
+                          ],
+                        ),
+                        onPressed: () {
+                          addGroceriesFromMealPlan(state.mealPlan, context);
                         },
                       ),
                     ],
