@@ -320,22 +320,34 @@ class SingleMealPlanView extends StatelessWidget {
                   )
                 ],
               ),
-              body: ListView.builder(
-                itemCount: state.mealPlan.days!.length,
-                itemBuilder: (context, index) {
-                  final day = state.mealPlan.days![index];
-                  return Card(
-                    child: ListTile(
-                      title: Text(day.name),
-                      subtitle: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            for (var meal in day.meals)
-                              Text('${meal.name}: ${meal.recipeName}'),
-                          ]),
+              body: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(8.0, 8.0, 8.0, 0),
+                    child: Text(
+                        'Servings per meal: ${state.mealPlan.servingsPerMeal}'),
+                  ),
+                  Expanded(
+                    child: ListView.builder(
+                      itemCount: state.mealPlan.days!.length,
+                      itemBuilder: (context, index) {
+                        final day = state.mealPlan.days![index];
+                        return Card(
+                          child: ListTile(
+                            title: Text(day.name),
+                            subtitle: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  for (var meal in day.meals)
+                                    Text('${meal.name}: ${meal.recipeName}'),
+                                ]),
+                          ),
+                        );
+                      },
                     ),
-                  );
-                },
+                  ),
+                ],
               ),
             );
         }

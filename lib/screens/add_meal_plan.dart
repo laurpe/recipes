@@ -34,7 +34,7 @@ class MealPlanFormState extends State<MealPlanForm> {
   final _formKey = GlobalKey<FormState>();
   late List<RecipeListItem> _recipes = [];
 
-  MealPlan mealPlan = const MealPlan(name: '', days: [
+  MealPlan mealPlan = const MealPlan(name: '', servingsPerMeal: 0, days: [
     Day(name: 'Monday', meals: [
       Meal(name: 'Lunch', recipeId: null),
       Meal(name: 'Dinner', recipeId: null),
@@ -109,6 +109,28 @@ class MealPlanFormState extends State<MealPlanForm> {
                 mealPlan = mealPlan.copyWith(name: value);
               });
             },
+            initialValue: mealPlan.name,
+          ),
+          TextFormField(
+            validator: (value) {
+              if (int.parse(value!) <= 0) {
+                return 'Servings per meal must be greater than 0';
+              }
+              return null;
+            },
+            keyboardType: TextInputType.number,
+            decoration: const InputDecoration(
+              labelText: 'Servings per meal',
+              floatingLabelBehavior: FloatingLabelBehavior.always,
+              contentPadding: EdgeInsets.fromLTRB(10, 20, 10, 20),
+            ),
+            onSaved: (value) {
+              setState(() {
+                mealPlan =
+                    mealPlan.copyWith(servingsPerMeal: int.parse(value!));
+              });
+            },
+            initialValue: mealPlan.servingsPerMeal.toString(),
           ),
           for (int i = 0; i < mealPlan.days!.length; i++)
             Padding(

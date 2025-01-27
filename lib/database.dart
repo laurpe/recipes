@@ -54,9 +54,11 @@ class DatabaseClient {
             )''');
         await db.execute('''CREATE TABLE meal_plans(
             id INTEGER PRIMARY KEY,
-            name TEXT NOT NULL
+            name TEXT NOT NULL,
+            servings_per_meal INTEGER NOT NULL
             )''');
-        await db.execute('INSERT INTO meal_plans VALUES (1, "Viikon ruoat")');
+        await db
+            .execute('INSERT INTO meal_plans VALUES (1, "Viikon ruoat", 2)');
 
         await db.execute('''CREATE TABLE days(
             id INTEGER PRIMARY KEY,
@@ -453,6 +455,7 @@ class DatabaseClient {
       return MealPlan(
         id: mealPlansMap[i]['id'],
         name: mealPlansMap[i]['name'],
+        servingsPerMeal: mealPlansMap[i]['servings_per_meal'],
         days: null,
       );
     });
@@ -507,8 +510,11 @@ class DatabaseClient {
       return accumulator;
     });
 
-    MealPlan mealPlan =
-        MealPlan(id: mealPlanId, name: mealPlanMap[0]['name'], days: days);
+    MealPlan mealPlan = MealPlan(
+        id: mealPlanId,
+        name: mealPlanMap[0]['name'],
+        servingsPerMeal: mealPlanMap[0]['servings_per_meal'],
+        days: days);
 
     return mealPlan;
   }
@@ -546,7 +552,7 @@ class DatabaseClient {
   Future<void> insertMealPlan(MealPlan mealPlan) async {
     int mealPlanId = await _database.insert(
       'meal_plans',
-      {'name': mealPlan.name},
+      {'name': mealPlan.name, 'servings_per_meal': mealPlan.servingsPerMeal},
     );
 
     for (var day in mealPlan.days!) {

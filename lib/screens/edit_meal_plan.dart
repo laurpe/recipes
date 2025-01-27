@@ -96,6 +96,27 @@ class EditMealPlanFormState extends State<EditMealPlanForm> {
               });
             },
           ),
+          TextFormField(
+            validator: (value) {
+              if (int.parse(value!) <= 0) {
+                return 'Servings per meal must be greater than 0';
+              }
+              return null;
+            },
+            keyboardType: TextInputType.number,
+            decoration: const InputDecoration(
+              labelText: 'Servings per meal',
+              floatingLabelBehavior: FloatingLabelBehavior.always,
+              contentPadding: EdgeInsets.fromLTRB(10, 20, 10, 20),
+            ),
+            onSaved: (value) {
+              setState(() {
+                _mealPlan =
+                    _mealPlan.copyWith(servingsPerMeal: int.parse(value!));
+              });
+            },
+            initialValue: _mealPlan.servingsPerMeal.toString(),
+          ),
           for (int i = 0; i < _mealPlan.days!.length; i++)
             Padding(
               padding: const EdgeInsets.all(8.0),
