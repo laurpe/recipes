@@ -2,7 +2,7 @@ import 'package:equatable/equatable.dart';
 
 class Grocery extends Equatable {
   final int? id;
-  final String amount;
+  final double amount;
   final String unit;
   final String name;
   final bool isBought;
@@ -35,7 +35,7 @@ class Grocery extends Equatable {
 
   Grocery copyWith({
     int? id,
-    String? amount,
+    double? amount,
     String? unit,
     String? name,
     bool? isBought,

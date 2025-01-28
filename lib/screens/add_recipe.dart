@@ -22,6 +22,10 @@ class RecipeFormView extends StatelessWidget {
   }
 }
 
+/*
+* The ingredient amounts the user adds are for the amount of servings the recipe yields.
+* TODO:  From that input, ingredient amount_per_serving is calculated and stored to the database.
+*/
 class RecipeForm extends StatefulWidget {
   const RecipeForm({super.key});
 
@@ -73,7 +77,8 @@ class RecipeFormState extends State<RecipeForm> {
 
   void _addIndgredient() {
     setState(() {
-      _ingredients.add(const Ingredient(name: '', amount: '', unit: ''));
+      _ingredients
+          .add(const Ingredient(name: '', amountPerServing: 0, unit: ''));
     });
   }
 
@@ -235,7 +240,8 @@ class RecipeFormState extends State<RecipeForm> {
                     SizedBox(
                       width: 60,
                       child: TextFormField(
-                        initialValue: _ingredients[index].amount,
+                        initialValue:
+                            _ingredients[index].amountPerServing.toString(),
                         decoration: const InputDecoration(
                           labelText: 'Amount',
                           floatingLabelBehavior: FloatingLabelBehavior.always,
@@ -251,7 +257,7 @@ class RecipeFormState extends State<RecipeForm> {
                           setState(() {
                             _ingredients[index] = Ingredient(
                               name: _ingredients[index].name,
-                              amount: value,
+                              amountPerServing: double.parse(value),
                               unit: _ingredients[index].unit,
                             );
                           });
@@ -277,7 +283,8 @@ class RecipeFormState extends State<RecipeForm> {
                           setState(() {
                             _ingredients[index] = Ingredient(
                               name: _ingredients[index].name,
-                              amount: _ingredients[index].amount,
+                              amountPerServing:
+                                  _ingredients[index].amountPerServing,
                               unit: value,
                             );
                           });
@@ -311,7 +318,8 @@ class RecipeFormState extends State<RecipeForm> {
                           setState(() {
                             _ingredients[index] = Ingredient(
                               name: value,
-                              amount: _ingredients[index].amount,
+                              amountPerServing:
+                                  _ingredients[index].amountPerServing,
                               unit: _ingredients[index].unit,
                             );
                           });

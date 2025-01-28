@@ -2,16 +2,19 @@ import 'package:equatable/equatable.dart';
 
 class Ingredient extends Equatable {
   final int? id;
-  final String amount;
+  final double amountPerServing;
   final String unit;
   final String name;
 
   const Ingredient(
-      {this.id, required this.amount, required this.unit, required this.name});
+      {this.id,
+      required this.amountPerServing,
+      required this.unit,
+      required this.name});
 
   Map<String, dynamic> toMap() {
     Map<String, dynamic> map = {
-      'amount': amount,
+      'amount_per_serving': amountPerServing,
       'unit': unit,
       'name': name,
     };
@@ -24,7 +27,7 @@ class Ingredient extends Equatable {
   }
 
   @override
-  List<Object?> get props => [id, amount, unit, name];
+  List<Object?> get props => [id, amountPerServing, unit, name];
 }
 
 class Tag extends Equatable {

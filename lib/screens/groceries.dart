@@ -122,7 +122,7 @@ class ReorderableGroceryListState extends State<ReorderableGroceryList> {
   final _groceriesFormKey = GlobalKey<FormState>();
 
   String _name = '';
-  String _amount = '';
+  double _amount = 0;
   String _unit = '';
 
   @override
@@ -146,7 +146,7 @@ class ReorderableGroceryListState extends State<ReorderableGroceryList> {
       _groceriesFormKey.currentState!.reset();
       setState(() {
         _name = '';
-        _amount = '';
+        _amount = 0;
         _unit = '';
       });
 
@@ -189,7 +189,7 @@ class ReorderableGroceryListState extends State<ReorderableGroceryList> {
               SizedBox(
                 width: 60,
                 child: TextFormField(
-                  initialValue: _amount,
+                  initialValue: _amount.toString(),
                   decoration: const InputDecoration(
                     labelText: 'Amount',
                     floatingLabelBehavior: FloatingLabelBehavior.always,
@@ -202,7 +202,7 @@ class ReorderableGroceryListState extends State<ReorderableGroceryList> {
                     return null;
                   },
                   onSaved: (value) {
-                    _amount = value!;
+                    _amount = double.parse(value!);
                   },
                 ),
               ),

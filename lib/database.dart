@@ -28,7 +28,7 @@ class DatabaseClient {
         await db.execute('''CREATE TABLE ingredients(
             id INTEGER PRIMARY KEY, 
             name TEXT NOT NULL, 
-            amount TEXT NOT NULL,
+            amount_per_serving REAL NOT NULL,
             unit TEXT NOT NULL, 
             recipeId INTEGER, 
             FOREIGN KEY(recipeId) REFERENCES recipes(id) ON DELETE CASCADE
@@ -36,7 +36,7 @@ class DatabaseClient {
         await db.execute('''CREATE TABLE groceries(
             id INTEGER PRIMARY KEY, 
             name TEXT NOT NULL, 
-            amount TEXT NOT NULL,
+            amount REAL NOT NULL,
             unit TEXT NOT NULL,
             is_bought BOOLEAN NOT NULL,
             list_order INTEGER NOT NULL
@@ -215,7 +215,7 @@ class DatabaseClient {
       return Ingredient(
         id: ingredientMaps[i]['id'],
         name: ingredientMaps[i]['name'],
-        amount: ingredientMaps[i]['amount'],
+        amountPerServing: ingredientMaps[i]['amount_per_serving'],
         unit: ingredientMaps[i]['unit'],
       );
     });
@@ -409,6 +409,7 @@ class DatabaseClient {
         listOrder: groceriesMap[i]['list_order'],
       );
     });
+
     return groceries;
   }
 

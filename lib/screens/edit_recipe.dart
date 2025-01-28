@@ -80,7 +80,8 @@ class EditRecipeFormState extends State<EditRecipeForm> {
 
   void _addIndgredient() {
     setState(() {
-      _ingredients.add(const Ingredient(name: '', amount: '', unit: ''));
+      _ingredients
+          .add(const Ingredient(name: '', amountPerServing: 0, unit: ''));
     });
   }
 
@@ -244,7 +245,8 @@ class EditRecipeFormState extends State<EditRecipeForm> {
                     SizedBox(
                       width: 60,
                       child: TextFormField(
-                        initialValue: _ingredients[index].amount,
+                        initialValue:
+                            _ingredients[index].amountPerServing.toString(),
                         decoration: const InputDecoration(
                           labelText: 'Amount',
                           floatingLabelBehavior: FloatingLabelBehavior.always,
@@ -260,7 +262,7 @@ class EditRecipeFormState extends State<EditRecipeForm> {
                           setState(() {
                             _ingredients[index] = Ingredient(
                               name: _ingredients[index].name,
-                              amount: value,
+                              amountPerServing: double.parse(value),
                               unit: _ingredients[index].unit,
                             );
                           });
@@ -286,7 +288,8 @@ class EditRecipeFormState extends State<EditRecipeForm> {
                           setState(() {
                             _ingredients[index] = Ingredient(
                               name: _ingredients[index].name,
-                              amount: _ingredients[index].amount,
+                              amountPerServing:
+                                  _ingredients[index].amountPerServing,
                               unit: value,
                             );
                           });
@@ -320,7 +323,8 @@ class EditRecipeFormState extends State<EditRecipeForm> {
                           setState(() {
                             _ingredients[index] = Ingredient(
                               name: value,
-                              amount: _ingredients[index].amount,
+                              amountPerServing:
+                                  _ingredients[index].amountPerServing,
                               unit: _ingredients[index].unit,
                             );
                           });

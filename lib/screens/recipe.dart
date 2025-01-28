@@ -38,7 +38,7 @@ Future<void> addGroceries(Recipe recipe, BuildContext context) async {
     newGroceries.add(
       Grocery(
         name: ingredient.name,
-        amount: ingredient.amount,
+        amount: ingredient.amountPerServing * recipe.servings,
         unit: ingredient.unit,
         isBought: false,
         listOrder: timestamp + ingredients.indexOf(ingredient),
@@ -49,40 +49,28 @@ Future<void> addGroceries(Recipe recipe, BuildContext context) async {
   final allGroceries = groceries + newGroceries;
 
   /// Converts amount to string without decimal places if it's a whole number
-  String amountToString(double amount) {
-    String amountAsString = amount.toString();
-    return amountAsString.contains('.0')
-        ? amountAsString.split('.0')[0]
-        : amountAsString;
-  }
+  // String amountToString(double amount) {
+  //   String amountAsString = amount.toString();
+  //   return amountAsString.contains('.0')
+  //       ? amountAsString.split('.0')[0]
+  //       : amountAsString;
+  // }
 
   /// Converts grocery units to default units
   Grocery unitsToDefaults(Grocery grocery) {
     switch (grocery.unit) {
       case 'tl':
-        return grocery.copyWith(
-            amount: amountToString(double.parse(grocery.amount) * 5),
-            unit: 'ml');
+        return grocery.copyWith(amount: grocery.amount * 5, unit: 'ml');
       case 'rkl':
-        return grocery.copyWith(
-            amount: amountToString(double.parse(grocery.amount) * 15),
-            unit: 'ml');
+        return grocery.copyWith(amount: grocery.amount * 15, unit: 'ml');
       case 'cl':
-        return grocery.copyWith(
-            amount: amountToString(double.parse(grocery.amount) * 10),
-            unit: 'ml');
+        return grocery.copyWith(amount: grocery.amount * 10, unit: 'ml');
       case 'dl':
-        return grocery.copyWith(
-            amount: amountToString(double.parse(grocery.amount) * 100),
-            unit: 'ml');
+        return grocery.copyWith(amount: grocery.amount * 100, unit: 'ml');
       case 'l':
-        return grocery.copyWith(
-            amount: amountToString(double.parse(grocery.amount) * 1000),
-            unit: 'ml');
+        return grocery.copyWith(amount: grocery.amount * 1000, unit: 'ml');
       case 'kg':
-        return grocery.copyWith(
-            amount: amountToString(double.parse(grocery.amount) * 1000),
-            unit: 'g');
+        return grocery.copyWith(amount: grocery.amount * 1000, unit: 'g');
       default:
         return grocery;
     }
@@ -100,9 +88,7 @@ Future<void> addGroceries(Recipe recipe, BuildContext context) async {
       accumulator[grocery.name] = Grocery(
           id: accumulator[grocery.name]!.id,
           name: grocery.name,
-          amount: amountToString(
-              double.parse(accumulator[grocery.name]!.amount) +
-                  double.parse(grocery.amount)),
+          amount: accumulator[grocery.name]!.amount + grocery.amount,
           unit: accumulator[grocery.name]!.unit,
           isBought: accumulator[grocery.name]!.isBought,
           listOrder: accumulator[grocery.name]!.listOrder);
@@ -349,7 +335,9 @@ class SingleRecipeView extends StatelessWidget {
                               SizedBox(
                                 width: 60,
                                 child: Text(
-                                  ingredient.amount.toString(),
+                                  (ingredient.amountPerServing *
+                                          state.recipe.servings)
+                                      .toString(),
                                 ),
                               ),
                               SizedBox(width: 60, child: Text(ingredient.unit)),
