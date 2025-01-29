@@ -30,7 +30,6 @@ class Added extends Result<MealPlan> {
 }
 
 // TODO: every recipe gives notification 'ingredients added to grocery list'
-// TODO: serving sizes for meal plan meals for correct amount of groceries
 Future<void> addGroceriesFromMealPlan(
     MealPlan mealPlan, BuildContext context) async {
   final databaseClient = GetIt.I<DatabaseClient>();
@@ -38,11 +37,12 @@ Future<void> addGroceriesFromMealPlan(
 
   for (var recipe in recipes) {
     if (!context.mounted) return;
-    await addGroceries(recipe, context);
+    await addGroceries(recipe, mealPlan.servingsPerMeal, context);
   }
 }
 
-Future<void> addGroceries(Recipe recipe, BuildContext context) async {
+Future<void> addGroceries(
+    Recipe recipe, int servings, BuildContext context) async {
   final databaseClient = GetIt.I<DatabaseClient>();
   final groceries = await databaseClient.getGroceries();
   final ingredients = recipe.ingredients;
@@ -53,7 +53,7 @@ Future<void> addGroceries(Recipe recipe, BuildContext context) async {
     newGroceries.add(
       Grocery(
         name: ingredient.name,
-        amount: ingredient.amountPerServing,
+        amount: ingredient.amountPerServing * servings,
         unit: ingredient.unit,
         isBought: false,
         listOrder: timestamp + ingredients.indexOf(ingredient),
