@@ -100,6 +100,7 @@ Future<void> addGroceries(Recipe recipe, BuildContext context) async {
 
   List<Grocery> finalList = resultMap.values.toList();
 
+  // TODO: use transaction
   try {
     for (var grocery in finalList) {
       grocery.id == null
@@ -118,7 +119,7 @@ Future<void> addGroceries(Recipe recipe, BuildContext context) async {
 
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
-        content: Text('Could not add ingredients to grocery list!'),
+        content: Text('Could not add ingredients to grocery list.'),
       ),
     );
   }

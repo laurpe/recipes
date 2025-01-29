@@ -29,15 +29,31 @@ class Added extends Result<MealPlan> {
   Added(MealPlan super.data);
 }
 
-// TODO: every recipe gives notification 'ingredients added to grocery list'
 Future<void> addGroceriesFromMealPlan(
     MealPlan mealPlan, BuildContext context) async {
   final databaseClient = GetIt.I<DatabaseClient>();
   final recipes = await databaseClient.getMealPlanRecipes(mealPlan.id!);
 
-  for (var recipe in recipes) {
+  // TODO: use transaction
+  try {
+    for (var recipe in recipes) {
+      if (!context.mounted) return;
+      await addGroceries(recipe, mealPlan.servingsPerMeal, context);
+    }
+
     if (!context.mounted) return;
-    await addGroceries(recipe, mealPlan.servingsPerMeal, context);
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Meal plan added to grocery list!'),
+      ),
+    );
+  } catch (error) {
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Could not add meal plan to grocery list.'),
+      ),
+    );
   }
 }
 
@@ -121,21 +137,8 @@ Future<void> addGroceries(
           ? await databaseClient.insertGrocery(grocery)
           : await databaseClient.updateGrocery(grocery);
     }
-    if (!context.mounted) return;
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Ingredients added to grocery list!'),
-      ),
-    );
   } catch (error) {
-    if (!context.mounted) return;
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Could not add ingredients to grocery list!'),
-      ),
-    );
+    rethrow;
   }
 }
 
