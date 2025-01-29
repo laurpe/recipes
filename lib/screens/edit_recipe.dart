@@ -156,8 +156,12 @@ class EditRecipeFormState extends State<EditRecipeForm> {
             initialValue: _recipeName,
           ),
           TextFormField(
+            autovalidateMode: AutovalidateMode.onUserInteraction,
             validator: (value) {
-              if (int.parse(value!) <= 0) {
+              if (int.tryParse(value!) == null) {
+                return 'Servings must be an integer';
+              }
+              if (int.parse(value) <= 0) {
                 return 'Servings must be greater than 0';
               }
               return null;
@@ -168,9 +172,7 @@ class EditRecipeFormState extends State<EditRecipeForm> {
               floatingLabelBehavior: FloatingLabelBehavior.always,
               contentPadding: EdgeInsets.fromLTRB(10, 20, 10, 20),
             ),
-            onSaved: (value) {
-              _servings = int.parse(value!);
-            },
+            onChanged: (value) => {_servings = int.tryParse(value) ?? 0},
             initialValue: _servings.toString(),
           ),
           Padding(
@@ -246,7 +248,8 @@ class EditRecipeFormState extends State<EditRecipeForm> {
                       width: 60,
                       child: TextFormField(
                         initialValue:
-                            _ingredients[index].amountPerServing.toString(),
+                            ((_ingredients[index].amountPerServing) * _servings)
+                                .toString(),
                         decoration: const InputDecoration(
                           labelText: 'Amount',
                           floatingLabelBehavior: FloatingLabelBehavior.always,
@@ -260,11 +263,24 @@ class EditRecipeFormState extends State<EditRecipeForm> {
                         },
                         onChanged: (value) {
                           setState(() {
+                            var amountAsDouble = double.tryParse(value);
+
+                            var amountPerServing = 0.0;
+
+                            if (amountAsDouble != null) {
+                              amountPerServing = (amountAsDouble / _servings);
+                            }
+                            // Per dart documentation, .toStringAsFixed should not round numbers,
+                            // but it seems to do that anyway.
+                            // TODO: 0 or 1 better failsafe for amountPerServing?
                             _ingredients[index] = Ingredient(
                               name: _ingredients[index].name,
-                              amountPerServing: double.parse(value),
+                              amountPerServing: double.tryParse(
+                                      amountPerServing.toStringAsFixed(6)) ??
+                                  0,
                               unit: _ingredients[index].unit,
                             );
+                            //}
                           });
                         },
                       ),
