@@ -151,8 +151,12 @@ class RecipeFormState extends State<RecipeForm> {
             },
           ),
           TextFormField(
+            autovalidateMode: AutovalidateMode.onUserInteraction,
             validator: (value) {
-              if (int.parse(value!) <= 0) {
+              if (int.tryParse(value!) == null) {
+                return 'Servings must be an integer';
+              }
+              if (int.parse(value) <= 0) {
                 return 'Servings must be greater than 0';
               }
               return null;
@@ -163,9 +167,7 @@ class RecipeFormState extends State<RecipeForm> {
               floatingLabelBehavior: FloatingLabelBehavior.always,
               contentPadding: EdgeInsets.fromLTRB(10, 20, 10, 20),
             ),
-            onSaved: (value) {
-              _servings = int.parse(value!);
-            },
+            onChanged: (value) => {_servings = int.tryParse(value) ?? 0},
             initialValue: _servings.toString(),
           ),
           Padding(
@@ -255,11 +257,24 @@ class RecipeFormState extends State<RecipeForm> {
                         },
                         onChanged: (value) {
                           setState(() {
+                            var amountAsDouble = double.tryParse(value);
+
+                            var amountPerServing = 0.0;
+
+                            if (amountAsDouble != null) {
+                              amountPerServing = (amountAsDouble / _servings);
+                            }
+                            // Per dart documentation, .toStringAsFixed should not round numbers,
+                            // but it seems to do that anyway.
+                            // TODO: 0 or 1 better failsafe for amountPerServing?
                             _ingredients[index] = Ingredient(
                               name: _ingredients[index].name,
-                              amountPerServing: double.parse(value),
+                              amountPerServing: double.tryParse(
+                                      amountPerServing.toStringAsFixed(6)) ??
+                                  0,
                               unit: _ingredients[index].unit,
                             );
+                            //}
                           });
                         },
                       ),
