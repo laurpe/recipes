@@ -37,6 +37,8 @@ class RecipeForm extends StatefulWidget {
 
 class RecipeFormState extends State<RecipeForm> {
   final _formKey = GlobalKey<FormState>();
+  final List<FocusNode> _ingredientFocusNodes = [];
+  late FocusNode _buttonFocusNode;
 
   String _recipeName = '';
   String _instructions = '';
@@ -51,7 +53,9 @@ class RecipeFormState extends State<RecipeForm> {
   @override
   void initState() {
     super.initState();
+
     _controller.addListener(_handleTextChange);
+    _buttonFocusNode = FocusNode();
   }
 
   void _handleTextChange() {
@@ -72,6 +76,11 @@ class RecipeFormState extends State<RecipeForm> {
   void dispose() {
     _controller.removeListener(_handleTextChange);
     _controller.dispose();
+    for (var ingredientFocusNode in _ingredientFocusNodes) {
+      ingredientFocusNode.dispose();
+    }
+    _buttonFocusNode.dispose();
+
     super.dispose();
   }
 
@@ -79,6 +88,8 @@ class RecipeFormState extends State<RecipeForm> {
     setState(() {
       _ingredients
           .add(const Ingredient(name: '', amountPerServing: 0, unit: ''));
+      final ingredientFocusNode = FocusNode();
+      _ingredientFocusNodes.add(ingredientFocusNode);
     });
   }
 
@@ -135,6 +146,8 @@ class RecipeFormState extends State<RecipeForm> {
         mainAxisSize: MainAxisSize.min,
         children: [
           TextFormField(
+            autofocus: true,
+            textInputAction: TextInputAction.next,
             validator: (value) {
               if (value == null || value.isEmpty) {
                 return 'Required field';
@@ -152,6 +165,7 @@ class RecipeFormState extends State<RecipeForm> {
             },
           ),
           TextFormField(
+            textInputAction: TextInputAction.next,
             autovalidateMode: AutovalidateMode.onUserInteraction,
             validator: (value) {
               if (int.tryParse(value!) == null) {
@@ -195,6 +209,7 @@ class RecipeFormState extends State<RecipeForm> {
             ),
           ),
           TextFormField(
+            textInputAction: TextInputAction.next,
             autocorrect: false,
             controller: _controller,
             decoration: const InputDecoration(
@@ -214,6 +229,7 @@ class RecipeFormState extends State<RecipeForm> {
             autovalidateMode: AutovalidateMode.onUserInteraction,
           ),
           TextFormField(
+            textInputAction: TextInputAction.next,
             validator: (value) {
               if (value == null || value.isEmpty) {
                 return 'Required field';
@@ -244,6 +260,8 @@ class RecipeFormState extends State<RecipeForm> {
                     SizedBox(
                       width: 60,
                       child: TextFormField(
+                        focusNode: _ingredientFocusNodes[index],
+                        textInputAction: TextInputAction.next,
                         initialValue: "",
                         decoration: const InputDecoration(
                           labelText: 'Amount',
@@ -283,6 +301,7 @@ class RecipeFormState extends State<RecipeForm> {
                     SizedBox(
                       width: 50,
                       child: TextFormField(
+                        textInputAction: TextInputAction.next,
                         initialValue: _ingredients[index].unit,
                         decoration: const InputDecoration(
                           labelText: 'Unit',
@@ -311,6 +330,9 @@ class RecipeFormState extends State<RecipeForm> {
                     Expanded(
                       child: TextFormField(
                         initialValue: _ingredients[index].name,
+                        onFieldSubmitted: (_) {
+                          _buttonFocusNode.requestFocus();
+                        },
                         decoration: InputDecoration(
                           labelText: 'Ingredient name',
                           hintText: 'rice',
@@ -355,7 +377,12 @@ class RecipeFormState extends State<RecipeForm> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 ElevatedButton(
-                  onPressed: _addIndgredient,
+                  focusNode: _buttonFocusNode,
+                  onPressed: (() {
+                    _addIndgredient();
+                    _ingredientFocusNodes[_ingredientFocusNodes.length - 1]
+                        .requestFocus();
+                  }),
                   child: const Text('Add ingredient'),
                 ),
                 ElevatedButton(
