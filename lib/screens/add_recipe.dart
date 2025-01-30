@@ -143,6 +143,7 @@ class RecipeFormState extends State<RecipeForm> {
             },
             decoration: const InputDecoration(
               labelText: 'Name',
+              hintText: 'The name of your recipe',
               floatingLabelBehavior: FloatingLabelBehavior.always,
               contentPadding: EdgeInsets.fromLTRB(10, 20, 10, 20),
             ),
@@ -223,6 +224,7 @@ class RecipeFormState extends State<RecipeForm> {
               labelText: 'Instructions',
               floatingLabelBehavior: FloatingLabelBehavior.always,
               contentPadding: EdgeInsets.fromLTRB(10, 20, 10, 20),
+              hintText: 'Describe how to prepare the dish',
             ),
             minLines: 8,
             maxLines: null,
@@ -245,6 +247,7 @@ class RecipeFormState extends State<RecipeForm> {
                         initialValue: "",
                         decoration: const InputDecoration(
                           labelText: 'Amount',
+                          hintText: '2',
                           floatingLabelBehavior: FloatingLabelBehavior.always,
                           contentPadding: EdgeInsets.fromLTRB(10, 20, 0, 20),
                         ),
@@ -283,6 +286,7 @@ class RecipeFormState extends State<RecipeForm> {
                         initialValue: _ingredients[index].unit,
                         decoration: const InputDecoration(
                           labelText: 'Unit',
+                          hintText: 'dl',
                           floatingLabelBehavior: FloatingLabelBehavior.always,
                           contentPadding: EdgeInsets.fromLTRB(10, 20, 0, 20),
                         ),
@@ -309,6 +313,7 @@ class RecipeFormState extends State<RecipeForm> {
                         initialValue: _ingredients[index].name,
                         decoration: InputDecoration(
                           labelText: 'Ingredient name',
+                          hintText: 'rice',
                           floatingLabelBehavior: FloatingLabelBehavior.always,
                           contentPadding:
                               const EdgeInsets.fromLTRB(10, 20, 10, 20),
