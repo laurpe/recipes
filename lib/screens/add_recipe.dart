@@ -24,7 +24,7 @@ class RecipeFormView extends StatelessWidget {
 
 /*
 * The ingredient amounts the user adds are for the amount of servings the recipe yields.
-* TODO:  From that input, ingredient amount_per_serving is calculated and stored to the database.
+* From that input, ingredient amount_per_serving is calculated and stored to the database.
 */
 class RecipeForm extends StatefulWidget {
   const RecipeForm({super.key});
@@ -41,7 +41,7 @@ class RecipeFormState extends State<RecipeForm> {
   String _recipeName = '';
   String _instructions = '';
   final List<Ingredient> _ingredients = [];
-  int _servings = 0;
+  int _servings = 4;
   final List<Tag> _newTags = [];
 
   final TextEditingController _controller = TextEditingController();
