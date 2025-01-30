@@ -242,8 +242,7 @@ class RecipeFormState extends State<RecipeForm> {
                     SizedBox(
                       width: 60,
                       child: TextFormField(
-                        initialValue:
-                            _ingredients[index].amountPerServing.toString(),
+                        initialValue: "",
                         decoration: const InputDecoration(
                           labelText: 'Amount',
                           floatingLabelBehavior: FloatingLabelBehavior.always,
@@ -259,19 +258,18 @@ class RecipeFormState extends State<RecipeForm> {
                           setState(() {
                             var amountAsDouble = double.tryParse(value);
 
-                            var amountPerServing = 0.0;
+                            double amountPerServing = 1.0;
 
                             if (amountAsDouble != null) {
                               amountPerServing = (amountAsDouble / _servings);
                             }
                             // Per dart documentation, .toStringAsFixed should not round numbers,
                             // but it seems to do that anyway.
-                            // TODO: 0 or 1 better failsafe for amountPerServing?
                             _ingredients[index] = Ingredient(
                               name: _ingredients[index].name,
                               amountPerServing: double.tryParse(
                                       amountPerServing.toStringAsFixed(6)) ??
-                                  0,
+                                  1,
                               unit: _ingredients[index].unit,
                             );
                             //}
