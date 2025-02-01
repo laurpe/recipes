@@ -57,43 +57,43 @@ class DatabaseClient {
             name TEXT NOT NULL,
             servings_per_meal INTEGER NOT NULL
             )''');
-        await db
-            .execute('INSERT INTO meal_plans VALUES (1, "Viikon ruoat", 2)');
+        // await db
+        //     .execute('INSERT INTO meal_plans VALUES (1, "Viikon ruoat", 2)');
 
-        await db.execute('''CREATE TABLE days(
-            id INTEGER PRIMARY KEY,
-            name TEXT NOT NULL,
-            meal_plan_id INTEGER NOT NULL,
-            FOREIGN KEY(meal_plan_id) REFERENCES meal_plans(id) ON DELETE CASCADE
-            )''');
-        await db.execute('INSERT INTO days VALUES (1, "Maanantai", 1)');
-        await db.execute('INSERT INTO days VALUES (2, "Tiistai", 1)');
-        await db.execute('INSERT INTO days VALUES (3, "Keskiviikko", 1)');
-        await db.execute('INSERT INTO days VALUES (4, "Torstai", 1)');
-        await db.execute('INSERT INTO days VALUES (5, "Perjantai", 1)');
+        // await db.execute('''CREATE TABLE days(
+        //     id INTEGER PRIMARY KEY,
+        //     name TEXT NOT NULL,
+        //     meal_plan_id INTEGER NOT NULL,
+        //     FOREIGN KEY(meal_plan_id) REFERENCES meal_plans(id) ON DELETE CASCADE
+        //     )''');
+        // await db.execute('INSERT INTO days VALUES (1, "Maanantai", 1)');
+        // await db.execute('INSERT INTO days VALUES (2, "Tiistai", 1)');
+        // await db.execute('INSERT INTO days VALUES (3, "Keskiviikko", 1)');
+        // await db.execute('INSERT INTO days VALUES (4, "Torstai", 1)');
+        // await db.execute('INSERT INTO days VALUES (5, "Perjantai", 1)');
 
-        await db.execute('''CREATE TABLE meals(
-            id INTEGER PRIMARY KEY,
-            name TEXT NOT NULL,
-            day_id INTEGER NOT NULL,
-            recipe_id INTEGER NOT NULL,
-            FOREIGN KEY(day_id) REFERENCES days(id) ON DELETE CASCADE,
-            FOREIGN KEY(recipe_id) REFERENCES recipes(id) ON DELETE CASCADE
-            )''');
-        await _seedRecipes(db, seedRecipes);
-        await _seedTags(db, seedTags);
-        await _seedRecipeTags(db);
+        // await db.execute('''CREATE TABLE meals(
+        //     id INTEGER PRIMARY KEY,
+        //     name TEXT NOT NULL,
+        //     day_id INTEGER NOT NULL,
+        //     recipe_id INTEGER NOT NULL,
+        //     FOREIGN KEY(day_id) REFERENCES days(id) ON DELETE CASCADE,
+        //     FOREIGN KEY(recipe_id) REFERENCES recipes(id) ON DELETE CASCADE
+        //     )''');
+        // await _seedRecipes(db, seedRecipes);
+        // await _seedTags(db, seedTags);
+        // await _seedRecipeTags(db);
 
-        await db.execute('INSERT INTO meals VALUES (1, "Lounas", 1, 1)');
-        await db.execute('INSERT INTO meals VALUES (2, "Päivällinen", 1, 2)');
-        await db.execute('INSERT INTO meals VALUES (3, "Lounas", 2, 3)');
-        await db.execute('INSERT INTO meals VALUES (4, "Päivällinen", 2, 4)');
-        await db.execute('INSERT INTO meals VALUES (5, "Lounas", 3, 1)');
-        await db.execute('INSERT INTO meals VALUES (6, "Päivällinen", 3, 2)');
-        await db.execute('INSERT INTO meals VALUES (7, "Lounas", 4, 3)');
-        await db.execute('INSERT INTO meals VALUES (8, "Päivällinen", 4, 4)');
-        await db.execute('INSERT INTO meals VALUES (9, "Lounas", 5, 1)');
-        await db.execute('INSERT INTO meals VALUES (10, "Päivällinen", 5, 2)');
+        // await db.execute('INSERT INTO meals VALUES (1, "Lounas", 1, 1)');
+        // await db.execute('INSERT INTO meals VALUES (2, "Päivällinen", 1, 2)');
+        // await db.execute('INSERT INTO meals VALUES (3, "Lounas", 2, 3)');
+        // await db.execute('INSERT INTO meals VALUES (4, "Päivällinen", 2, 4)');
+        // await db.execute('INSERT INTO meals VALUES (5, "Lounas", 3, 1)');
+        // await db.execute('INSERT INTO meals VALUES (6, "Päivällinen", 3, 2)');
+        // await db.execute('INSERT INTO meals VALUES (7, "Lounas", 4, 3)');
+        // await db.execute('INSERT INTO meals VALUES (8, "Päivällinen", 4, 4)');
+        // await db.execute('INSERT INTO meals VALUES (9, "Lounas", 5, 1)');
+        // await db.execute('INSERT INTO meals VALUES (10, "Päivällinen", 5, 2)');
       },
       // onUpgrade: (db, oldVersion, newVersion) async {
       // },
@@ -264,6 +264,13 @@ class DatabaseClient {
     }
 
     return recipeList;
+  }
+
+  Future<int> getRecipesCount() async {
+    return Sqflite.firstIntValue(
+          await _database.rawQuery('SELECT COUNT(*) FROM recipes'),
+        ) ??
+        0;
   }
 
   Future<void> deleteIngredient(int ingredientId) async {
