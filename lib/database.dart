@@ -60,26 +60,26 @@ class DatabaseClient {
         // await db
         //     .execute('INSERT INTO meal_plans VALUES (1, "Viikon ruoat", 2)');
 
-        // await db.execute('''CREATE TABLE days(
-        //     id INTEGER PRIMARY KEY,
-        //     name TEXT NOT NULL,
-        //     meal_plan_id INTEGER NOT NULL,
-        //     FOREIGN KEY(meal_plan_id) REFERENCES meal_plans(id) ON DELETE CASCADE
-        //     )''');
+        await db.execute('''CREATE TABLE days(
+            id INTEGER PRIMARY KEY,
+            name TEXT NOT NULL,
+            meal_plan_id INTEGER NOT NULL,
+            FOREIGN KEY(meal_plan_id) REFERENCES meal_plans(id) ON DELETE CASCADE
+            )''');
         // await db.execute('INSERT INTO days VALUES (1, "Maanantai", 1)');
         // await db.execute('INSERT INTO days VALUES (2, "Tiistai", 1)');
         // await db.execute('INSERT INTO days VALUES (3, "Keskiviikko", 1)');
         // await db.execute('INSERT INTO days VALUES (4, "Torstai", 1)');
         // await db.execute('INSERT INTO days VALUES (5, "Perjantai", 1)');
 
-        // await db.execute('''CREATE TABLE meals(
-        //     id INTEGER PRIMARY KEY,
-        //     name TEXT NOT NULL,
-        //     day_id INTEGER NOT NULL,
-        //     recipe_id INTEGER NOT NULL,
-        //     FOREIGN KEY(day_id) REFERENCES days(id) ON DELETE CASCADE,
-        //     FOREIGN KEY(recipe_id) REFERENCES recipes(id) ON DELETE CASCADE
-        //     )''');
+        await db.execute('''CREATE TABLE meals(
+            id INTEGER PRIMARY KEY,
+            name TEXT NOT NULL,
+            day_id INTEGER NOT NULL,
+            recipe_id INTEGER NOT NULL,
+            FOREIGN KEY(day_id) REFERENCES days(id) ON DELETE CASCADE,
+            FOREIGN KEY(recipe_id) REFERENCES recipes(id) ON DELETE CASCADE
+            )''');
         // await _seedRecipes(db, seedRecipes);
         // await _seedTags(db, seedTags);
         // await _seedRecipeTags(db);
