@@ -6,6 +6,7 @@ import 'package:recipes/blocs/recipe/events.dart';
 import 'package:recipes/blocs/recipe/state.dart';
 import 'package:recipes/database.dart';
 import 'package:recipes/grocery.dart';
+import 'package:recipes/helpers/trim_trailing_zero.dart';
 import 'package:recipes/recipe.dart';
 import 'package:recipes/screens/edit_recipe.dart';
 
@@ -328,9 +329,8 @@ class SingleRecipeView extends StatelessWidget {
                               SizedBox(
                                 width: 60,
                                 child: Text(
-                                  (ingredient.amountPerServing *
-                                          state.recipe.servings)
-                                      .toString(),
+                                  trimTrailingZero(ingredient.amountPerServing *
+                                      state.recipe.servings),
                                 ),
                               ),
                               SizedBox(width: 60, child: Text(ingredient.unit)),
