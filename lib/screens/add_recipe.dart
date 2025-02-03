@@ -148,6 +148,7 @@ class RecipeFormState extends State<RecipeForm> {
           TextFormField(
             autofocus: true,
             textInputAction: TextInputAction.next,
+            autovalidateMode: AutovalidateMode.onUserInteraction,
             validator: (value) {
               if (value == null || value.isEmpty) {
                 return 'Required field';
@@ -179,10 +180,11 @@ class RecipeFormState extends State<RecipeForm> {
             keyboardType: TextInputType.number,
             decoration: const InputDecoration(
               labelText: 'Servings',
+              hintText: 'How many portions the recipe makes',
               floatingLabelBehavior: FloatingLabelBehavior.always,
               contentPadding: EdgeInsets.fromLTRB(10, 20, 10, 20),
             ),
-            onChanged: (value) => {_servings = int.tryParse(value) ?? 0},
+            onSaved: (value) => {_servings = int.parse(value!)},
             initialValue: _servings.toString(),
           ),
           Padding(
@@ -230,6 +232,7 @@ class RecipeFormState extends State<RecipeForm> {
           ),
           TextFormField(
             textInputAction: TextInputAction.next,
+            autovalidateMode: AutovalidateMode.onUserInteraction,
             validator: (value) {
               if (value == null || value.isEmpty) {
                 return 'Required field';
@@ -262,6 +265,9 @@ class RecipeFormState extends State<RecipeForm> {
                       child: TextFormField(
                         focusNode: _ingredientFocusNodes[index],
                         textInputAction: TextInputAction.next,
+                        autovalidateMode: AutovalidateMode.onUserInteraction,
+                        keyboardType:
+                            TextInputType.numberWithOptions(decimal: true),
                         initialValue: "",
                         decoration: const InputDecoration(
                           labelText: 'Amount',
@@ -272,6 +278,9 @@ class RecipeFormState extends State<RecipeForm> {
                         validator: (value) {
                           if (value == null || value.isEmpty) {
                             return 'Please enter ingredient amount';
+                          }
+                          if (double.tryParse(value) == null) {
+                            return 'Please enter a valid number';
                           }
                           return null;
                         },
@@ -288,12 +297,10 @@ class RecipeFormState extends State<RecipeForm> {
                             // but it seems to do that anyway.
                             _ingredients[index] = Ingredient(
                               name: _ingredients[index].name,
-                              amountPerServing: double.tryParse(
-                                      amountPerServing.toStringAsFixed(6)) ??
-                                  1,
+                              amountPerServing: double.parse(
+                                  amountPerServing.toStringAsFixed(6)),
                               unit: _ingredients[index].unit,
                             );
-                            //}
                           });
                         },
                       ),
@@ -302,6 +309,7 @@ class RecipeFormState extends State<RecipeForm> {
                       width: 50,
                       child: TextFormField(
                         textInputAction: TextInputAction.next,
+                        autovalidateMode: AutovalidateMode.onUserInteraction,
                         initialValue: _ingredients[index].unit,
                         decoration: const InputDecoration(
                           labelText: 'Unit',
@@ -329,6 +337,7 @@ class RecipeFormState extends State<RecipeForm> {
                     ),
                     Expanded(
                       child: TextFormField(
+                        autovalidateMode: AutovalidateMode.onUserInteraction,
                         initialValue: _ingredients[index].name,
                         onFieldSubmitted: (_) {
                           _buttonFocusNode.requestFocus();

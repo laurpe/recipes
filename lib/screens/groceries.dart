@@ -189,7 +189,9 @@ class ReorderableGroceryListState extends State<ReorderableGroceryList> {
               SizedBox(
                 width: 60,
                 child: TextFormField(
-                  initialValue: _amount.toString(),
+                  initialValue: "",
+                  keyboardType: TextInputType.numberWithOptions(decimal: true),
+                  autovalidateMode: AutovalidateMode.onUserInteraction,
                   decoration: const InputDecoration(
                     labelText: 'Amount',
                     floatingLabelBehavior: FloatingLabelBehavior.always,
@@ -199,6 +201,11 @@ class ReorderableGroceryListState extends State<ReorderableGroceryList> {
                     if (value == null || value.isEmpty) {
                       return 'Please enter amount';
                     }
+
+                    if (double.tryParse(value) == null) {
+                      return 'Please enter a valid number';
+                    }
+
                     return null;
                   },
                   onSaved: (value) {
