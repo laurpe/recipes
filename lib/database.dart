@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:path/path.dart';
 import 'package:recipes/grocery.dart';
 import 'package:recipes/meal_plan.dart';
-import 'package:recipes/seed_data.dart';
+//import 'package:recipes/seed_data.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:recipes/recipe.dart';
 
@@ -101,42 +101,42 @@ class DatabaseClient {
     );
   }
 
-  Future<void> _seedRecipes(Database db, List<Recipe> recipes) async {
-    for (var recipe in recipes) {
-      var recipeMap = recipe.toMap();
-      recipeMap['favorite'] = recipe.favorite ? 1 : 0;
+  // Future<void> _seedRecipes(Database db, List<Recipe> recipes) async {
+  //   for (var recipe in recipes) {
+  //     var recipeMap = recipe.toMap();
+  //     recipeMap['favorite'] = recipe.favorite ? 1 : 0;
 
-      final recipeId = await db.insert(
-        'recipes',
-        recipeMap,
-      );
+  //     final recipeId = await db.insert(
+  //       'recipes',
+  //       recipeMap,
+  //     );
 
-      for (var ingredient in recipe.ingredients) {
-        await db.insert(
-          'ingredients',
-          {...ingredient.toMap(), 'recipeId': recipeId},
-        );
-      }
-    }
-  }
+  //     for (var ingredient in recipe.ingredients) {
+  //       await db.insert(
+  //         'ingredients',
+  //         {...ingredient.toMap(), 'recipeId': recipeId},
+  //       );
+  //     }
+  //   }
+  // }
 
-  Future<void> _seedTags(db, List<String> tags) async {
-    for (var tag in tags) {
-      await db.insert(
-        'tags',
-        {'name': tag},
-      );
-    }
-  }
+  // Future<void> _seedTags(db, List<String> tags) async {
+  //   for (var tag in tags) {
+  //     await db.insert(
+  //       'tags',
+  //       {'name': tag},
+  //     );
+  //   }
+  // }
 
-  Future<void> _seedRecipeTags(Database db) async {
-    /// depends on recipe and tag seeds
-    db.insert('recipe_tags', {'recipe_id': 1, 'tag_id': 4});
-    db.insert('recipe_tags', {'recipe_id': 2, 'tag_id': 4});
-    db.insert('recipe_tags', {'recipe_id': 3, 'tag_id': 2});
-    db.insert('recipe_tags', {'recipe_id': 4, 'tag_id': 2});
-    db.insert('recipe_tags', {'recipe_id': 4, 'tag_id': 3});
-  }
+  // Future<void> _seedRecipeTags(Database db) async {
+  //   /// depends on recipe and tag seeds
+  //   db.insert('recipe_tags', {'recipe_id': 1, 'tag_id': 4});
+  //   db.insert('recipe_tags', {'recipe_id': 2, 'tag_id': 4});
+  //   db.insert('recipe_tags', {'recipe_id': 3, 'tag_id': 2});
+  //   db.insert('recipe_tags', {'recipe_id': 4, 'tag_id': 2});
+  //   db.insert('recipe_tags', {'recipe_id': 4, 'tag_id': 3});
+  // }
 
   Future<int> insertTag(Tag tag) async {
     return await _database.insert(
