@@ -6,6 +6,7 @@ import 'package:recipes/blocs/recipe/events.dart';
 import 'package:recipes/blocs/recipe/state.dart';
 import 'package:recipes/database.dart';
 import 'package:recipes/grocery.dart';
+import 'package:recipes/helpers/trim_trailing_zero.dart';
 import 'package:recipes/recipe.dart';
 import 'package:recipes/screens/edit_recipe.dart';
 
@@ -47,14 +48,6 @@ Future<void> addGroceries(Recipe recipe, BuildContext context) async {
   }
 
   final allGroceries = groceries + newGroceries;
-
-  /// Converts amount to string without decimal places if it's a whole number
-  // String amountToString(double amount) {
-  //   String amountAsString = amount.toString();
-  //   return amountAsString.contains('.0')
-  //       ? amountAsString.split('.0')[0]
-  //       : amountAsString;
-  // }
 
   /// Converts grocery units to default units
   Grocery unitsToDefaults(Grocery grocery) {
@@ -336,9 +329,8 @@ class SingleRecipeView extends StatelessWidget {
                               SizedBox(
                                 width: 60,
                                 child: Text(
-                                  (ingredient.amountPerServing *
-                                          state.recipe.servings)
-                                      .toString(),
+                                  trimTrailingZero(ingredient.amountPerServing *
+                                      state.recipe.servings),
                                 ),
                               ),
                               SizedBox(width: 60, child: Text(ingredient.unit)),

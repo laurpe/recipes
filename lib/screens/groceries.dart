@@ -6,6 +6,7 @@ import 'package:recipes/blocs/groceries/events.dart';
 import 'package:recipes/blocs/groceries/state.dart';
 import 'package:recipes/database.dart';
 import 'package:recipes/grocery.dart';
+import 'package:recipes/helpers/trim_trailing_zero.dart';
 
 class GroceriesList extends StatelessWidget {
   const GroceriesList({super.key});
@@ -189,7 +190,9 @@ class ReorderableGroceryListState extends State<ReorderableGroceryList> {
               SizedBox(
                 width: 60,
                 child: TextFormField(
-                  initialValue: _amount.toString(),
+                  initialValue: "",
+                  keyboardType: TextInputType.numberWithOptions(decimal: true),
+                  autovalidateMode: AutovalidateMode.onUserInteraction,
                   decoration: const InputDecoration(
                     labelText: 'Amount',
                     floatingLabelBehavior: FloatingLabelBehavior.always,
@@ -199,6 +202,11 @@ class ReorderableGroceryListState extends State<ReorderableGroceryList> {
                     if (value == null || value.isEmpty) {
                       return 'Please enter amount';
                     }
+
+                    if (double.tryParse(value) == null) {
+                      return 'Please enter a valid number';
+                    }
+
                     return null;
                   },
                   onSaved: (value) {
@@ -302,7 +310,7 @@ class ReorderableGroceryListState extends State<ReorderableGroceryList> {
                         }
                       },
                       title: Text(
-                          '${grocery.amount} ${grocery.unit} ${grocery.name}',
+                          '${trimTrailingZero(grocery.amount)} ${grocery.unit} ${grocery.name}',
                           style: grocery.isBought
                               ? const TextStyle(
                                   decoration: TextDecoration.lineThrough)

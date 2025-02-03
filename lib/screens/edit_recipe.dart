@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:recipes/database.dart';
+import 'package:recipes/helpers/trim_trailing_zero.dart';
 import 'package:recipes/recipe.dart';
 import 'package:recipes/screens/recipe.dart';
 
@@ -139,6 +140,7 @@ class EditRecipeFormState extends State<EditRecipeForm> {
         mainAxisSize: MainAxisSize.min,
         children: [
           TextFormField(
+            autovalidateMode: AutovalidateMode.onUserInteraction,
             validator: (value) {
               if (value == null || value.isEmpty) {
                 return 'Required field';
@@ -147,6 +149,7 @@ class EditRecipeFormState extends State<EditRecipeForm> {
             },
             decoration: const InputDecoration(
               labelText: 'Name',
+              hintText: 'The name of your recipe',
               floatingLabelBehavior: FloatingLabelBehavior.always,
               contentPadding: EdgeInsets.fromLTRB(10, 20, 10, 20),
             ),
@@ -169,10 +172,11 @@ class EditRecipeFormState extends State<EditRecipeForm> {
             keyboardType: TextInputType.number,
             decoration: const InputDecoration(
               labelText: 'Servings',
+              hintText: 'How many portions the recipe makes',
               floatingLabelBehavior: FloatingLabelBehavior.always,
               contentPadding: EdgeInsets.fromLTRB(10, 20, 10, 20),
             ),
-            onChanged: (value) => {_servings = int.tryParse(value) ?? 0},
+            onSaved: (value) => {_servings = int.parse(value!)},
             initialValue: _servings.toString(),
           ),
           Padding(
@@ -218,6 +222,7 @@ class EditRecipeFormState extends State<EditRecipeForm> {
             autovalidateMode: AutovalidateMode.onUserInteraction,
           ),
           TextFormField(
+            autovalidateMode: AutovalidateMode.onUserInteraction,
             validator: (value) {
               if (value == null || value.isEmpty) {
                 return 'Required field';
@@ -226,6 +231,7 @@ class EditRecipeFormState extends State<EditRecipeForm> {
             },
             decoration: const InputDecoration(
                 labelText: 'Instructions',
+                hintText: 'Describe how to prepare the dish',
                 floatingLabelBehavior: FloatingLabelBehavior.always,
                 contentPadding: EdgeInsets.fromLTRB(10, 20, 10, 20)),
             minLines: 8,
@@ -247,11 +253,14 @@ class EditRecipeFormState extends State<EditRecipeForm> {
                     SizedBox(
                       width: 60,
                       child: TextFormField(
-                        initialValue:
-                            ((_ingredients[index].amountPerServing) * _servings)
-                                .toString(),
+                        autovalidateMode: AutovalidateMode.onUserInteraction,
+                        keyboardType:
+                            TextInputType.numberWithOptions(decimal: true),
+                        initialValue: trimTrailingZero(
+                            (_ingredients[index].amountPerServing) * _servings),
                         decoration: const InputDecoration(
                           labelText: 'Amount',
+                          hintText: '2',
                           floatingLabelBehavior: FloatingLabelBehavior.always,
                           contentPadding: EdgeInsets.fromLTRB(10, 20, 0, 20),
                         ),
@@ -259,28 +268,28 @@ class EditRecipeFormState extends State<EditRecipeForm> {
                           if (value == null || value.isEmpty) {
                             return 'Please enter ingredient amount';
                           }
+                          if (double.tryParse(value) == null) {
+                            return 'Please enter a valid number';
+                          }
                           return null;
                         },
                         onChanged: (value) {
                           setState(() {
                             var amountAsDouble = double.tryParse(value);
 
-                            var amountPerServing = 0.0;
+                            double amountPerServing = 1.0;
 
                             if (amountAsDouble != null) {
                               amountPerServing = (amountAsDouble / _servings);
                             }
                             // Per dart documentation, .toStringAsFixed should not round numbers,
                             // but it seems to do that anyway.
-                            // TODO: 0 or 1 better failsafe for amountPerServing?
                             _ingredients[index] = Ingredient(
                               name: _ingredients[index].name,
-                              amountPerServing: double.tryParse(
-                                      amountPerServing.toStringAsFixed(6)) ??
-                                  0,
+                              amountPerServing: double.parse(
+                                  amountPerServing.toStringAsFixed(6)),
                               unit: _ingredients[index].unit,
                             );
-                            //}
                           });
                         },
                       ),
@@ -288,9 +297,11 @@ class EditRecipeFormState extends State<EditRecipeForm> {
                     SizedBox(
                       width: 50,
                       child: TextFormField(
+                        autovalidateMode: AutovalidateMode.onUserInteraction,
                         initialValue: _ingredients[index].unit,
                         decoration: const InputDecoration(
                           labelText: 'Unit',
+                          hintText: 'dl',
                           floatingLabelBehavior: FloatingLabelBehavior.always,
                           contentPadding: EdgeInsets.fromLTRB(10, 20, 0, 20),
                         ),
@@ -314,9 +325,11 @@ class EditRecipeFormState extends State<EditRecipeForm> {
                     ),
                     Expanded(
                       child: TextFormField(
+                        autovalidateMode: AutovalidateMode.onUserInteraction,
                         initialValue: _ingredients[index].name,
                         decoration: InputDecoration(
                           labelText: 'Ingredient',
+                          hintText: 'rice',
                           floatingLabelBehavior: FloatingLabelBehavior.always,
                           contentPadding:
                               const EdgeInsets.fromLTRB(10, 20, 10, 20),

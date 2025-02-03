@@ -79,14 +79,6 @@ Future<void> addGroceries(
 
   final allGroceries = groceries + newGroceries;
 
-  /// Converts amount to string without decimal places if it's a whole number
-  // String amountToString(double amount) {
-  //   String amountAsString = amount.toString();
-  //   return amountAsString.contains('.0')
-  //       ? amountAsString.split('.0')[0]
-  //       : amountAsString;
-  // }
-
   /// Converts grocery units to default units
   Grocery unitsToDefaults(Grocery grocery) {
     switch (grocery.unit) {

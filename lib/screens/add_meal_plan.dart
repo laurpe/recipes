@@ -34,7 +34,7 @@ class MealPlanFormState extends State<MealPlanForm> {
   final _formKey = GlobalKey<FormState>();
   late List<RecipeListItem> _recipes = [];
 
-  MealPlan mealPlan = const MealPlan(name: '', servingsPerMeal: 0, days: [
+  MealPlan mealPlan = const MealPlan(name: '', servingsPerMeal: 2, days: [
     Day(name: 'Monday', meals: [
       Meal(name: 'Lunch', recipeId: null),
       Meal(name: 'Dinner', recipeId: null),
@@ -93,14 +93,18 @@ class MealPlanFormState extends State<MealPlanForm> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           TextFormField(
+            autofocus: true,
+            textInputAction: TextInputAction.next,
+            autovalidateMode: AutovalidateMode.onUserInteraction,
             validator: (value) {
               if (value == null || value.isEmpty) {
-                return 'Please enter a name';
+                return 'Required field';
               }
               return null;
             },
             decoration: const InputDecoration(
               labelText: 'Name',
+              hintText: 'The name of your meal plan',
               floatingLabelBehavior: FloatingLabelBehavior.always,
               contentPadding: EdgeInsets.fromLTRB(10, 20, 10, 20),
             ),
@@ -112,8 +116,13 @@ class MealPlanFormState extends State<MealPlanForm> {
             initialValue: mealPlan.name,
           ),
           TextFormField(
+            textInputAction: TextInputAction.next,
+            autovalidateMode: AutovalidateMode.onUserInteraction,
             validator: (value) {
-              if (int.parse(value!) <= 0) {
+              if (int.tryParse(value!) == null) {
+                return 'Servings per meal must be an integer';
+              }
+              if (int.parse(value) <= 0) {
                 return 'Servings per meal must be greater than 0';
               }
               return null;
@@ -121,6 +130,7 @@ class MealPlanFormState extends State<MealPlanForm> {
             keyboardType: TextInputType.number,
             decoration: const InputDecoration(
               labelText: 'Servings per meal',
+              hintText: 'How many people to serve per meal',
               floatingLabelBehavior: FloatingLabelBehavior.always,
               contentPadding: EdgeInsets.fromLTRB(10, 20, 10, 20),
             ),

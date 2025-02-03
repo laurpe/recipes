@@ -65,12 +65,18 @@ class RecipesBloc extends Bloc<RecipesEvent, RecipesState> {
     on<GetRecipes>(
       (event, emit) async {
         try {
-          List<Recipe> recipes = [];
           int? offset = event.offset;
+          List<Recipe> recipes = [];
           String? query = event.query;
           List<Tag>? tags = event.tags;
-          bool hasReachedEnd = false;
           bool? favorites = event.favorites;
+
+          int totalCount = await databaseClient.getRecipesCount();
+          int pageSize = 15;
+          int pages = (totalCount / pageSize).ceil();
+          int currentPage = (offset ?? 0 / pageSize).ceil() +
+              1; // +1 so it starts from page #1, not #0.
+          int lastPage = pages;
 
           if (state is LoadedRecipesState) {
             final currentState = state as LoadedRecipesState;
@@ -78,20 +84,16 @@ class RecipesBloc extends Bloc<RecipesEvent, RecipesState> {
             offset = offset ?? currentState.offset;
             query = query ?? currentState.query;
             tags = tags ?? currentState.tags;
-            hasReachedEnd = currentState.hasReachedEnd;
             favorites = favorites ?? currentState.favorites;
 
+            /// Refresh the list if these change.
             if (query != currentState.query ||
                 tags != null ||
-                favorites != currentState.favorites) {
+                favorites != currentState.favorites ||
+                recipes.length != totalCount) {
               offset = 0;
               recipes = [];
-              hasReachedEnd = false;
             }
-          }
-
-          if (hasReachedEnd) {
-            return;
           }
 
           final newRecipes = await databaseClient.searchRecipes(
@@ -106,7 +108,7 @@ class RecipesBloc extends Bloc<RecipesEvent, RecipesState> {
             query: query,
             offset: offset,
             tags: tags,
-            hasReachedEnd: newRecipes.length < 10,
+            hasReachedEnd: currentPage == lastPage,
             favorites: favorites,
           ));
         } catch (error) {
