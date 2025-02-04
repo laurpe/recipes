@@ -15,7 +15,7 @@ Future<void> openAddRecipe(BuildContext context) async {
   final Result? result = await Navigator.push(
     context,
     MaterialPageRoute(
-      builder: (context) => const RecipeFormView(),
+      builder: (context) => AddRecipeFormView(),
     ),
   );
 
