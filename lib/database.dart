@@ -590,7 +590,8 @@ class DatabaseClient {
   }
 
   Future<void> updateMealPlan(MealPlan mealPlan) async {
-    await _database.update('meal_plans', {'name': mealPlan.name},
+    await _database.update('meal_plans',
+        {'name': mealPlan.name, 'servings_per_meal': mealPlan.servingsPerMeal},
         where: 'id = ?', whereArgs: [mealPlan.id]);
 
     for (var day in mealPlan.days!) {
