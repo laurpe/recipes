@@ -70,6 +70,8 @@ class MealPlanFormState extends State<MealPlanForm> {
 
   void onSubmit() async {
     if (_formKey.currentState!.validate()) {
+      _formKey.currentState!.save();
+
       try {
         await GetIt.I<DatabaseClient>().insertMealPlan(mealPlan);
 

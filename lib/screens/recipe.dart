@@ -122,7 +122,7 @@ Future<void> openEditRecipe(BuildContext context, Recipe recipe) async {
   final Result? result = await Navigator.push(
     context,
     MaterialPageRoute(
-      builder: (context) => EditRecipe(recipe: recipe),
+      builder: (context) => EditRecipeFormView(recipe: recipe),
     ),
   );
 
