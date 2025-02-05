@@ -31,7 +31,6 @@ class RecipeFormState extends State<RecipeForm> {
   late bool _favorite;
   late List<Tag> _tags;
 
-  late FocusNode _buttonFocusNode;
   late List<FocusNode> _ingredientFocusNodes = [];
 
   final TextEditingController _controller = TextEditingController();
@@ -51,8 +50,7 @@ class RecipeFormState extends State<RecipeForm> {
     _tags = widget.initialValues.tags!;
 
     _controller.addListener(_handleTextChange);
-
-    _buttonFocusNode = FocusNode();
+    ;
 
     _ingredientFocusNodes = [];
 
@@ -82,7 +80,6 @@ class RecipeFormState extends State<RecipeForm> {
     for (var ingredientFocusNode in _ingredientFocusNodes) {
       ingredientFocusNode.dispose();
     }
-    _buttonFocusNode.dispose();
 
     super.dispose();
   }
@@ -308,7 +305,7 @@ class RecipeFormState extends State<RecipeForm> {
                       width: 50,
                       child: TextFormField(
                         initialValue: _ingredients[index].unit,
-                        textInputAction: TextInputAction.done,
+                        textInputAction: TextInputAction.next,
                         autovalidateMode: AutovalidateMode.onUserInteraction,
                         decoration: const InputDecoration(
                           labelText: 'Unit',
@@ -338,9 +335,7 @@ class RecipeFormState extends State<RecipeForm> {
                       child: TextFormField(
                         initialValue: _ingredients[index].name,
                         autovalidateMode: AutovalidateMode.onUserInteraction,
-                        onFieldSubmitted: (_) {
-                          FocusScope.of(context).requestFocus(_buttonFocusNode);
-                        },
+                        textInputAction: TextInputAction.done,
                         decoration: InputDecoration(
                           labelText: 'Ingredient name',
                           hintText: 'rice',
@@ -385,11 +380,9 @@ class RecipeFormState extends State<RecipeForm> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 ElevatedButton(
-                  focusNode: _buttonFocusNode,
                   onPressed: (() {
                     _addIndgredient();
-                    _ingredientFocusNodes[_ingredientFocusNodes.length - 1]
-                        .requestFocus();
+                    _ingredientFocusNodes.last.requestFocus();
                   }),
                   child: const Text('Add ingredient'),
                 ),
