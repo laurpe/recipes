@@ -308,7 +308,7 @@ class RecipeFormState extends State<RecipeForm> {
                       width: 50,
                       child: TextFormField(
                         initialValue: _ingredients[index].unit,
-                        textInputAction: TextInputAction.next,
+                        textInputAction: TextInputAction.done,
                         autovalidateMode: AutovalidateMode.onUserInteraction,
                         decoration: const InputDecoration(
                           labelText: 'Unit',
@@ -339,7 +339,7 @@ class RecipeFormState extends State<RecipeForm> {
                         initialValue: _ingredients[index].name,
                         autovalidateMode: AutovalidateMode.onUserInteraction,
                         onFieldSubmitted: (_) {
-                          _buttonFocusNode.requestFocus();
+                          FocusScope.of(context).requestFocus(_buttonFocusNode);
                         },
                         decoration: InputDecoration(
                           labelText: 'Ingredient name',
