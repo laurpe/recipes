@@ -66,9 +66,7 @@ class RecipeFormState extends State<RecipeForm> {
   void _handleTextChange() {
     String text = _controller.text;
 
-    if (text.isNotEmpty &&
-        tagFieldRegex.hasMatch(text) &&
-        (text.endsWith(',') || text.endsWith(' '))) {
+    if (text.isNotEmpty && tagFieldRegex.hasMatch(text) && text.endsWith(' ')) {
       String trimmedText = text.substring(0, text.length - 1).trim();
       setState(() {
         _tags.add(Tag(name: trimmedText));
@@ -206,7 +204,7 @@ class RecipeFormState extends State<RecipeForm> {
               labelText: 'Tags',
               floatingLabelBehavior: FloatingLabelBehavior.always,
               contentPadding: EdgeInsets.fromLTRB(10, 20, 10, 20),
-              hintText: 'Separate tags by comma or space',
+              hintText: 'Separate tags by space',
             ),
             validator: (value) {
               if (value != null && value.isNotEmpty) {
