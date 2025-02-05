@@ -203,14 +203,22 @@ class ReorderableGroceryListState extends State<ReorderableGroceryList> {
                       return 'Please enter amount';
                     }
 
-                    if (double.tryParse(value) == null) {
+                    var formatted = value.replaceAll(',', '.');
+
+                    if (double.tryParse(formatted) == null) {
                       return 'Please enter a valid number';
+                    }
+
+                    if (double.parse(formatted) <= 0) {
+                      return 'Amount needs to be more than 0';
                     }
 
                     return null;
                   },
                   onSaved: (value) {
-                    _amount = double.parse(value!);
+                    var formatted = value!.replaceAll(',', '.');
+
+                    _amount = double.parse(formatted);
                   },
                 ),
               ),

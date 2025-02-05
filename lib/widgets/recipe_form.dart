@@ -272,17 +272,22 @@ class RecipeFormState extends State<RecipeForm> {
                           if (value == null || value.isEmpty) {
                             return 'Please enter ingredient amount';
                           }
-                          if (double.tryParse(value) == null) {
+
+                          var formatted = value.replaceAll(',', '.');
+
+                          if (double.tryParse(formatted) == null) {
                             return 'Please enter a valid number';
                           }
-                          if (double.parse(value) <= 0) {
+                          if (double.parse(formatted) <= 0) {
                             return 'Amount needs to be more than 0';
                           }
                           return null;
                         },
                         onChanged: (value) {
                           setState(() {
-                            var amountAsDouble = double.tryParse(value);
+                            var formatted = value.replaceAll(',', '.');
+
+                            var amountAsDouble = double.tryParse(formatted);
 
                             double amountPerServing = 1;
 
