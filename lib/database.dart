@@ -159,6 +159,7 @@ class DatabaseClient {
     return tagList;
   }
 
+// TODO: all tags should be used tags, this shouldn't be needed
   Future<List<Tag>> getUsedTags() async {
     final List<Map<String, dynamic>> tags = await _database.rawQuery(
         'SELECT tags.* FROM tags INNER JOIN recipe_tags ON tags.id = recipe_tags.tag_id GROUP BY tags.id');
