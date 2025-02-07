@@ -48,6 +48,16 @@ class Tag extends Equatable {
     return map;
   }
 
+  Tag copyWith({
+    int? id,
+    String? name,
+  }) {
+    return Tag(
+      id: id ?? this.id,
+      name: name ?? this.name,
+    );
+  }
+
   @override
   List<Object?> get props => [id, name];
 }

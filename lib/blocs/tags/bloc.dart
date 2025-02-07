@@ -16,5 +16,35 @@ class TagsBloc extends Bloc<TagsEvent, TagsState> {
         }
       },
     );
+    on<AddRecipeTags>((event, emit) async {
+      try {
+        print(state);
+
+        final tags = event.tags;
+        final recipeId = event.recipeId;
+
+        if (state is LoadedTagsState) {
+          final currentState = state as LoadedTagsState;
+
+          for (var tag in tags) {
+            if (tag.id == null) {
+              final id = await databaseClient.insertTag(tag);
+              tag = tag.copyWith(id: id);
+            }
+          }
+
+          await databaseClient.insertRecipeTags(
+              recipeId, tags.map((t) => t.id!).toList());
+
+          final newTags = tags.where((tag) {
+            return !currentState.tags.any((t) => t.id == tag.id);
+          }).toList();
+
+          emit(LoadedTagsState(tags: [...currentState.tags, ...newTags]));
+        }
+      } catch (error) {
+        emit(ErrorLoadingTagsState());
+      }
+    });
   }
 }

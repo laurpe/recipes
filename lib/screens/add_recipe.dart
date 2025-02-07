@@ -1,28 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
+import 'package:recipes/blocs/tags/bloc.dart';
+import 'package:recipes/blocs/tags/events.dart';
 import 'package:recipes/database.dart';
 import 'package:recipes/recipe.dart';
 import 'package:recipes/screens/recipe.dart';
 import 'package:recipes/widgets/recipe_form.dart';
 
 Future<void> submitRecipe(BuildContext context, Recipe recipe) async {
-  List<Tag> existingTags = await GetIt.I<DatabaseClient>().getTags();
-
-  List<int> tagIds = [];
-
-  for (var newTag in recipe.tags!) {
-    if (existingTags.any((tag) => tag.name == newTag.name)) {
-      Tag existingTag =
-          existingTags.firstWhere((tag) => tag.name == newTag.name);
-      tagIds.add(existingTag.id!);
-    } else {
-      int id = await GetIt.I<DatabaseClient>().insertTag(newTag);
-      tagIds.add(id);
-    }
-  }
-
   int recipeId = await GetIt.I<DatabaseClient>().insertRecipe(recipe);
-  await GetIt.I<DatabaseClient>().insertRecipeTags(recipeId, tagIds);
+
+  if (!context.mounted) return;
+  BlocProvider.of<TagsBloc>(context).add(AddRecipeTags(recipe.tags!, recipeId));
 
   if (context.mounted) {
     Navigator.of(context).pop(Added(recipe));
@@ -47,16 +37,21 @@ class AddRecipeFormView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("Add recipe"),
-      ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: RecipeForm(
-              initialValues: initialValues, submitRecipe: submitRecipe),
-        ),
-      ),
-    );
+    return BlocProvider<TagsBloc>(
+        create: (_) {
+          final databaseClient = GetIt.I<DatabaseClient>();
+          return TagsBloc(databaseClient: databaseClient)..add(GetTags());
+        },
+        child: Scaffold(
+          appBar: AppBar(
+            title: const Text("Add recipe"),
+          ),
+          body: SafeArea(
+            child: SingleChildScrollView(
+              child: RecipeForm(
+                  initialValues: initialValues, submitRecipe: submitRecipe),
+            ),
+          ),
+        ));
   }
 }
