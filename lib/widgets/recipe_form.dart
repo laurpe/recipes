@@ -1,4 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:get_it/get_it.dart';
+import 'package:recipes/blocs/tags/bloc.dart';
+import 'package:recipes/blocs/tags/events.dart';
+import 'package:recipes/blocs/tags/state.dart';
+import 'package:recipes/database.dart';
 import 'package:recipes/helpers/trim_trailing_zero.dart';
 import 'package:recipes/recipe.dart';
 
@@ -32,6 +38,7 @@ class RecipeFormState extends State<RecipeForm> {
   late List<Tag> _tags;
 
   late List<FocusNode> _ingredientFocusNodes = [];
+  final FocusNode _tagFocusNode = FocusNode();
 
   final TextEditingController _controller = TextEditingController();
 
@@ -50,7 +57,6 @@ class RecipeFormState extends State<RecipeForm> {
     _tags = widget.initialValues.tags!;
 
     _controller.addListener(_handleTextChange);
-    ;
 
     _ingredientFocusNodes = [];
 
@@ -122,277 +128,362 @@ class RecipeFormState extends State<RecipeForm> {
 
   @override
   Widget build(BuildContext context) {
-    return Form(
-      key: _formKey,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          TextFormField(
-            initialValue: _name,
-            autofocus: true,
-            textInputAction: TextInputAction.next,
-            autovalidateMode: AutovalidateMode.onUserInteraction,
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return 'Required field';
-              }
-              return null;
-            },
-            decoration: const InputDecoration(
-              labelText: 'Name',
-              hintText: 'The name of your recipe',
-              floatingLabelBehavior: FloatingLabelBehavior.always,
-              contentPadding: EdgeInsets.fromLTRB(10, 20, 10, 20),
-            ),
-            onSaved: (value) {
-              _name = value!;
-            },
-          ),
-          TextFormField(
-            initialValue: _servings.toString(),
-            textInputAction: TextInputAction.next,
-            autovalidateMode: AutovalidateMode.onUserInteraction,
-            validator: (value) {
-              if (int.tryParse(value!) == null) {
-                return 'Servings must be an integer';
-              }
-              if (int.parse(value) <= 0) {
-                return 'Servings must be greater than 0';
-              }
-              return null;
-            },
-            keyboardType: TextInputType.number,
-            decoration: const InputDecoration(
-              labelText: 'Servings',
-              hintText: 'How many portions the recipe makes',
-              floatingLabelBehavior: FloatingLabelBehavior.always,
-              contentPadding: EdgeInsets.fromLTRB(10, 20, 10, 20),
-            ),
-            onSaved: (value) => {_servings = int.parse(value!)},
-          ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(6.0, 2.0, 6.0, 0),
-            child: Wrap(
-              spacing: 8.0,
-              runSpacing: -4.0,
-              alignment: WrapAlignment.center,
-              children: [
-                for (var tag in _tags)
-                  Chip(
-                    label: Text(tag.name),
-                    onDeleted: () {
-                      setState(() {
-                        _tags.removeWhere((t) => t.name == tag.name);
-                      });
-                    },
-                    deleteIcon: const Icon(
-                      Icons.clear,
-                      size: 18,
-                    ),
-                  )
-              ],
-            ),
-          ),
-          TextFormField(
-            textInputAction: TextInputAction.next,
-            autocorrect: false,
-            controller: _controller,
-            decoration: const InputDecoration(
-              labelText: 'Tags',
-              floatingLabelBehavior: FloatingLabelBehavior.always,
-              contentPadding: EdgeInsets.fromLTRB(10, 20, 10, 20),
-              hintText: 'Separate tags by space',
-            ),
-            validator: (value) {
-              if (value != null && value.isNotEmpty) {
-                if (!tagFieldRegex.hasMatch(value)) {
-                  return 'Only letters, numbers, and hyphens are allowed';
+    return BlocProvider<TagsBloc>(
+      create: (_) {
+        final databaseClient = GetIt.I<DatabaseClient>();
+        return TagsBloc(databaseClient: databaseClient)..add(GetTags());
+      },
+      child: Form(
+        key: _formKey,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextFormField(
+              initialValue: _name,
+              autofocus: true,
+              textInputAction: TextInputAction.next,
+              autovalidateMode: AutovalidateMode.onUserInteraction,
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Required field';
                 }
-              }
-              return null;
-            },
-            autovalidateMode: AutovalidateMode.onUserInteraction,
-          ),
-          TextFormField(
-            initialValue: _instructions,
-            textInputAction: TextInputAction.next,
-            autovalidateMode: AutovalidateMode.onUserInteraction,
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return 'Required field';
-              }
-              return null;
-            },
-            decoration: const InputDecoration(
-              labelText: 'Instructions',
-              floatingLabelBehavior: FloatingLabelBehavior.always,
-              contentPadding: EdgeInsets.fromLTRB(10, 20, 10, 20),
-              hintText: 'Describe how to prepare the dish',
-            ),
-            minLines: 8,
-            maxLines: null,
-            keyboardType: TextInputType.multiline,
-            onSaved: (value) {
-              _instructions = value!;
-            },
-          ),
-          Flexible(
-            child: ListView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: _ingredients.length,
-              itemBuilder: (context, index) {
-                return Row(
-                  children: [
-                    SizedBox(
-                      width: 60,
-                      child: TextFormField(
-                        focusNode: _ingredientFocusNodes[index],
-                        textInputAction: TextInputAction.next,
-                        autovalidateMode: AutovalidateMode.onUserInteraction,
-                        keyboardType:
-                            TextInputType.numberWithOptions(decimal: true),
-                        initialValue: _ingredients[index].amountPerServing == 0
-                            ? ''
-                            : trimTrailingZero(
-                                _ingredients[index].amountPerServing *
-                                    _servings),
-                        decoration: const InputDecoration(
-                          labelText: 'Amount',
-                          hintText: '2',
-                          floatingLabelBehavior: FloatingLabelBehavior.always,
-                          contentPadding: EdgeInsets.fromLTRB(10, 20, 0, 20),
-                        ),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Please enter ingredient amount';
-                          }
-
-                          var formatted = value.replaceAll(',', '.');
-
-                          if (double.tryParse(formatted) == null) {
-                            return 'Please enter a valid number';
-                          }
-                          if (double.parse(formatted) <= 0) {
-                            return 'Amount needs to be more than 0';
-                          }
-                          return null;
-                        },
-                        onChanged: (value) {
-                          setState(() {
-                            var formatted = value.replaceAll(',', '.');
-
-                            var amountAsDouble = double.tryParse(formatted);
-
-                            double amountPerServing = 1;
-
-                            if (amountAsDouble != null) {
-                              amountPerServing = (amountAsDouble / _servings);
-                            }
-                            // Per dart documentation, .toStringAsFixed should not round numbers,
-                            // but it seems to do that anyway.
-                            _ingredients[index] = Ingredient(
-                              name: _ingredients[index].name,
-                              amountPerServing: double.parse(
-                                  amountPerServing.toStringAsFixed(6)),
-                              unit: _ingredients[index].unit,
-                            );
-                          });
-                        },
-                      ),
-                    ),
-                    SizedBox(
-                      width: 50,
-                      child: TextFormField(
-                        initialValue: _ingredients[index].unit,
-                        textInputAction: TextInputAction.next,
-                        autovalidateMode: AutovalidateMode.onUserInteraction,
-                        decoration: const InputDecoration(
-                          labelText: 'Unit',
-                          hintText: 'dl',
-                          floatingLabelBehavior: FloatingLabelBehavior.always,
-                          contentPadding: EdgeInsets.fromLTRB(10, 20, 0, 20),
-                        ),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Please enter ingredient unit';
-                          }
-                          return null;
-                        },
-                        onChanged: (value) {
-                          setState(() {
-                            _ingredients[index] = Ingredient(
-                              name: _ingredients[index].name,
-                              amountPerServing:
-                                  _ingredients[index].amountPerServing,
-                              unit: value,
-                            );
-                          });
-                        },
-                      ),
-                    ),
-                    Expanded(
-                      child: TextFormField(
-                        initialValue: _ingredients[index].name,
-                        autovalidateMode: AutovalidateMode.onUserInteraction,
-                        textInputAction: TextInputAction.done,
-                        decoration: InputDecoration(
-                          labelText: 'Ingredient name',
-                          hintText: 'rice',
-                          floatingLabelBehavior: FloatingLabelBehavior.always,
-                          contentPadding:
-                              const EdgeInsets.fromLTRB(10, 20, 10, 20),
-                          suffixIcon: IconButton(
-                            icon: const Icon(Icons.clear),
-                            onPressed: () {
-                              setState(() {
-                                _ingredients.removeAt(index);
-                              });
-                            },
-                          ),
-                        ),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Please enter ingredient name';
-                          }
-                          return null;
-                        },
-                        onChanged: (value) {
-                          setState(() {
-                            _ingredients[index] = Ingredient(
-                              name: value,
-                              amountPerServing:
-                                  _ingredients[index].amountPerServing,
-                              unit: _ingredients[index].unit,
-                            );
-                          });
-                        },
-                      ),
-                    ),
-                  ],
-                );
+                return null;
+              },
+              decoration: const InputDecoration(
+                labelText: 'Name',
+                hintText: 'The name of your recipe',
+                floatingLabelBehavior: FloatingLabelBehavior.always,
+                contentPadding: EdgeInsets.fromLTRB(10, 20, 10, 20),
+              ),
+              onSaved: (value) {
+                _name = value!;
               },
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(4.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                ElevatedButton(
-                  onPressed: (() {
-                    _addIndgredient();
-                    _ingredientFocusNodes.last.requestFocus();
-                  }),
-                  child: const Text('Add ingredient'),
-                ),
-                ElevatedButton(
-                    onPressed: () => _handleSubmit(),
-                    child: const Text('Submit')),
-              ],
+            TextFormField(
+              initialValue: _servings.toString(),
+              textInputAction: TextInputAction.next,
+              autovalidateMode: AutovalidateMode.onUserInteraction,
+              validator: (value) {
+                if (int.tryParse(value!) == null) {
+                  return 'Servings must be an integer';
+                }
+                if (int.parse(value) <= 0) {
+                  return 'Servings must be greater than 0';
+                }
+                return null;
+              },
+              keyboardType: TextInputType.number,
+              decoration: const InputDecoration(
+                labelText: 'Servings',
+                hintText: 'How many portions the recipe makes',
+                floatingLabelBehavior: FloatingLabelBehavior.always,
+                contentPadding: EdgeInsets.fromLTRB(10, 20, 10, 20),
+              ),
+              onSaved: (value) => {_servings = int.parse(value!)},
             ),
-          ),
-        ],
+            BlocBuilder<TagsBloc, TagsState>(
+              builder: (BuildContext context, TagsState state) {
+                switch (state) {
+                  case LoadingTagsState():
+                    return const Center(
+                      child: CircularProgressIndicator(),
+                    );
+
+                  case ErrorLoadingTagsState():
+                    return const Center(
+                      child: Text('Error loading tags'),
+                    );
+                  case LoadedTagsState():
+                    return Column(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(6.0, 2.0, 6.0, 0),
+                          child: Wrap(
+                            spacing: 8.0,
+                            runSpacing: -4.0,
+                            alignment: WrapAlignment.center,
+                            children: [
+                              for (var tag in _tags)
+                                Chip(
+                                  label: Text(tag.name),
+                                  onDeleted: () {
+                                    setState(() {
+                                      _tags.removeWhere(
+                                          (t) => t.name == tag.name);
+                                    });
+                                  },
+                                  deleteIcon: const Icon(
+                                    Icons.clear,
+                                    size: 18,
+                                  ),
+                                )
+                            ],
+                          ),
+                        ),
+                        RawAutocomplete<Tag>(
+                          focusNode: _tagFocusNode,
+                          textEditingController: _controller,
+                          displayStringForOption: (Tag tag) => tag.name,
+                          optionsBuilder: (TextEditingValue textEditingValue) {
+                            if (textEditingValue.text.isEmpty) {
+                              return const Iterable<Tag>.empty();
+                            }
+                            return state.tags
+                                .where((tag) => tag.name.toLowerCase().contains(
+                                    textEditingValue.text.toLowerCase()))
+                                .toList();
+                          },
+                          onSelected: (Tag tag) {
+                            setState(() {
+                              _tags.add(tag);
+                            });
+                            _controller.clear();
+                          },
+                          optionsViewBuilder: (context, onSelected, options) {
+                            return Align(
+                              alignment: Alignment.topLeft,
+                              child: Material(
+                                elevation: 4.0,
+                                child: Container(
+                                  constraints: BoxConstraints(
+                                      maxHeight: 200,
+                                      minWidth: 200), // Prevents layout issues
+                                  child: ListView.builder(
+                                    padding: EdgeInsets.zero,
+                                    shrinkWrap: true,
+                                    itemCount: options.length,
+                                    itemBuilder: (context, index) {
+                                      final tag = options.elementAt(index);
+                                      return ListTile(
+                                        title: Text(tag.name),
+                                        onTap: () {
+                                          onSelected(tag);
+                                        },
+                                      );
+                                    },
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
+                          fieldViewBuilder: (context, textEditingController,
+                              focusNode, onFieldSubmitted) {
+                            return TextFormField(
+                              controller: textEditingController,
+                              focusNode: focusNode,
+                              textInputAction: TextInputAction.next,
+                              autocorrect: false,
+                              decoration: const InputDecoration(
+                                labelText: 'Tags',
+                                floatingLabelBehavior:
+                                    FloatingLabelBehavior.always,
+                                contentPadding:
+                                    EdgeInsets.fromLTRB(10, 20, 10, 20),
+                                hintText: 'Separate tags by space',
+                              ),
+                              onFieldSubmitted: (value) {
+                                onFieldSubmitted();
+                              },
+                              validator: (value) {
+                                if (value != null && value.isNotEmpty) {
+                                  if (!tagFieldRegex.hasMatch(value)) {
+                                    return 'Only letters, numbers, and hyphens are allowed';
+                                  }
+                                }
+                                return null;
+                              },
+                              autovalidateMode:
+                                  AutovalidateMode.onUserInteraction,
+                            );
+                          },
+                        ),
+                      ],
+                    );
+                }
+              },
+            ),
+            TextFormField(
+              initialValue: _instructions,
+              textInputAction: TextInputAction.next,
+              autovalidateMode: AutovalidateMode.onUserInteraction,
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Required field';
+                }
+                return null;
+              },
+              decoration: const InputDecoration(
+                labelText: 'Instructions',
+                floatingLabelBehavior: FloatingLabelBehavior.always,
+                contentPadding: EdgeInsets.fromLTRB(10, 20, 10, 20),
+                hintText: 'Describe how to prepare the dish',
+              ),
+              minLines: 8,
+              maxLines: null,
+              keyboardType: TextInputType.multiline,
+              onSaved: (value) {
+                _instructions = value!;
+              },
+            ),
+            Flexible(
+              child: ListView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: _ingredients.length,
+                itemBuilder: (context, index) {
+                  return Row(
+                    children: [
+                      SizedBox(
+                        width: 60,
+                        child: TextFormField(
+                          focusNode: _ingredientFocusNodes[index],
+                          textInputAction: TextInputAction.next,
+                          autovalidateMode: AutovalidateMode.onUserInteraction,
+                          keyboardType:
+                              TextInputType.numberWithOptions(decimal: true),
+                          initialValue:
+                              _ingredients[index].amountPerServing == 0
+                                  ? ''
+                                  : trimTrailingZero(
+                                      _ingredients[index].amountPerServing *
+                                          _servings),
+                          decoration: const InputDecoration(
+                            labelText: 'Amount',
+                            hintText: '2',
+                            floatingLabelBehavior: FloatingLabelBehavior.always,
+                            contentPadding: EdgeInsets.fromLTRB(10, 20, 0, 20),
+                          ),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Please enter ingredient amount';
+                            }
+
+                            var formatted = value.replaceAll(',', '.');
+
+                            if (double.tryParse(formatted) == null) {
+                              return 'Please enter a valid number';
+                            }
+                            if (double.parse(formatted) <= 0) {
+                              return 'Amount needs to be more than 0';
+                            }
+                            return null;
+                          },
+                          onChanged: (value) {
+                            setState(() {
+                              var formatted = value.replaceAll(',', '.');
+
+                              var amountAsDouble = double.tryParse(formatted);
+
+                              double amountPerServing = 1;
+
+                              if (amountAsDouble != null) {
+                                amountPerServing = (amountAsDouble / _servings);
+                              }
+                              // Per dart documentation, .toStringAsFixed should not round numbers,
+                              // but it seems to do that anyway.
+                              _ingredients[index] = Ingredient(
+                                name: _ingredients[index].name,
+                                amountPerServing: double.parse(
+                                    amountPerServing.toStringAsFixed(6)),
+                                unit: _ingredients[index].unit,
+                              );
+                            });
+                          },
+                        ),
+                      ),
+                      SizedBox(
+                        width: 50,
+                        child: TextFormField(
+                          initialValue: _ingredients[index].unit,
+                          textInputAction: TextInputAction.next,
+                          autovalidateMode: AutovalidateMode.onUserInteraction,
+                          decoration: const InputDecoration(
+                            labelText: 'Unit',
+                            hintText: 'dl',
+                            floatingLabelBehavior: FloatingLabelBehavior.always,
+                            contentPadding: EdgeInsets.fromLTRB(10, 20, 0, 20),
+                          ),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Please enter ingredient unit';
+                            }
+                            return null;
+                          },
+                          onChanged: (value) {
+                            setState(() {
+                              _ingredients[index] = Ingredient(
+                                name: _ingredients[index].name,
+                                amountPerServing:
+                                    _ingredients[index].amountPerServing,
+                                unit: value,
+                              );
+                            });
+                          },
+                        ),
+                      ),
+                      Expanded(
+                        child: TextFormField(
+                          initialValue: _ingredients[index].name,
+                          autovalidateMode: AutovalidateMode.onUserInteraction,
+                          textInputAction: TextInputAction.done,
+                          decoration: InputDecoration(
+                            labelText: 'Ingredient name',
+                            hintText: 'rice',
+                            floatingLabelBehavior: FloatingLabelBehavior.always,
+                            contentPadding:
+                                const EdgeInsets.fromLTRB(10, 20, 10, 20),
+                            suffixIcon: IconButton(
+                              icon: const Icon(Icons.clear),
+                              onPressed: () {
+                                setState(() {
+                                  _ingredients.removeAt(index);
+                                });
+                              },
+                            ),
+                          ),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Please enter ingredient name';
+                            }
+                            return null;
+                          },
+                          onChanged: (value) {
+                            setState(() {
+                              _ingredients[index] = Ingredient(
+                                name: value,
+                                amountPerServing:
+                                    _ingredients[index].amountPerServing,
+                                unit: _ingredients[index].unit,
+                              );
+                            });
+                          },
+                        ),
+                      ),
+                    ],
+                  );
+                },
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(4.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  ElevatedButton(
+                    onPressed: (() {
+                      _addIndgredient();
+                      _ingredientFocusNodes.last.requestFocus();
+                    }),
+                    child: const Text('Add ingredient'),
+                  ),
+                  ElevatedButton(
+                      onPressed: () => _handleSubmit(),
+                      child: const Text('Submit')),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
