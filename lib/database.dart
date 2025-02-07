@@ -192,6 +192,17 @@ class DatabaseClient {
     }
   }
 
+  Future<void> setRecipeTags(int recipeId, List<int> tagIds) async {
+    await deleteRecipeTags(recipeId);
+
+    for (var tagId in tagIds) {
+      await _database.insert(
+        'recipe_tags',
+        {'recipe_id': recipeId, 'tag_id': tagId},
+      );
+    }
+  }
+
   Future<int> insertRecipe(Recipe recipe) async {
     var recipeMap = recipe.toMap();
     recipeMap['favorite'] = recipe.favorite ? 1 : 0;
