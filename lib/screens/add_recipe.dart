@@ -12,6 +12,7 @@ Future<void> submitRecipe(BuildContext context, Recipe recipe) async {
   int recipeId = await GetIt.I<DatabaseClient>().insertRecipe(recipe);
 
   if (!context.mounted) return;
+
   BlocProvider.of<TagsBloc>(context).add(AddRecipeTags(recipe.tags!, recipeId));
 
   if (context.mounted) {
@@ -37,21 +38,16 @@ class AddRecipeFormView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider<TagsBloc>(
-        create: (_) {
-          final databaseClient = GetIt.I<DatabaseClient>();
-          return TagsBloc(databaseClient: databaseClient)..add(GetTags());
-        },
-        child: Scaffold(
-          appBar: AppBar(
-            title: const Text("Add recipe"),
-          ),
-          body: SafeArea(
-            child: SingleChildScrollView(
-              child: RecipeForm(
-                  initialValues: initialValues, submitRecipe: submitRecipe),
-            ),
-          ),
-        ));
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("Add recipe"),
+      ),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: RecipeForm(
+              initialValues: initialValues, submitRecipe: submitRecipe),
+        ),
+      ),
+    );
   }
 }

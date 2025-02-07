@@ -18,23 +18,22 @@ class TagsBloc extends Bloc<TagsEvent, TagsState> {
     );
     on<AddRecipeTags>((event, emit) async {
       try {
-        print(state);
-
         final tags = event.tags;
         final recipeId = event.recipeId;
 
         if (state is LoadedTagsState) {
           final currentState = state as LoadedTagsState;
 
-          for (var tag in tags) {
-            if (tag.id == null) {
-              final id = await databaseClient.insertTag(tag);
-              tag = tag.copyWith(id: id);
+          for (int i = 0; i < tags.length; i++) {
+            if (tags[i].id == null) {
+              final id = await databaseClient.insertTag(tags[i]);
+              tags[i] = tags[i].copyWith(id: id);
             }
           }
 
-          await databaseClient.insertRecipeTags(
-              recipeId, tags.map((t) => t.id!).toList());
+          final tagIds = tags.map((t) => t.id!).toList();
+
+          await databaseClient.insertRecipeTags(recipeId, tagIds);
 
           final newTags = tags.where((tag) {
             return !currentState.tags.any((t) => t.id == tag.id);
