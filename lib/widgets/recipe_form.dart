@@ -238,8 +238,7 @@ class RecipeFormState extends State<RecipeForm> {
                               elevation: 4.0,
                               child: Container(
                                 constraints: BoxConstraints(
-                                    maxHeight: 200,
-                                    minWidth: 200), // Prevents layout issues
+                                    maxHeight: 200, minWidth: 200),
                                 child: ListView.builder(
                                   padding: EdgeInsets.zero,
                                   shrinkWrap: true,
