@@ -187,7 +187,8 @@ class SingleRecipeView extends StatelessWidget {
               child: const Text('Yes'),
               onPressed: () async {
                 try {
-                  await GetIt.I<DatabaseClient>().deleteRecipe(recipeId);
+                  await GetIt.I<DatabaseClient>()
+                      .deleteRecipeAndUnusedTags(recipeId);
 
                   if (!context.mounted) return;
 

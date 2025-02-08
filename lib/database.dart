@@ -312,7 +312,7 @@ class DatabaseClient {
 
   /// Deletes a recipe and tags that are not used by
   /// any other recipe.
-  Future<void> deleteRecipe(int recipeId) async {
+  Future<void> deleteRecipeAndUnusedTags(int recipeId) async {
     await _database.transaction((txn) async {
       await txn.delete('recipes', where: 'id = ?', whereArgs: [recipeId]);
 

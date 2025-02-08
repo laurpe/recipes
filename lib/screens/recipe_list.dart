@@ -4,6 +4,7 @@ import 'package:recipes/blocs/recipes/bloc.dart';
 import 'package:recipes/blocs/recipes/events.dart';
 import 'package:recipes/blocs/recipes/state.dart';
 import 'package:recipes/blocs/tags/bloc.dart';
+import 'package:recipes/blocs/tags/events.dart';
 import 'package:recipes/blocs/tags/state.dart';
 import 'package:recipes/recipe.dart';
 import 'package:recipes/screens/add_recipe.dart';
@@ -247,6 +248,7 @@ class RecipeListTile extends StatelessWidget {
             );
             BlocProvider.of<RecipesBloc>(context)
                 .add(RecipeDeleted(recipeId: result.data!));
+            BlocProvider.of<TagsBloc>(context).add(GetTags());
           }
 
           /// Get recipe when returning from single recipe page
