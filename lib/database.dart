@@ -159,22 +159,6 @@ class DatabaseClient {
     return tagList;
   }
 
-  Future<List<Tag>> getUsedTags() async {
-    final List<Map<String, dynamic>> tags = await _database.rawQuery(
-        'SELECT tags.* FROM tags INNER JOIN recipe_tags ON tags.id = recipe_tags.tag_id GROUP BY tags.id');
-
-    List<Tag> tagList = [];
-
-    for (var tag in tags) {
-      tagList.add(Tag(
-        id: tag['id'],
-        name: tag['name'],
-      ));
-    }
-
-    return tagList;
-  }
-
   Future<void> insertIngredient(Ingredient ingredient, int recipeId) async {
     await _database.insert(
       'ingredients',
@@ -183,6 +167,17 @@ class DatabaseClient {
   }
 
   Future<void> insertRecipeTags(int recipeId, List<int> tagIds) async {
+    for (var tagId in tagIds) {
+      await _database.insert(
+        'recipe_tags',
+        {'recipe_id': recipeId, 'tag_id': tagId},
+      );
+    }
+  }
+
+  Future<void> setRecipeTags(int recipeId, List<int> tagIds) async {
+    await deleteRecipeTags(recipeId);
+
     for (var tagId in tagIds) {
       await _database.insert(
         'recipe_tags',
@@ -298,8 +293,19 @@ class DatabaseClient {
         .update('recipes', recipeMap, where: 'id = ?', whereArgs: [recipe.id]);
   }
 
-  Future<void> deleteRecipe(int recipeId) async {
-    await _database.delete('recipes', where: 'id = ?', whereArgs: [recipeId]);
+  /// Deletes a recipe and tags that are not used by
+  /// any other recipe.
+  Future<void> deleteRecipeAndUnusedTags(int recipeId) async {
+    await _database.transaction((txn) async {
+      await txn.delete('recipes', where: 'id = ?', whereArgs: [recipeId]);
+
+      await txn.rawDelete('''
+        DELETE FROM tags 
+        WHERE id NOT IN (
+            SELECT DISTINCT tag_id FROM recipe_tags
+        )
+      ''');
+    });
   }
 
   Future<Recipe> getRecipe(int recipeId) async {

@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:recipes/blocs/tags/bloc.dart';
+import 'package:recipes/blocs/tags/state.dart';
 import 'package:recipes/helpers/trim_trailing_zero.dart';
 import 'package:recipes/recipe.dart';
 
@@ -32,6 +35,7 @@ class RecipeFormState extends State<RecipeForm> {
   late List<Tag> _tags;
 
   late List<FocusNode> _ingredientFocusNodes = [];
+  final FocusNode _tagFocusNode = FocusNode();
 
   final TextEditingController _controller = TextEditingController();
 
@@ -50,7 +54,6 @@ class RecipeFormState extends State<RecipeForm> {
     _tags = widget.initialValues.tags!;
 
     _controller.addListener(_handleTextChange);
-    ;
 
     _ingredientFocusNodes = [];
 
@@ -170,48 +173,125 @@ class RecipeFormState extends State<RecipeForm> {
             ),
             onSaved: (value) => {_servings = int.parse(value!)},
           ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(6.0, 2.0, 6.0, 0),
-            child: Wrap(
-              spacing: 8.0,
-              runSpacing: -4.0,
-              alignment: WrapAlignment.center,
-              children: [
-                for (var tag in _tags)
-                  Chip(
-                    label: Text(tag.name),
-                    onDeleted: () {
-                      setState(() {
-                        _tags.removeWhere((t) => t.name == tag.name);
-                      });
-                    },
-                    deleteIcon: const Icon(
-                      Icons.clear,
-                      size: 18,
-                    ),
-                  )
-              ],
-            ),
-          ),
-          TextFormField(
-            textInputAction: TextInputAction.next,
-            autocorrect: false,
-            controller: _controller,
-            decoration: const InputDecoration(
-              labelText: 'Tags',
-              floatingLabelBehavior: FloatingLabelBehavior.always,
-              contentPadding: EdgeInsets.fromLTRB(10, 20, 10, 20),
-              hintText: 'Separate tags by space',
-            ),
-            validator: (value) {
-              if (value != null && value.isNotEmpty) {
-                if (!tagFieldRegex.hasMatch(value)) {
-                  return 'Only letters, numbers, and hyphens are allowed';
-                }
+          BlocBuilder<TagsBloc, TagsState>(
+            builder: (BuildContext context, TagsState state) {
+              switch (state) {
+                case LoadingTagsState():
+                  return const Center(
+                    child: CircularProgressIndicator(),
+                  );
+
+                case ErrorLoadingTagsState():
+                  return const Center(
+                    child: Text('Error loading tags'),
+                  );
+                case LoadedTagsState():
+                  return Column(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(6.0, 2.0, 6.0, 0),
+                        child: Wrap(
+                          spacing: 8.0,
+                          runSpacing: -4.0,
+                          alignment: WrapAlignment.center,
+                          children: [
+                            for (var tag in _tags)
+                              Chip(
+                                label: Text(tag.name),
+                                onDeleted: () {
+                                  setState(() {
+                                    _tags
+                                        .removeWhere((t) => t.name == tag.name);
+                                  });
+                                },
+                                deleteIcon: const Icon(
+                                  Icons.clear,
+                                  size: 18,
+                                ),
+                              )
+                          ],
+                        ),
+                      ),
+                      RawAutocomplete<Tag>(
+                        focusNode: _tagFocusNode,
+                        textEditingController: _controller,
+                        displayStringForOption: (Tag tag) => tag.name,
+                        optionsBuilder: (TextEditingValue textEditingValue) {
+                          if (textEditingValue.text.isEmpty) {
+                            return const Iterable<Tag>.empty();
+                          }
+                          return state.tags
+                              .where((tag) => tag.name.toLowerCase().contains(
+                                  textEditingValue.text.toLowerCase()))
+                              .toList();
+                        },
+                        onSelected: (Tag tag) {
+                          setState(() {
+                            _tags.add(tag);
+                          });
+                          _controller.clear();
+                        },
+                        optionsViewBuilder: (context, onSelected, options) {
+                          return Align(
+                            alignment: Alignment.topLeft,
+                            child: Material(
+                              elevation: 4.0,
+                              child: Container(
+                                constraints: BoxConstraints(
+                                    maxHeight: 200, minWidth: 200),
+                                child: ListView.builder(
+                                  padding: EdgeInsets.zero,
+                                  shrinkWrap: true,
+                                  itemCount: options.length,
+                                  itemBuilder: (context, index) {
+                                    final tag = options.elementAt(index);
+                                    return ListTile(
+                                      title: Text(tag.name),
+                                      onTap: () {
+                                        onSelected(tag);
+                                      },
+                                    );
+                                  },
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                        fieldViewBuilder: (context, textEditingController,
+                            focusNode, onFieldSubmitted) {
+                          return TextFormField(
+                            controller: textEditingController,
+                            focusNode: focusNode,
+                            textInputAction: TextInputAction.next,
+                            autocorrect: false,
+                            decoration: const InputDecoration(
+                              labelText: 'Tags',
+                              floatingLabelBehavior:
+                                  FloatingLabelBehavior.always,
+                              contentPadding:
+                                  EdgeInsets.fromLTRB(10, 20, 10, 20),
+                              hintText: 'Separate tags by space',
+                            ),
+                            onFieldSubmitted: (value) {
+                              onFieldSubmitted();
+                            },
+                            validator: (value) {
+                              if (value != null && value.isNotEmpty) {
+                                if (!tagFieldRegex.hasMatch(value)) {
+                                  return 'Only letters, numbers, and hyphens are allowed';
+                                }
+                              }
+                              return null;
+                            },
+                            autovalidateMode:
+                                AutovalidateMode.onUserInteraction,
+                          );
+                        },
+                      ),
+                    ],
+                  );
               }
-              return null;
             },
-            autovalidateMode: AutovalidateMode.onUserInteraction,
           ),
           TextFormField(
             initialValue: _instructions,

@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:get_it/get_it.dart';
 import 'package:recipes/blocs/recipes/bloc.dart';
 import 'package:recipes/blocs/recipes/events.dart';
 import 'package:recipes/blocs/recipes/state.dart';
-import 'package:recipes/database.dart';
+import 'package:recipes/blocs/tags/bloc.dart';
+import 'package:recipes/blocs/tags/events.dart';
+import 'package:recipes/blocs/tags/state.dart';
 import 'package:recipes/recipe.dart';
 import 'package:recipes/screens/add_recipe.dart';
 import 'package:recipes/screens/groceries.dart';
@@ -33,14 +34,7 @@ class RecipeList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) {
-        final databaseClient = GetIt.I<DatabaseClient>();
-        return RecipesBloc(databaseClient: databaseClient)
-          ..add(const GetRecipes());
-      },
-      child: const RecipeListView(),
-    );
+    return RecipeListView();
   }
 }
 
@@ -55,18 +49,12 @@ class RecipeListView extends StatefulWidget {
 
 class _RecipeListViewState extends State<RecipeListView> {
   bool _showFilters = false;
-  List<Tag> tags = [];
   List<Tag> selectedTags = [];
   bool _favoriteSelected = false;
-
-  Future<List<Tag>> getUsedTags() async {
-    return await GetIt.I<DatabaseClient>().getUsedTags();
-  }
 
   @override
   void initState() {
     super.initState();
-    getUsedTags().then((value) => setState(() => tags = value));
   }
 
   @override
@@ -75,9 +63,6 @@ class _RecipeListViewState extends State<RecipeListView> {
       floatingActionButton: FloatingActionButton(
           onPressed: () async {
             await openAddRecipe(context);
-
-            ///TODO: refactor this to use bloc.
-            await getUsedTags().then((value) => setState(() => tags = value));
           },
           child: const Icon(Icons.add)),
       appBar: AppBar(
@@ -125,39 +110,66 @@ class _RecipeListViewState extends State<RecipeListView> {
                             .add(GetRecipes(query: value));
                       },
                     ),
-                    Wrap(
-                      spacing: 8.0,
-                      runSpacing: -4.0,
-                      alignment: WrapAlignment.center,
+                    Column(
                       children: [
-                        FilterChip(
-                            label: const Text('favorite'),
-                            selected: _favoriteSelected,
-                            onSelected: (selected) {
-                              setState(() {
-                                _favoriteSelected = selected;
-                                BlocProvider.of<RecipesBloc>(context).add(
-                                    GetRecipes(favorites: _favoriteSelected));
-                              });
-                            }),
-                        for (final tag in tags)
-                          FilterChip(
-                            label: Text(tag.name),
-                            selected: selectedTags.contains(tag),
-                            onSelected: (selected) {
-                              setState(() {
-                                if (selected) {
-                                  selectedTags.add(tag);
-                                  BlocProvider.of<RecipesBloc>(context)
-                                      .add(GetRecipes(tags: selectedTags));
-                                } else {
-                                  selectedTags.remove(tag);
-                                  BlocProvider.of<RecipesBloc>(context)
-                                      .add(GetRecipes(tags: selectedTags));
-                                }
-                              });
-                            },
-                          ),
+                        BlocBuilder<TagsBloc, TagsState>(builder: (
+                          BuildContext context,
+                          TagsState state,
+                        ) {
+                          switch (state) {
+                            case LoadingTagsState():
+                              return const Center(
+                                child: CircularProgressIndicator(),
+                              );
+
+                            case ErrorLoadingTagsState():
+                              return const Center(
+                                child: Text('Error loading tags'),
+                              );
+                            case LoadedTagsState():
+                              return Wrap(
+                                spacing: 8.0,
+                                runSpacing: -4.0,
+                                alignment: WrapAlignment.center,
+                                children: [
+                                  FilterChip(
+                                      label: const Text('favorite'),
+                                      selected: _favoriteSelected,
+                                      onSelected: (selected) {
+                                        setState(() {
+                                          _favoriteSelected = selected;
+                                          BlocProvider.of<RecipesBloc>(context)
+                                              .add(GetRecipes(
+                                                  favorites:
+                                                      _favoriteSelected));
+                                        });
+                                      }),
+                                  for (final tag in state.tags)
+                                    FilterChip(
+                                      label: Text(tag.name),
+                                      selected: selectedTags.contains(tag),
+                                      onSelected: (selected) {
+                                        setState(() {
+                                          if (selected) {
+                                            selectedTags.add(tag);
+                                            BlocProvider.of<RecipesBloc>(
+                                                    context)
+                                                .add(GetRecipes(
+                                                    tags: selectedTags));
+                                          } else {
+                                            selectedTags.remove(tag);
+                                            BlocProvider.of<RecipesBloc>(
+                                                    context)
+                                                .add(GetRecipes(
+                                                    tags: selectedTags));
+                                          }
+                                        });
+                                      },
+                                    ),
+                                ],
+                              );
+                          }
+                        }),
                       ],
                     ),
                   ],
@@ -236,6 +248,7 @@ class RecipeListTile extends StatelessWidget {
             );
             BlocProvider.of<RecipesBloc>(context)
                 .add(RecipeDeleted(recipeId: result.data!));
+            BlocProvider.of<TagsBloc>(context).add(GetTags());
           }
 
           /// Get recipe when returning from single recipe page
