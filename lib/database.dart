@@ -310,8 +310,19 @@ class DatabaseClient {
         .update('recipes', recipeMap, where: 'id = ?', whereArgs: [recipe.id]);
   }
 
+  /// Deletes a recipe and tags that are not used by
+  /// any other recipe.
   Future<void> deleteRecipe(int recipeId) async {
-    await _database.delete('recipes', where: 'id = ?', whereArgs: [recipeId]);
+    await _database.transaction((txn) async {
+      await txn.delete('recipes', where: 'id = ?', whereArgs: [recipeId]);
+
+      await txn.rawDelete('''
+        DELETE FROM tags 
+        WHERE id NOT IN (
+            SELECT DISTINCT tag_id FROM recipe_tags
+        )
+      ''');
+    });
   }
 
   Future<Recipe> getRecipe(int recipeId) async {
