@@ -159,23 +159,6 @@ class DatabaseClient {
     return tagList;
   }
 
-// TODO: all tags should be used tags, this shouldn't be needed
-  Future<List<Tag>> getUsedTags() async {
-    final List<Map<String, dynamic>> tags = await _database.rawQuery(
-        'SELECT tags.* FROM tags INNER JOIN recipe_tags ON tags.id = recipe_tags.tag_id GROUP BY tags.id');
-
-    List<Tag> tagList = [];
-
-    for (var tag in tags) {
-      tagList.add(Tag(
-        id: tag['id'],
-        name: tag['name'],
-      ));
-    }
-
-    return tagList;
-  }
-
   Future<void> insertIngredient(Ingredient ingredient, int recipeId) async {
     await _database.insert(
       'ingredients',
