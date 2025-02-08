@@ -162,6 +162,9 @@ class RecipeFormState extends State<RecipeForm> {
               if (int.parse(value) <= 0) {
                 return 'Servings must be greater than 0';
               }
+              if (int.parse(value) > 100) {
+                return 'Servings must be less than 100';
+              }
               return null;
             },
             keyboardType: TextInputType.number,
@@ -171,7 +174,7 @@ class RecipeFormState extends State<RecipeForm> {
               floatingLabelBehavior: FloatingLabelBehavior.always,
               contentPadding: EdgeInsets.fromLTRB(10, 20, 10, 20),
             ),
-            onSaved: (value) => {_servings = int.parse(value!)},
+            onChanged: (value) => {_servings = int.tryParse(value) ?? 1},
           ),
           BlocBuilder<TagsBloc, TagsState>(
             builder: (BuildContext context, TagsState state) {
