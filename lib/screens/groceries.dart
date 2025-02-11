@@ -6,7 +6,7 @@ import 'package:recipes/blocs/groceries/events.dart';
 import 'package:recipes/blocs/groceries/state.dart';
 import 'package:recipes/database.dart';
 import 'package:recipes/grocery.dart';
-import 'package:recipes/helpers/trim_trailing_zero.dart';
+import 'package:recipes/helpers/ingredient_formatters.dart';
 
 class GroceriesList extends StatelessWidget {
   const GroceriesList({super.key});
@@ -318,7 +318,7 @@ class ReorderableGroceryListState extends State<ReorderableGroceryList> {
                         }
                       },
                       title: Text(
-                          '${trimTrailingZero(grocery.amount)} ${grocery.unit} ${grocery.name}',
+                          '${removeTrailingZero(grocery.amount)} ${grocery.unit} ${grocery.name}',
                           style: grocery.isBought
                               ? const TextStyle(
                                   decoration: TextDecoration.lineThrough)

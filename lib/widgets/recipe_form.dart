@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:recipes/blocs/tags/bloc.dart';
 import 'package:recipes/blocs/tags/state.dart';
-import 'package:recipes/helpers/format_ingredient_amount.dart';
+import 'package:recipes/helpers/ingredient_formatters.dart';
 import 'package:recipes/recipe.dart';
 
 /// The ingredient amounts the user adds are for the amount of servings the recipe yields.
@@ -359,8 +359,8 @@ class RecipeFormState extends State<RecipeForm> {
                         initialValue: _ingredients[index].amountPerServing == 0
                             ? ''
                             : formatIngredientAmount(
-                                _ingredients[index].amountPerServing,
-                                _servings),
+                                _ingredients[index].amountPerServing *
+                                    _servings),
                         decoration: const InputDecoration(
                           labelText: 'Amount',
                           hintText: '2',

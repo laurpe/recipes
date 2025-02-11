@@ -6,7 +6,7 @@ import 'package:recipes/blocs/recipe/events.dart';
 import 'package:recipes/blocs/recipe/state.dart';
 import 'package:recipes/database.dart';
 import 'package:recipes/grocery.dart';
-import 'package:recipes/helpers/format_ingredient_amount.dart';
+import 'package:recipes/helpers/ingredient_formatters.dart';
 import 'package:recipes/recipe.dart';
 import 'package:recipes/screens/edit_recipe.dart';
 
@@ -331,8 +331,8 @@ class SingleRecipeView extends StatelessWidget {
                                 width: 60,
                                 child: Text(
                                   formatIngredientAmount(
-                                      ingredient.amountPerServing,
-                                      state.recipe.servings),
+                                      ingredient.amountPerServing *
+                                          state.recipe.servings),
                                 ),
                               ),
                               SizedBox(width: 60, child: Text(ingredient.unit)),
