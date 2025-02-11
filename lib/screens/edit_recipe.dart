@@ -29,7 +29,10 @@ class EditRecipeFormView extends StatelessWidget {
             Recipe(
               name: '',
               instructions: '',
-              ingredients: [],
+              ingredients: [
+                const Ingredient(
+                    name: '', amountPerServing: 0, unit: IngredientUnit.dl)
+              ],
               favorite: false,
               servings: 4,
               tags: [],

@@ -1,9 +1,11 @@
 import 'package:equatable/equatable.dart';
 
+enum IngredientUnit { ml, dl, l, tsp, tbsp, g, kg, pcs }
+
 class Ingredient extends Equatable {
   final int? id;
   final double amountPerServing;
-  final String unit;
+  final IngredientUnit unit;
   final String name;
 
   const Ingredient(
@@ -15,7 +17,7 @@ class Ingredient extends Equatable {
   Map<String, dynamic> toMap() {
     Map<String, dynamic> map = {
       'amount_per_serving': amountPerServing,
-      'unit': unit,
+      'unit': unit.name,
       'name': name,
     };
 

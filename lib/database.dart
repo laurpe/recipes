@@ -152,7 +152,8 @@ class DatabaseClient {
         id: ingredientMaps[i]['id'],
         name: ingredientMaps[i]['name'],
         amountPerServing: ingredientMaps[i]['amount_per_serving'],
-        unit: ingredientMaps[i]['unit'],
+        unit: IngredientUnit.values
+            .firstWhere((unit) => unit.name == ingredientMaps[i]['unit']),
       );
     });
   }

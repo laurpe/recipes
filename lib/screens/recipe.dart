@@ -40,7 +40,7 @@ Future<void> addGroceries(Recipe recipe, BuildContext context) async {
       Grocery(
         name: ingredient.name,
         amount: ingredient.amountPerServing * recipe.servings,
-        unit: ingredient.unit,
+        unit: ingredient.unit.name,
         isBought: false,
         listOrder: timestamp + ingredients.indexOf(ingredient),
       ),
@@ -335,7 +335,8 @@ class SingleRecipeView extends StatelessWidget {
                                       state.recipe.servings),
                                 ),
                               ),
-                              SizedBox(width: 60, child: Text(ingredient.unit)),
+                              SizedBox(
+                                  width: 60, child: Text(ingredient.unit.name)),
                               Text(ingredient.name)
                             ],
                           ),

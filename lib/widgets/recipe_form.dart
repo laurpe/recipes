@@ -89,8 +89,8 @@ class RecipeFormState extends State<RecipeForm> {
 
   void _addIndgredient() {
     setState(() {
-      _ingredients
-          .add(const Ingredient(name: '', amountPerServing: 0, unit: ''));
+      _ingredients.add(const Ingredient(
+          name: '', amountPerServing: 0, unit: IngredientUnit.dl));
       final ingredientFocusNode = FocusNode();
       _ingredientFocusNodes.add(ingredientFocusNode);
     });
@@ -385,35 +385,29 @@ class RecipeFormState extends State<RecipeForm> {
                       ),
                     ),
                     SizedBox(
-                      width: 50,
-                      child: TextFormField(
-                        initialValue: _ingredients[index].unit,
-                        textInputAction: TextInputAction.next,
-                        autovalidateMode: AutovalidateMode.onUserInteraction,
-                        decoration: const InputDecoration(
-                          labelText: 'Unit',
-                          hintText: 'dl',
-                          floatingLabelBehavior: FloatingLabelBehavior.always,
-                          contentPadding: EdgeInsets.fromLTRB(10, 20, 0, 20),
-                        ),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Please enter ingredient unit';
-                          }
-                          return null;
-                        },
-                        onChanged: (value) {
-                          setState(() {
+                        width: 70,
+                        child: DropdownButtonFormField(
+                          value: IngredientUnit.dl,
+                          onChanged: (value) {
                             _ingredients[index] = Ingredient(
                               name: _ingredients[index].name,
                               amountPerServing:
                                   _ingredients[index].amountPerServing,
-                              unit: value,
+                              unit: value!,
                             );
-                          });
-                        },
-                      ),
-                    ),
+                          },
+                          items: IngredientUnit.values.map((unit) {
+                            return DropdownMenuItem<IngredientUnit>(
+                              value: unit,
+                              child: Text(unit.name),
+                            );
+                          }).toList(),
+                          decoration: const InputDecoration(
+                            labelText: 'Unit',
+                            floatingLabelBehavior: FloatingLabelBehavior.always,
+                            contentPadding: EdgeInsets.fromLTRB(10, 20, 0, 20),
+                          ),
+                        )),
                     Expanded(
                       child: TextFormField(
                         initialValue: _ingredients[index].name,

@@ -70,7 +70,7 @@ Future<void> addGroceries(
       Grocery(
         name: ingredient.name,
         amount: ingredient.amountPerServing * servings,
-        unit: ingredient.unit,
+        unit: ingredient.unit.name,
         isBought: false,
         listOrder: timestamp + ingredients.indexOf(ingredient),
       ),
