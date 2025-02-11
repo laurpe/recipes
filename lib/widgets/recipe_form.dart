@@ -2,13 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:recipes/blocs/tags/bloc.dart';
 import 'package:recipes/blocs/tags/state.dart';
-import 'package:recipes/helpers/trim_trailing_zero.dart';
+import 'package:recipes/helpers/format_ingredient_amount.dart';
 import 'package:recipes/recipe.dart';
 
-/*
-The ingredient amounts the user adds are for the amount of servings the recipe yields.
-From that input, ingredient amount_per_serving is calculated and stored to the database.
-*/
+/// The ingredient amounts the user adds are for the amount of servings the recipe yields.
+/// From that input, ingredient amount_per_serving is calculated and stored to the database.
 
 class RecipeForm extends StatefulWidget {
   final Recipe initialValues;
@@ -162,6 +160,9 @@ class RecipeFormState extends State<RecipeForm> {
               if (int.parse(value) <= 0) {
                 return 'Servings must be greater than 0';
               }
+              if (int.parse(value) > 100) {
+                return 'Servings must be less than 100';
+              }
               return null;
             },
             keyboardType: TextInputType.number,
@@ -171,7 +172,30 @@ class RecipeFormState extends State<RecipeForm> {
               floatingLabelBehavior: FloatingLabelBehavior.always,
               contentPadding: EdgeInsets.fromLTRB(10, 20, 10, 20),
             ),
-            onSaved: (value) => {_servings = int.parse(value!)},
+            onChanged: (value) {
+              /// When serving size is changed, we want to keep
+              /// the ingredient amounts the same. For this, we need
+              /// to calculate the amountPerServing to match the
+              /// new serving size, so that we store correct amountPerServing
+              /// to the database.
+
+              var originalServings = _servings;
+
+              _servings = int.tryParse(value) ?? 1;
+
+              for (var i = 0; i < _ingredients.length; i++) {
+                var originalTotal =
+                    _ingredients[i].amountPerServing * originalServings;
+                var newAmount = originalTotal / _servings;
+
+                _ingredients[i] = Ingredient(
+                  name: _ingredients[i].name,
+                  amountPerServing:
+                      _ingredients[i].amountPerServing != 0 ? newAmount : 0,
+                  unit: _ingredients[i].unit,
+                );
+              }
+            },
           ),
           BlocBuilder<TagsBloc, TagsState>(
             builder: (BuildContext context, TagsState state) {
@@ -334,9 +358,9 @@ class RecipeFormState extends State<RecipeForm> {
                             TextInputType.numberWithOptions(decimal: true),
                         initialValue: _ingredients[index].amountPerServing == 0
                             ? ''
-                            : trimTrailingZero(
-                                _ingredients[index].amountPerServing *
-                                    _servings),
+                            : formatIngredientAmount(
+                                _ingredients[index].amountPerServing,
+                                _servings),
                         decoration: const InputDecoration(
                           labelText: 'Amount',
                           hintText: '2',

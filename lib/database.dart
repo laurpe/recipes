@@ -2,7 +2,6 @@ import 'dart:async';
 import 'package:path/path.dart';
 import 'package:recipes/grocery.dart';
 import 'package:recipes/meal_plan.dart';
-//import 'package:recipes/seed_data.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:recipes/recipe.dart';
 
@@ -57,8 +56,6 @@ class DatabaseClient {
             name TEXT NOT NULL,
             servings_per_meal INTEGER NOT NULL
             )''');
-        // await db
-        //     .execute('INSERT INTO meal_plans VALUES (1, "Viikon ruoat", 2)');
 
         await db.execute('''CREATE TABLE days(
             id INTEGER PRIMARY KEY,
@@ -66,11 +63,6 @@ class DatabaseClient {
             meal_plan_id INTEGER NOT NULL,
             FOREIGN KEY(meal_plan_id) REFERENCES meal_plans(id) ON DELETE CASCADE
             )''');
-        // await db.execute('INSERT INTO days VALUES (1, "Maanantai", 1)');
-        // await db.execute('INSERT INTO days VALUES (2, "Tiistai", 1)');
-        // await db.execute('INSERT INTO days VALUES (3, "Keskiviikko", 1)');
-        // await db.execute('INSERT INTO days VALUES (4, "Torstai", 1)');
-        // await db.execute('INSERT INTO days VALUES (5, "Perjantai", 1)');
 
         await db.execute('''CREATE TABLE meals(
             id INTEGER PRIMARY KEY,
@@ -80,63 +72,12 @@ class DatabaseClient {
             FOREIGN KEY(day_id) REFERENCES days(id) ON DELETE CASCADE,
             FOREIGN KEY(recipe_id) REFERENCES recipes(id) ON DELETE CASCADE
             )''');
-        // await _seedRecipes(db, seedRecipes);
-        // await _seedTags(db, seedTags);
-        // await _seedRecipeTags(db);
-
-        // await db.execute('INSERT INTO meals VALUES (1, "Lounas", 1, 1)');
-        // await db.execute('INSERT INTO meals VALUES (2, "Päivällinen", 1, 2)');
-        // await db.execute('INSERT INTO meals VALUES (3, "Lounas", 2, 3)');
-        // await db.execute('INSERT INTO meals VALUES (4, "Päivällinen", 2, 4)');
-        // await db.execute('INSERT INTO meals VALUES (5, "Lounas", 3, 1)');
-        // await db.execute('INSERT INTO meals VALUES (6, "Päivällinen", 3, 2)');
-        // await db.execute('INSERT INTO meals VALUES (7, "Lounas", 4, 3)');
-        // await db.execute('INSERT INTO meals VALUES (8, "Päivällinen", 4, 4)');
-        // await db.execute('INSERT INTO meals VALUES (9, "Lounas", 5, 1)');
-        // await db.execute('INSERT INTO meals VALUES (10, "Päivällinen", 5, 2)');
       },
       // onUpgrade: (db, oldVersion, newVersion) async {
       // },
       version: 1,
     );
   }
-
-  // Future<void> _seedRecipes(Database db, List<Recipe> recipes) async {
-  //   for (var recipe in recipes) {
-  //     var recipeMap = recipe.toMap();
-  //     recipeMap['favorite'] = recipe.favorite ? 1 : 0;
-
-  //     final recipeId = await db.insert(
-  //       'recipes',
-  //       recipeMap,
-  //     );
-
-  //     for (var ingredient in recipe.ingredients) {
-  //       await db.insert(
-  //         'ingredients',
-  //         {...ingredient.toMap(), 'recipeId': recipeId},
-  //       );
-  //     }
-  //   }
-  // }
-
-  // Future<void> _seedTags(db, List<String> tags) async {
-  //   for (var tag in tags) {
-  //     await db.insert(
-  //       'tags',
-  //       {'name': tag},
-  //     );
-  //   }
-  // }
-
-  // Future<void> _seedRecipeTags(Database db) async {
-  //   /// depends on recipe and tag seeds
-  //   db.insert('recipe_tags', {'recipe_id': 1, 'tag_id': 4});
-  //   db.insert('recipe_tags', {'recipe_id': 2, 'tag_id': 4});
-  //   db.insert('recipe_tags', {'recipe_id': 3, 'tag_id': 2});
-  //   db.insert('recipe_tags', {'recipe_id': 4, 'tag_id': 2});
-  //   db.insert('recipe_tags', {'recipe_id': 4, 'tag_id': 3});
-  // }
 
   Future<int> insertTag(Tag tag) async {
     return await _database.insert(
@@ -608,7 +549,6 @@ class DatabaseClient {
     }
   }
 
-  // TODO: later might want to also delete days and meals
   Future<void> deleteMealPlan(int mealPlanId) {
     return _database
         .delete('meal_plans', where: 'id = ?', whereArgs: [mealPlanId]);
