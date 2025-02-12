@@ -22,7 +22,8 @@ class Grocery extends Equatable {
       'amount': amount,
       'unit': unit,
       'name': name,
-      'is_bought': isBought,
+      // sqflite wants booleans as a number
+      'is_bought': isBought ? 1 : 0,
       'list_order': listOrder,
     };
 

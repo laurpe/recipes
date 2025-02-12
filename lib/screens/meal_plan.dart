@@ -6,6 +6,7 @@ import 'package:recipes/blocs/meal_plan/events.dart';
 import 'package:recipes/blocs/meal_plan/state.dart';
 import 'package:recipes/database.dart';
 import 'package:recipes/grocery.dart';
+import 'package:recipes/helpers/add_ingredients_to_groceries.dart';
 import 'package:recipes/meal_plan.dart';
 import 'package:recipes/recipe.dart';
 import 'package:recipes/screens/edit_meal_plan.dart';
@@ -29,19 +30,19 @@ class Added extends Result<MealPlan> {
   Added(MealPlan super.data);
 }
 
-Future<void> addGroceriesFromMealPlan(
+Future<void> addMealplanToGroceries(
     MealPlan mealPlan, BuildContext context) async {
   final databaseClient = GetIt.I<DatabaseClient>();
   final recipes = await databaseClient.getMealPlanRecipes(mealPlan.id!);
 
-  // TODO: use transaction
+  /// TODO: could be optimized by adding all groceries at once
   try {
     for (var recipe in recipes) {
-      if (!context.mounted) return;
-      await addGroceries(recipe, mealPlan.servingsPerMeal, context);
+      await addIngredientsToGroceries(recipe, mealPlan.servingsPerMeal);
     }
 
     if (!context.mounted) return;
+
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text('Meal plan added to grocery list!'),
@@ -294,7 +295,7 @@ class SingleMealPlanView extends StatelessWidget {
                           ],
                         ),
                         onPressed: () {
-                          addGroceriesFromMealPlan(state.mealPlan, context);
+                          addMealplanToGroceries(state.mealPlan, context);
                         },
                       ),
                     ],
