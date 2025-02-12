@@ -369,7 +369,6 @@ class DatabaseClient {
 
   Future<int> insertGrocery(Grocery grocery) async {
     var groceryMap = grocery.toMap();
-    groceryMap['is_bought'] = grocery.isBought ? 1 : 0;
 
     return await _database.insert(
       'groceries',
@@ -379,7 +378,6 @@ class DatabaseClient {
 
   Future<void> updateGrocery(Grocery grocery) async {
     var groceryMap = grocery.toMap();
-    groceryMap['is_bought'] = grocery.isBought ? 1 : 0;
 
     await _database.update('groceries', groceryMap,
         where: 'id = ?', whereArgs: [grocery.id]);
@@ -388,6 +386,19 @@ class DatabaseClient {
   Future<void> deleteGrocery(int groceryId) async {
     await _database
         .delete('groceries', where: 'id = ?', whereArgs: [groceryId]);
+  }
+
+  Future<void> insertOrUpdateGroceries(List<Grocery> groceries) {
+    return _database.transaction((txn) async {
+      for (var grocery in groceries) {
+        if (grocery.id == null) {
+          await txn.insert('groceries', grocery.toMap());
+        } else {
+          await txn.update('groceries', grocery.toMap(),
+              where: 'id = ?', whereArgs: [grocery.id]);
+        }
+      }
+    });
   }
 
   Future<void> deleteGroceries() async {

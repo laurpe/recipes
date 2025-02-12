@@ -5,7 +5,7 @@ import 'package:recipes/blocs/recipe/bloc.dart';
 import 'package:recipes/blocs/recipe/events.dart';
 import 'package:recipes/blocs/recipe/state.dart';
 import 'package:recipes/database.dart';
-import 'package:recipes/grocery.dart';
+import 'package:recipes/helpers/add_ingredients_to_groceries.dart';
 import 'package:recipes/helpers/ingredient_formatters.dart';
 import 'package:recipes/recipe.dart';
 import 'package:recipes/screens/edit_recipe.dart';
@@ -28,78 +28,10 @@ class Added extends Result<Recipe> {
   Added(Recipe data) : super(data);
 }
 
-Future<void> addGroceries(Recipe recipe, BuildContext context) async {
-  final databaseClient = GetIt.I<DatabaseClient>();
-  final groceries = await databaseClient.getGroceries();
-  final ingredients = recipe.ingredients;
-  final List<Grocery> newGroceries = [];
-  final int timestamp = DateTime.now().millisecondsSinceEpoch;
-
-  for (var ingredient in ingredients) {
-    newGroceries.add(
-      Grocery(
-        name: ingredient.name,
-        amount: ingredient.amountPerServing * recipe.servings,
-        unit: ingredient.unit,
-        isBought: false,
-        listOrder: timestamp + ingredients.indexOf(ingredient),
-      ),
-    );
-  }
-
-  final allGroceries = groceries + newGroceries;
-
-  /// Converts grocery units to default units
-  Grocery unitsToDefaults(Grocery grocery) {
-    switch (grocery.unit) {
-      case 'tl':
-        return grocery.copyWith(amount: grocery.amount * 5, unit: 'ml');
-      case 'rkl':
-        return grocery.copyWith(amount: grocery.amount * 15, unit: 'ml');
-      case 'cl':
-        return grocery.copyWith(amount: grocery.amount * 10, unit: 'ml');
-      case 'dl':
-        return grocery.copyWith(amount: grocery.amount * 100, unit: 'ml');
-      case 'l':
-        return grocery.copyWith(amount: grocery.amount * 1000, unit: 'ml');
-      case 'kg':
-        return grocery.copyWith(amount: grocery.amount * 1000, unit: 'g');
-      default:
-        return grocery;
-    }
-  }
-
-  List<Grocery> unitCorrectedGroceries = [];
-
-  for (var grocery in allGroceries) {
-    unitCorrectedGroceries.add(unitsToDefaults(grocery));
-  }
-
-  Map<String, Grocery> resultMap =
-      unitCorrectedGroceries.fold(<String, Grocery>{}, (accumulator, grocery) {
-    if (accumulator.containsKey(grocery.name)) {
-      accumulator[grocery.name] = Grocery(
-          id: accumulator[grocery.name]!.id,
-          name: grocery.name,
-          amount: accumulator[grocery.name]!.amount + grocery.amount,
-          unit: accumulator[grocery.name]!.unit,
-          isBought: accumulator[grocery.name]!.isBought,
-          listOrder: accumulator[grocery.name]!.listOrder);
-      return accumulator;
-    }
-    accumulator[grocery.name] = grocery;
-    return accumulator;
-  });
-
-  List<Grocery> finalList = resultMap.values.toList();
-
-  // TODO: use transaction
+Future<void> addRecipeToGroceries(Recipe recipe, BuildContext context) async {
   try {
-    for (var grocery in finalList) {
-      grocery.id == null
-          ? await databaseClient.insertGrocery(grocery)
-          : await databaseClient.updateGrocery(grocery);
-    }
+    await addIngredientsToGroceries(recipe, recipe.servings);
+
     if (!context.mounted) return;
 
     ScaffoldMessenger.of(context).showSnackBar(
@@ -293,7 +225,7 @@ class SingleRecipeView extends StatelessWidget {
                             ],
                           ),
                           onPressed: () {
-                            addGroceries(state.recipe, context);
+                            addRecipeToGroceries(state.recipe, context);
                           },
                         ),
                       ],
