@@ -129,7 +129,6 @@ class DatabaseClient {
 
   Future<int> insertRecipe(Recipe recipe) async {
     var recipeMap = recipe.toMap();
-    recipeMap['favorite'] = recipe.favorite ? 1 : 0;
 
     final recipeId = await _database.insert(
       'recipes',
@@ -228,7 +227,6 @@ class DatabaseClient {
     }
 
     var recipeMap = recipe.toMap();
-    recipeMap['favorite'] = recipe.favorite ? 1 : 0;
 
     await _database
         .update('recipes', recipeMap, where: 'id = ?', whereArgs: [recipe.id]);
@@ -276,7 +274,6 @@ class DatabaseClient {
     );
 
     var updatedRecipeMap = updatedRecipe.toMap();
-    updatedRecipeMap['favorite'] = favorite ? 1 : 0;
 
     await _database.update('recipes', updatedRecipeMap,
         where: 'id = ?', whereArgs: [recipe.id]);
@@ -407,7 +404,6 @@ class DatabaseClient {
 
   Future<void> toggleGroceryBought(Grocery grocery, bool isBought) async {
     var groceryMap = grocery.toMap();
-    groceryMap['is_bought'] = isBought ? 1 : 0;
 
     await _database.update('groceries', groceryMap,
         where: 'id = ?', whereArgs: [grocery.id]);

@@ -85,7 +85,7 @@ class Recipe extends Equatable {
     Map<String, dynamic> map = {
       'name': name,
       'instructions': instructions,
-      'favorite': favorite,
+      'favorite': favorite ? 1 : 0,
       'servings': servings,
     };
 
