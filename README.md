@@ -10,7 +10,8 @@ Run
 - `fvm flutter pub get` to install dependencies
 - `fvm flutter doctor` to check for possible problems
 
-## Running tests
+## Testing
 
-Unit tests:
-`fvm flutter test`
+Run
+
+- `fvm flutter test` for unit tests
