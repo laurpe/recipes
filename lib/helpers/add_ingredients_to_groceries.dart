@@ -27,6 +27,27 @@ Grocery unitsToDefaults(Grocery grocery) {
   }
 }
 
+/// Combines duplicate groceries by summing their amounts.
+List<Grocery> combineDuplicateGroceries(List<Grocery> groceries) {
+  Map<String, Grocery> resultMap =
+      groceries.fold(<String, Grocery>{}, (accumulator, grocery) {
+    if (accumulator.containsKey(grocery.name)) {
+      accumulator[grocery.name] = Grocery(
+          id: accumulator[grocery.name]!.id,
+          name: grocery.name,
+          amount: accumulator[grocery.name]!.amount + grocery.amount,
+          unit: accumulator[grocery.name]!.unit,
+          isBought: accumulator[grocery.name]!.isBought,
+          listOrder: accumulator[grocery.name]!.listOrder);
+      return accumulator;
+    }
+    accumulator[grocery.name] = grocery;
+    return accumulator;
+  });
+
+  return resultMap.values.toList();
+}
+
 Future<void> addIngredientsToGroceries(Recipe recipe, int servings) async {
   final databaseClient = GetIt.I<DatabaseClient>();
   final groceries = await databaseClient.getGroceries();
@@ -54,26 +75,11 @@ Future<void> addIngredientsToGroceries(Recipe recipe, int servings) async {
     unitCorrectedGroceries.add(unitsToDefaults(grocery));
   }
 
-  Map<String, Grocery> resultMap =
-      unitCorrectedGroceries.fold(<String, Grocery>{}, (accumulator, grocery) {
-    if (accumulator.containsKey(grocery.name)) {
-      accumulator[grocery.name] = Grocery(
-          id: accumulator[grocery.name]!.id,
-          name: grocery.name,
-          amount: accumulator[grocery.name]!.amount + grocery.amount,
-          unit: accumulator[grocery.name]!.unit,
-          isBought: accumulator[grocery.name]!.isBought,
-          listOrder: accumulator[grocery.name]!.listOrder);
-      return accumulator;
-    }
-    accumulator[grocery.name] = grocery;
-    return accumulator;
-  });
-
-  List<Grocery> finalList = resultMap.values.toList();
+  List<Grocery> combinedGroceries =
+      combineDuplicateGroceries(unitCorrectedGroceries);
 
   try {
-    databaseClient.insertOrUpdateGroceries(finalList);
+    databaseClient.insertOrUpdateGroceries(combinedGroceries);
   } catch (error) {
     rethrow;
   }
