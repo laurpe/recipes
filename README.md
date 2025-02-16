@@ -1,6 +1,6 @@
 # Recipes
 
-An app for planning weekly meals, storing recipes, and managing grocery shopping.
+A Flutter app for planning weekly meals, storing recipes, and managing grocery shopping.
 
 ## Getting Started
 
