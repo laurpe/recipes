@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:image_picker/image_picker.dart';
 import 'package:path/path.dart';
 import 'package:recipes/grocery.dart';
 import 'package:recipes/meal_plan.dart';
@@ -73,9 +74,17 @@ class DatabaseClient {
             FOREIGN KEY(recipe_id) REFERENCES recipes(id) ON DELETE CASCADE
             )''');
       },
-      // onUpgrade: (db, oldVersion, newVersion) async {
-      // },
-      version: 1,
+      onUpgrade: (db, oldVersion, newVersion) async {
+        if (oldVersion < 2) {
+          await db.execute('''CREATE TABLE images(
+              id INTEGER PRIMARY KEY,
+              recipe_id INTEGER NOT NULL,
+              path TEXT NOT NULL,
+              FOREIGN KEY(recipe_id) REFERENCES recipes(id) ON DELETE CASCADE
+              )''');
+        }
+      },
+      version: 2,
     );
   }
 
