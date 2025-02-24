@@ -1,9 +1,37 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:get_it/get_it.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:recipes/blocs/tags/bloc.dart';
 import 'package:recipes/blocs/tags/state.dart';
 import 'package:recipes/helpers/ingredient_formatters.dart';
 import 'package:recipes/recipe.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:recipes/screens/recipe.dart';
+import 'package:uuid/uuid.dart';
+import 'package:path/path.dart' as path;
+
+import '../database.dart';
+
+Future<String> storeImage(XFile image, String name, String extension) async {
+  final directory = await getApplicationDocumentsDirectory();
+
+  final imageDirectory = Directory('${directory.path}/images');
+
+  if (!await imageDirectory.exists()) {
+    await imageDirectory.create();
+  }
+
+  final fullName = name + extension;
+
+  File newImage = File('${imageDirectory.path}/$fullName');
+
+  await image.saveTo(newImage.path);
+
+  return fullName;
+}
 
 /// The ingredient amounts the user adds are for the amount of servings the recipe yields.
 /// From that input, ingredient amount_per_serving is calculated and stored to the database.
@@ -23,6 +51,7 @@ class RecipeForm extends StatefulWidget {
 
 class RecipeFormState extends State<RecipeForm> {
   final _formKey = GlobalKey<FormState>();
+  final _databaseClient = GetIt.I<DatabaseClient>();
 
   late int? _id;
   late String _name;
@@ -38,6 +67,9 @@ class RecipeFormState extends State<RecipeForm> {
   final TextEditingController _controller = TextEditingController();
 
   RegExp tagFieldRegex = RegExp(r'^[A-Za-zÀ-ÖØ-öø-ÿ0-9-]+[ ,]?$');
+
+  final ImagePicker _picker = ImagePicker();
+  XFile? _image;
 
   @override
   void initState() {
@@ -109,7 +141,20 @@ class RecipeFormState extends State<RecipeForm> {
       );
 
       try {
-        await widget.submitRecipe(context, recipe);
+        var recipeId = await widget.submitRecipe(context, recipe);
+
+        if (_image != null) {
+          String imageName = Uuid().v4();
+
+          final extension = path.extension(_image!.path);
+
+          final finalName = await storeImage(_image!, imageName, extension);
+
+          _databaseClient.saveRecipeImage(recipeId, finalName);
+        }
+
+        if (!mounted) return;
+        Navigator.of(context).pop(Added(recipe));
 
         //_formKey.currentState!.reset();
       } catch (error) {
@@ -128,6 +173,20 @@ class RecipeFormState extends State<RecipeForm> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
+          _image != null
+              ? Image.file(File(_image!.path))
+              : Text('No image selected'),
+          ElevatedButton(
+            onPressed: () async {
+              var pickedImage = await _picker.pickImage(
+                source: ImageSource.gallery,
+              );
+              setState(() {
+                _image = pickedImage;
+              });
+            },
+            child: Text('Add image'),
+          ),
           TextFormField(
             initialValue: _name,
             autofocus: true,

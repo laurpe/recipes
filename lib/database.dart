@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'package:image_picker/image_picker.dart';
 import 'package:path/path.dart';
 import 'package:recipes/grocery.dart';
 import 'package:recipes/meal_plan.dart';
@@ -79,7 +78,7 @@ class DatabaseClient {
           await db.execute('''CREATE TABLE images(
               id INTEGER PRIMARY KEY,
               recipe_id INTEGER NOT NULL,
-              path TEXT NOT NULL,
+              name TEXT NOT NULL,
               FOREIGN KEY(recipe_id) REFERENCES recipes(id) ON DELETE CASCADE
               )''');
         }
@@ -568,5 +567,9 @@ class DatabaseClient {
   Future<void> deleteMealPlan(int mealPlanId) {
     return _database
         .delete('meal_plans', where: 'id = ?', whereArgs: [mealPlanId]);
+  }
+
+  Future<void> saveRecipeImage(int recipeId, String name) async {
+    await _database.insert('images', {'recipe_id': recipeId, 'name': name});
   }
 }

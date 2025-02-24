@@ -5,19 +5,17 @@ import 'package:recipes/blocs/tags/bloc.dart';
 import 'package:recipes/blocs/tags/events.dart';
 import 'package:recipes/database.dart';
 import 'package:recipes/recipe.dart';
-import 'package:recipes/screens/recipe.dart';
 import 'package:recipes/widgets/recipe_form.dart';
 
-Future<void> submitRecipe(BuildContext context, Recipe recipe) async {
+Future<int> submitRecipe(BuildContext context, Recipe recipe) async {
   int recipeId = await GetIt.I<DatabaseClient>().insertRecipe(recipe);
 
-  if (!context.mounted) return;
-
-  BlocProvider.of<TagsBloc>(context).add(AddRecipeTags(recipe.tags!, recipeId));
-
   if (context.mounted) {
-    Navigator.of(context).pop(Added(recipe));
+    BlocProvider.of<TagsBloc>(context)
+        .add(AddRecipeTags(recipe.tags!, recipeId));
   }
+
+  return recipeId;
 }
 
 class AddRecipeFormView extends StatelessWidget {
