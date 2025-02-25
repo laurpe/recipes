@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:path/path.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:recipes/grocery.dart';
 import 'package:recipes/meal_plan.dart';
 import 'package:sqflite/sqflite.dart';
@@ -259,6 +260,15 @@ class DatabaseClient {
     final List<Map<String, dynamic>> recipe = await _database.query('recipes',
         where: 'id = ?', whereArgs: [recipeId], limit: 1);
 
+    // Currently a recipe can only have one image.
+    final List<Map<String, dynamic>> imageName = await _database.query('images',
+        where: 'recipe_id = ?',
+        whereArgs: [recipeId],
+        orderBy: 'id DESC',
+        limit: 1);
+
+    final directory = await getApplicationDocumentsDirectory();
+
     return Recipe(
       id: recipe[0]['id'],
       name: recipe[0]['name'],
@@ -267,6 +277,9 @@ class DatabaseClient {
       favorite: recipe[0]['favorite'] == 1 ? true : false,
       servings: recipe[0]['servings'],
       tags: await getRecipeTags(recipe[0]['id']),
+      imagePath: imageName.isNotEmpty
+          ? '${directory.path}/images/${imageName[0]['name']}'
+          : null,
     );
   }
 
@@ -569,6 +582,7 @@ class DatabaseClient {
         .delete('meal_plans', where: 'id = ?', whereArgs: [mealPlanId]);
   }
 
+// TODO: when image is updated, delete the old image.
   Future<void> saveRecipeImage(int recipeId, String name) async {
     await _database.insert('images', {'recipe_id': recipeId, 'name': name});
   }

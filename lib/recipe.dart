@@ -70,6 +70,7 @@ class Recipe extends Equatable {
   final bool favorite;
   final int servings;
   final List<Tag>? tags;
+  final String? imagePath;
 
   const Recipe({
     this.id,
@@ -79,6 +80,7 @@ class Recipe extends Equatable {
     required this.favorite,
     required this.servings,
     this.tags,
+    this.imagePath,
   });
 
   Map<String, dynamic> toMap() {
@@ -104,6 +106,7 @@ class Recipe extends Equatable {
     bool? favorite,
     int? servings,
     List<Tag>? tags,
+    String? imagePath,
   }) {
     return Recipe(
       id: id ?? this.id,
@@ -113,6 +116,7 @@ class Recipe extends Equatable {
       favorite: favorite ?? this.favorite,
       servings: servings ?? this.servings,
       tags: tags ?? this.tags,
+      imagePath: imagePath ?? this.imagePath,
     );
   }
 

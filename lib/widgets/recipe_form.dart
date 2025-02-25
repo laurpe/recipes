@@ -9,13 +9,13 @@ import 'package:recipes/blocs/tags/state.dart';
 import 'package:recipes/helpers/ingredient_formatters.dart';
 import 'package:recipes/recipe.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:recipes/screens/recipe.dart';
 import 'package:uuid/uuid.dart';
 import 'package:path/path.dart' as path;
 
 import '../database.dart';
 
-Future<String> storeImage(XFile image, String name, String extension) async {
+/// Stores the picked image to disk and returns its name and full path.
+Future<Map<String, String>> storeImage(XFile image) async {
   final directory = await getApplicationDocumentsDirectory();
 
   final imageDirectory = Directory('${directory.path}/images');
@@ -24,13 +24,22 @@ Future<String> storeImage(XFile image, String name, String extension) async {
     await imageDirectory.create();
   }
 
+  String name = Uuid().v4();
+
+  final extension = path.extension(image.path);
+
   final fullName = name + extension;
 
   File newImage = File('${imageDirectory.path}/$fullName');
 
   await image.saveTo(newImage.path);
 
-  return fullName;
+  return {'name': fullName, 'path': newImage.path};
+}
+
+/// Adds image name and recipe id to images table.
+Future<void> addImageToRecipe(String name, int recipeId) async {
+  GetIt.I<DatabaseClient>().saveRecipeImage(recipeId, name);
 }
 
 /// The ingredient amounts the user adds are for the amount of servings the recipe yields.
@@ -51,7 +60,6 @@ class RecipeForm extends StatefulWidget {
 
 class RecipeFormState extends State<RecipeForm> {
   final _formKey = GlobalKey<FormState>();
-  final _databaseClient = GetIt.I<DatabaseClient>();
 
   late int? _id;
   late String _name;
@@ -71,6 +79,8 @@ class RecipeFormState extends State<RecipeForm> {
   final ImagePicker _picker = ImagePicker();
   XFile? _image;
 
+  bool _imageChanged = false;
+
   @override
   void initState() {
     super.initState();
@@ -82,6 +92,10 @@ class RecipeFormState extends State<RecipeForm> {
     _servings = widget.initialValues.servings;
     _favorite = widget.initialValues.favorite;
     _tags = widget.initialValues.tags!;
+
+    _image = widget.initialValues.imagePath == null
+        ? null
+        : XFile(widget.initialValues.imagePath!);
 
     _controller.addListener(_handleTextChange);
 
@@ -141,20 +155,24 @@ class RecipeFormState extends State<RecipeForm> {
       );
 
       try {
-        var recipeId = await widget.submitRecipe(context, recipe);
+        // TODO: rewrite this
 
-        if (_image != null) {
-          String imageName = Uuid().v4();
+        Recipe? newRecipe;
+        Map<String, String>? imageInfo;
 
-          final extension = path.extension(_image!.path);
+        if (_image != null && _imageChanged) {
+          var result = await storeImage(_image!);
 
-          final finalName = await storeImage(_image!, imageName, extension);
+          imageInfo = result;
 
-          _databaseClient.saveRecipeImage(recipeId, finalName);
+          newRecipe = recipe.copyWith(imagePath: imageInfo['path']);
         }
 
-        if (!mounted) return;
-        Navigator.of(context).pop(Added(recipe));
+        var recipeId = await widget.submitRecipe(context, newRecipe ?? recipe);
+
+        if (newRecipe != null) {
+          addImageToRecipe(imageInfo!['name']!, recipeId);
+        }
 
         //_formKey.currentState!.reset();
       } catch (error) {
@@ -183,9 +201,10 @@ class RecipeFormState extends State<RecipeForm> {
               );
               setState(() {
                 _image = pickedImage;
+                _imageChanged = true;
               });
             },
-            child: Text('Add image'),
+            child: Text(_image == null ? 'Add image' : 'Change image'),
           ),
           TextFormField(
             initialValue: _name,

@@ -8,17 +8,17 @@ import 'package:recipes/recipe.dart';
 import 'package:recipes/screens/recipe.dart';
 import 'package:recipes/widgets/recipe_form.dart';
 
-Future<void> submitRecipe(BuildContext context, Recipe recipe) async {
+Future<int> submitRecipe(BuildContext context, Recipe recipe) async {
   await GetIt.I<DatabaseClient>().updateRecipe(recipe);
 
-  if (!context.mounted) return;
-
-  BlocProvider.of<TagsBloc>(context)
-      .add(AddRecipeTags(recipe.tags!, recipe.id!));
-
   if (context.mounted) {
+    BlocProvider.of<TagsBloc>(context)
+        .add(AddRecipeTags(recipe.tags!, recipe.id!));
+
     Navigator.of(context).pop(Updated(recipe));
   }
+
+  return recipe.id!;
 }
 
 class EditRecipeFormView extends StatelessWidget {

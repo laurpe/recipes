@@ -5,6 +5,7 @@ import 'package:recipes/blocs/tags/bloc.dart';
 import 'package:recipes/blocs/tags/events.dart';
 import 'package:recipes/database.dart';
 import 'package:recipes/recipe.dart';
+import 'package:recipes/screens/recipe.dart';
 import 'package:recipes/widgets/recipe_form.dart';
 
 Future<int> submitRecipe(BuildContext context, Recipe recipe) async {
@@ -13,6 +14,8 @@ Future<int> submitRecipe(BuildContext context, Recipe recipe) async {
   if (context.mounted) {
     BlocProvider.of<TagsBloc>(context)
         .add(AddRecipeTags(recipe.tags!, recipeId));
+
+    Navigator.of(context).pop(Added(recipe));
   }
 
   return recipeId;
