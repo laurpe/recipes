@@ -23,25 +23,23 @@ class ImageData {
 
 /// Stores the picked image to disk if it doesn't exist and returns its name and full path.
 Future<ImageData> storeImageToDisk(XFile image) async {
-  final directory = await getApplicationDocumentsDirectory();
+  final Directory directory = await getApplicationDocumentsDirectory();
 
-  final imageDirectory = Directory('${directory.path}/images');
+  final Directory imageDirectory = Directory('${directory.path}/images');
 
   if (!await imageDirectory.exists()) {
     await imageDirectory.create();
   }
 
-  String name = Uuid().v4();
+  final String name = Uuid().v4();
 
-  final extension = path.extension(image.path);
+  final String extension = path.extension(image.path);
 
-  final fullName = name + extension;
+  final String fullName = name + extension;
 
   File newImage = File('${imageDirectory.path}/$fullName');
 
-  if (!await newImage.exists()) {
-    await image.saveTo(newImage.path);
-  }
+  await image.saveTo(newImage.path);
 
   return ImageData(name: fullName, path: newImage.path);
 }
@@ -183,9 +181,9 @@ class RecipeFormState extends State<RecipeForm> {
         if (imageData != null) {
           GetIt.I<DatabaseClient>()
               .insertOrUpdateRecipeImage(recipeId, imageData.name);
-
-          _formKey.currentState!.reset();
         }
+
+        _formKey.currentState!.reset();
       } catch (error) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
