@@ -14,8 +14,15 @@ import 'package:path/path.dart' as path;
 
 import '../database.dart';
 
-/// Stores the picked image to disk and returns its name and full path.
-Future<Map<String, String>> storeImage(XFile image) async {
+class ImageData {
+  final String name;
+  final String path;
+
+  const ImageData({required this.name, required this.path});
+}
+
+/// Stores the picked image to disk if it doesn't exist and returns its name and full path.
+Future<ImageData> storeImageToDisk(XFile image) async {
   final directory = await getApplicationDocumentsDirectory();
 
   final imageDirectory = Directory('${directory.path}/images');
@@ -32,14 +39,17 @@ Future<Map<String, String>> storeImage(XFile image) async {
 
   File newImage = File('${imageDirectory.path}/$fullName');
 
-  await image.saveTo(newImage.path);
+  if (!await newImage.exists()) {
+    await image.saveTo(newImage.path);
+  }
 
-  return {'name': fullName, 'path': newImage.path};
+  return ImageData(name: fullName, path: newImage.path);
 }
 
-/// Adds image name and recipe id to images table.
-Future<void> addImageToRecipe(String name, int recipeId) async {
-  GetIt.I<DatabaseClient>().saveRecipeImage(recipeId, name);
+Future<void> deleteImageFromDisk(String path) async {
+  File image = File(path);
+
+  await image.delete();
 }
 
 /// The ingredient amounts the user adds are for the amount of servings the recipe yields.
@@ -144,6 +154,16 @@ class RecipeFormState extends State<RecipeForm> {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
 
+      // User has changed recipe image – delete old image
+      if (widget.initialValues.imagePath != null && _imageChanged) {
+        deleteImageFromDisk(widget.initialValues.imagePath!);
+
+        GetIt.I<DatabaseClient>().deleteRecipeImage(widget.initialValues.id!);
+      }
+
+      ImageData? imageData =
+          _image != null ? await storeImageToDisk(_image!) : null;
+
       final recipe = Recipe(
         id: _id,
         name: _name,
@@ -152,29 +172,20 @@ class RecipeFormState extends State<RecipeForm> {
         favorite: _favorite,
         servings: _servings,
         tags: _tags,
+        imagePath: imageData
+            ?.path, // may be null when user has not added or has deleted image
       );
 
       try {
-        // TODO: rewrite this
+        if (!mounted) return;
+        final int recipeId = await widget.submitRecipe(context, recipe);
 
-        Recipe? newRecipe;
-        Map<String, String>? imageInfo;
+        if (imageData != null) {
+          GetIt.I<DatabaseClient>()
+              .insertOrUpdateRecipeImage(recipeId, imageData.name);
 
-        if (_image != null && _imageChanged) {
-          var result = await storeImage(_image!);
-
-          imageInfo = result;
-
-          newRecipe = recipe.copyWith(imagePath: imageInfo['path']);
+          _formKey.currentState!.reset();
         }
-
-        var recipeId = await widget.submitRecipe(context, newRecipe ?? recipe);
-
-        if (newRecipe != null) {
-          addImageToRecipe(imageInfo!['name']!, recipeId);
-        }
-
-        //_formKey.currentState!.reset();
       } catch (error) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
@@ -192,20 +203,62 @@ class RecipeFormState extends State<RecipeForm> {
         mainAxisSize: MainAxisSize.min,
         children: [
           _image != null
-              ? Image.file(File(_image!.path))
-              : Text('No image selected'),
-          ElevatedButton(
-            onPressed: () async {
-              var pickedImage = await _picker.pickImage(
-                source: ImageSource.gallery,
-              );
-              setState(() {
-                _image = pickedImage;
-                _imageChanged = true;
-              });
-            },
-            child: Text(_image == null ? 'Add image' : 'Change image'),
-          ),
+              ? Container(
+                  width: MediaQuery.of(context).size.width,
+                  height: 300,
+                  decoration: BoxDecoration(
+                    image: DecorationImage(
+                      fit: BoxFit.fill,
+                      image: FileImage(
+                        File(_image!.path),
+                      ),
+                    ),
+                  ),
+                  child: IconButton(
+                    onPressed: () async {
+                      setState(() {
+                        _image = null;
+                        _imageChanged = true;
+                      });
+                    },
+                    icon: Icon(Icons.image_not_supported,
+                        size: 50,
+                        color: Colors.white,
+                        shadows: [
+                          Shadow(
+                              color: Colors.black45,
+                              blurRadius: 20.0,
+                              offset: Offset(0, 2.0))
+                        ]),
+                  ),
+                )
+              : SizedBox(
+                  width: MediaQuery.of(context).size.width,
+                  height: 300,
+                  child: IconButton(
+                    onPressed: () async {
+                      var pickedImage = await _picker.pickImage(
+                        source: ImageSource.gallery,
+                      );
+                      setState(() {
+                        _image = pickedImage;
+                        _imageChanged = true;
+                      });
+                    },
+                    icon: Icon(
+                      Icons.add_photo_alternate,
+                      size: 50,
+                      color: Colors.white,
+                      shadows: [
+                        Shadow(
+                          color: Colors.black45,
+                          blurRadius: 20.0,
+                          offset: Offset(0, 2.0),
+                        )
+                      ],
+                    ),
+                  ),
+                ),
           TextFormField(
             initialValue: _name,
             autofocus: true,
