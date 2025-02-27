@@ -24,7 +24,11 @@ class DatabaseClient {
             name TEXT NOT NULL,
             instructions TEXT NOT NULL,
             favorite BOOLEAN NOT NULL,
-            servings INTEGER NOT NULL
+            servings INTEGER NOT NULL,
+            carbohydrates REAL,
+            protein REAL,
+            fat REAL,
+            calories REAL
             )''');
         await db.execute('''CREATE TABLE ingredients(
             id INTEGER PRIMARY KEY, 
@@ -83,16 +87,27 @@ class DatabaseClient {
               )''');
       },
       onUpgrade: (db, oldVersion, newVersion) async {
-        if (oldVersion == 1) {
-          await db.execute('''CREATE TABLE IF NOT EXISTS images(
+        if (oldVersion < 2) {
+          var batch = db.batch();
+          batch.execute('''CREATE TABLE IF NOT EXISTS images(
               id INTEGER PRIMARY KEY,
               recipe_id INTEGER NOT NULL,
               name TEXT NOT NULL,
               FOREIGN KEY(recipe_id) REFERENCES recipes(id) ON DELETE CASCADE
               )''');
+          await batch.commit();
+        }
+
+        if (oldVersion < 3) {
+          var batch = db.batch();
+          batch.execute('ALTER TABLE recipes ADD COLUMN carbohydrates REAL');
+          batch.execute('ALTER TABLE recipes ADD COLUMN protein REAL');
+          batch.execute('ALTER TABLE recipes ADD COLUMN fat REAL');
+          batch.execute('ALTER TABLE recipes ADD COLUMN calories REAL');
+          await batch.commit();
         }
       },
-      version: 2,
+      version: 3,
     );
   }
 
