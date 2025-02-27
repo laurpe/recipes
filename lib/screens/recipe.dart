@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
@@ -119,8 +121,7 @@ class SingleRecipeView extends StatelessWidget {
               child: const Text('Yes'),
               onPressed: () async {
                 try {
-                  await GetIt.I<DatabaseClient>()
-                      .deleteRecipeAndUnusedTags(recipeId);
+                  await GetIt.I<DatabaseClient>().deleteRecipe(recipeId);
 
                   if (!context.mounted) return;
 
@@ -234,6 +235,20 @@ class SingleRecipeView extends StatelessWidget {
               body: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
+                  state.recipe.imagePath != null
+                      ? Container(
+                          width: MediaQuery.of(context).size.width,
+                          height: 300,
+                          decoration: BoxDecoration(
+                            image: DecorationImage(
+                              fit: BoxFit.fill,
+                              image: FileImage(
+                                File(state.recipe.imagePath!),
+                              ),
+                            ),
+                          ),
+                        )
+                      : SizedBox(),
                   Padding(
                     padding: const EdgeInsets.fromLTRB(8.0, 8.0, 8.0, 0),
                     child: Text('Servings: ${state.recipe.servings}'),

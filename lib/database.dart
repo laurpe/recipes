@@ -1,5 +1,7 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:path/path.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:recipes/grocery.dart';
 import 'package:recipes/meal_plan.dart';
 import 'package:sqflite/sqflite.dart';
@@ -72,10 +74,25 @@ class DatabaseClient {
             FOREIGN KEY(day_id) REFERENCES days(id) ON DELETE CASCADE,
             FOREIGN KEY(recipe_id) REFERENCES recipes(id) ON DELETE CASCADE
             )''');
+
+        await db.execute('''CREATE TABLE images(
+              id INTEGER PRIMARY KEY,
+              recipe_id INTEGER NOT NULL,
+              name TEXT NOT NULL,
+              FOREIGN KEY(recipe_id) REFERENCES recipes(id) ON DELETE CASCADE
+              )''');
       },
-      // onUpgrade: (db, oldVersion, newVersion) async {
-      // },
-      version: 1,
+      onUpgrade: (db, oldVersion, newVersion) async {
+        if (oldVersion == 1) {
+          await db.execute('''CREATE TABLE IF NOT EXISTS images(
+              id INTEGER PRIMARY KEY,
+              recipe_id INTEGER NOT NULL,
+              name TEXT NOT NULL,
+              FOREIGN KEY(recipe_id) REFERENCES recipes(id) ON DELETE CASCADE
+              )''');
+        }
+      },
+      version: 2,
     );
   }
 
@@ -232,9 +249,20 @@ class DatabaseClient {
         .update('recipes', recipeMap, where: 'id = ?', whereArgs: [recipe.id]);
   }
 
-  /// Deletes a recipe and tags that are not used by
+  /// Deletes a recipe, possible recipe image and tags that are not used by
   /// any other recipe.
-  Future<void> deleteRecipeAndUnusedTags(int recipeId) async {
+  Future<void> deleteRecipe(int recipeId) async {
+    final directory = await getApplicationDocumentsDirectory();
+
+    List<Map<String, dynamic>> image =
+        await _database.query('images', where: 'id = ?', whereArgs: [recipeId]);
+
+    if (image.isNotEmpty) {
+      File file = File('${directory.path}/images/${image[0]['name']}');
+
+      file.delete();
+    }
+
     await _database.transaction((txn) async {
       await txn.delete('recipes', where: 'id = ?', whereArgs: [recipeId]);
 
@@ -248,8 +276,17 @@ class DatabaseClient {
   }
 
   Future<Recipe> getRecipe(int recipeId) async {
-    final List<Map<String, dynamic>> recipe = await _database.query('recipes',
-        where: 'id = ?', whereArgs: [recipeId], limit: 1);
+    final List<Map<String, dynamic>> recipe = await _database
+        .query('recipes', where: 'id = ?', whereArgs: [recipeId]);
+
+    // Currently a recipe can only have one image.
+    final List<Map<String, dynamic>> imageName = await _database.query(
+      'images',
+      where: 'recipe_id = ?',
+      whereArgs: [recipeId],
+    );
+
+    final directory = await getApplicationDocumentsDirectory();
 
     return Recipe(
       id: recipe[0]['id'],
@@ -259,6 +296,9 @@ class DatabaseClient {
       favorite: recipe[0]['favorite'] == 1 ? true : false,
       servings: recipe[0]['servings'],
       tags: await getRecipeTags(recipe[0]['id']),
+      imagePath: imageName.isNotEmpty
+          ? '${directory.path}/images/${imageName[0]['name']}'
+          : null,
     );
   }
 
@@ -559,5 +599,26 @@ class DatabaseClient {
   Future<void> deleteMealPlan(int mealPlanId) {
     return _database
         .delete('meal_plans', where: 'id = ?', whereArgs: [mealPlanId]);
+  }
+
+  /// Adds or updates recipe image and deletes old records if they exist.
+  Future<void> insertOrUpdateRecipeImage(int recipeId, String name) async {
+    List<Map<String, dynamic>> image =
+        await _database.query('images', where: 'id = ?', whereArgs: [recipeId]);
+
+    if (image.isNotEmpty && image[0]['name'] != name) {
+      await _database.update(
+        'images',
+        {'name': name},
+        where: 'id = ?',
+        whereArgs: [image[0]['id']],
+      );
+    } else {
+      await _database.insert('images', {'recipe_id': recipeId, 'name': name});
+    }
+  }
+
+  Future<void> deleteRecipeImage(int recipeId) async {
+    await _database.delete('images', where: 'id = ?', whereArgs: [recipeId]);
   }
 }

@@ -1,9 +1,54 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:get_it/get_it.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:recipes/blocs/tags/bloc.dart';
 import 'package:recipes/blocs/tags/state.dart';
 import 'package:recipes/helpers/ingredient_formatters.dart';
 import 'package:recipes/recipe.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:uuid/uuid.dart';
+import 'package:path/path.dart' as path;
+
+import '../database.dart';
+
+class ImageData {
+  final String name;
+  final String path;
+
+  const ImageData({required this.name, required this.path});
+}
+
+/// Stores the picked image to disk if it doesn't exist and returns its name and full path.
+Future<ImageData> storeImageToDisk(XFile image) async {
+  final Directory directory = await getApplicationDocumentsDirectory();
+
+  final Directory imageDirectory = Directory('${directory.path}/images');
+
+  if (!await imageDirectory.exists()) {
+    await imageDirectory.create();
+  }
+
+  final String name = Uuid().v4();
+
+  final String extension = path.extension(image.path);
+
+  final String fullName = name + extension;
+
+  File newImage = File('${imageDirectory.path}/$fullName');
+
+  await image.saveTo(newImage.path);
+
+  return ImageData(name: fullName, path: newImage.path);
+}
+
+Future<void> deleteImageFromDisk(String path) async {
+  File image = File(path);
+
+  await image.delete();
+}
 
 /// The ingredient amounts the user adds are for the amount of servings the recipe yields.
 /// From that input, ingredient amount_per_serving is calculated and stored to the database.
@@ -39,6 +84,11 @@ class RecipeFormState extends State<RecipeForm> {
 
   RegExp tagFieldRegex = RegExp(r'^[A-Za-zÀ-ÖØ-öø-ÿ0-9-]+[ ,]?$');
 
+  final ImagePicker _picker = ImagePicker();
+  XFile? _image;
+
+  bool _imageChanged = false;
+
   @override
   void initState() {
     super.initState();
@@ -50,6 +100,10 @@ class RecipeFormState extends State<RecipeForm> {
     _servings = widget.initialValues.servings;
     _favorite = widget.initialValues.favorite;
     _tags = widget.initialValues.tags!;
+
+    _image = widget.initialValues.imagePath == null
+        ? null
+        : XFile(widget.initialValues.imagePath!);
 
     _controller.addListener(_handleTextChange);
 
@@ -98,6 +152,16 @@ class RecipeFormState extends State<RecipeForm> {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
 
+      // User has changed recipe image – delete old image
+      if (widget.initialValues.imagePath != null && _imageChanged) {
+        deleteImageFromDisk(widget.initialValues.imagePath!);
+
+        GetIt.I<DatabaseClient>().deleteRecipeImage(widget.initialValues.id!);
+      }
+
+      ImageData? imageData =
+          _image != null ? await storeImageToDisk(_image!) : null;
+
       final recipe = Recipe(
         id: _id,
         name: _name,
@@ -106,12 +170,20 @@ class RecipeFormState extends State<RecipeForm> {
         favorite: _favorite,
         servings: _servings,
         tags: _tags,
+        imagePath: imageData
+            ?.path, // may be null when user has not added or has deleted image
       );
 
       try {
-        await widget.submitRecipe(context, recipe);
+        if (!mounted) return;
+        final int recipeId = await widget.submitRecipe(context, recipe);
 
-        //_formKey.currentState!.reset();
+        if (imageData != null) {
+          GetIt.I<DatabaseClient>()
+              .insertOrUpdateRecipeImage(recipeId, imageData.name);
+        }
+
+        _formKey.currentState!.reset();
       } catch (error) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
@@ -128,6 +200,63 @@ class RecipeFormState extends State<RecipeForm> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
+          _image != null
+              ? Container(
+                  width: MediaQuery.of(context).size.width,
+                  height: 300,
+                  decoration: BoxDecoration(
+                    image: DecorationImage(
+                      fit: BoxFit.fill,
+                      image: FileImage(
+                        File(_image!.path),
+                      ),
+                    ),
+                  ),
+                  child: IconButton(
+                    onPressed: () async {
+                      setState(() {
+                        _image = null;
+                        _imageChanged = true;
+                      });
+                    },
+                    icon: Icon(Icons.image_not_supported,
+                        size: 50,
+                        color: Colors.white,
+                        shadows: [
+                          Shadow(
+                              color: Colors.black45,
+                              blurRadius: 20.0,
+                              offset: Offset(0, 2.0))
+                        ]),
+                  ),
+                )
+              : SizedBox(
+                  width: MediaQuery.of(context).size.width,
+                  height: 300,
+                  child: IconButton(
+                    onPressed: () async {
+                      var pickedImage = await _picker.pickImage(
+                        source: ImageSource.gallery,
+                      );
+                      setState(() {
+                        _image = pickedImage;
+                        _imageChanged = true;
+                      });
+                    },
+                    icon: Icon(
+                      Icons.add_photo_alternate,
+                      size: 50,
+                      color: Colors.white,
+                      shadows: [
+                        Shadow(
+                          color: Colors.black45,
+                          blurRadius: 20.0,
+                          offset: Offset(0, 2.0),
+                        )
+                      ],
+                    ),
+                  ),
+                ),
           TextFormField(
             initialValue: _name,
             autofocus: true,
