@@ -241,7 +241,7 @@ class SingleRecipeView extends StatelessWidget {
                           height: 300,
                           decoration: BoxDecoration(
                             image: DecorationImage(
-                              fit: BoxFit.fill,
+                              fit: BoxFit.cover,
                               image: FileImage(
                                 File(state.recipe.imagePath!),
                               ),
