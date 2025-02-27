@@ -206,7 +206,7 @@ class RecipeFormState extends State<RecipeForm> {
                   height: 300,
                   decoration: BoxDecoration(
                     image: DecorationImage(
-                      fit: BoxFit.fill,
+                      fit: BoxFit.cover,
                       image: FileImage(
                         File(_image!.path),
                       ),
@@ -219,15 +219,18 @@ class RecipeFormState extends State<RecipeForm> {
                         _imageChanged = true;
                       });
                     },
-                    icon: Icon(Icons.image_not_supported,
-                        size: 50,
-                        color: Colors.white,
-                        shadows: [
-                          Shadow(
-                              color: Colors.black45,
-                              blurRadius: 20.0,
-                              offset: Offset(0, 2.0))
-                        ]),
+                    icon: Align(
+                      alignment: Alignment.bottomRight,
+                      child: Icon(Icons.delete,
+                          size: 40,
+                          color: Colors.white,
+                          shadows: [
+                            Shadow(
+                                color: Colors.black45,
+                                blurRadius: 20.0,
+                                offset: Offset(0, 2.0))
+                          ]),
+                    ),
                   ),
                 )
               : SizedBox(
