@@ -227,6 +227,10 @@ class DatabaseClient {
         favorite: recipe['favorite'] == 1 ? true : false,
         servings: recipe['servings'],
         tags: await getRecipeTags(recipe['id']),
+        carbohydrates: recipe['carbohydrates'],
+        protein: recipe['protein'],
+        fat: recipe['fat'],
+        calories: recipe['calories'],
       ));
     }
 
@@ -314,6 +318,10 @@ class DatabaseClient {
       imagePath: imageName.isNotEmpty
           ? '${directory.path}/images/${imageName[0]['name']}'
           : null,
+      carbohydrates: recipe[0]['carbohydrates'],
+      protein: recipe[0]['protein'],
+      fat: recipe[0]['fat'],
+      calories: recipe[0]['calories'],
     );
   }
 
