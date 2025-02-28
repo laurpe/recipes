@@ -21,7 +21,7 @@ class ImageData {
   const ImageData({required this.name, required this.path});
 }
 
-/// Stores the picked image to disk if it doesn't exist and returns its name and full path.
+/// Stores the picked image to disk and returns its name and full path.
 Future<ImageData> storeImageToDisk(XFile image) async {
   final Directory directory = await getApplicationDocumentsDirectory();
 
@@ -377,9 +377,10 @@ class RecipeFormState extends State<RecipeForm> {
                   keyboardType: TextInputType.number,
                   decoration: const InputDecoration(
                     labelText: 'Carbohydrates',
-                    hintText: '60 g',
+                    hintText: '60',
                     floatingLabelBehavior: FloatingLabelBehavior.always,
                     contentPadding: EdgeInsets.fromLTRB(10, 20, 10, 20),
+                    suffixText: 'g',
                   ),
                   onChanged: (value) {
                     final String formatted = value.replaceAll(',', '.');
@@ -415,9 +416,10 @@ class RecipeFormState extends State<RecipeForm> {
                   keyboardType: TextInputType.number,
                   decoration: const InputDecoration(
                     labelText: 'Protein',
-                    hintText: '40 g',
+                    hintText: '40',
                     floatingLabelBehavior: FloatingLabelBehavior.always,
                     contentPadding: EdgeInsets.fromLTRB(10, 20, 10, 20),
+                    suffixText: 'g',
                   ),
                   onChanged: (value) {
                     final String formatted = value.replaceAll(',', '.');
@@ -453,9 +455,10 @@ class RecipeFormState extends State<RecipeForm> {
                   keyboardType: TextInputType.number,
                   decoration: const InputDecoration(
                     labelText: 'Fat',
-                    hintText: '20 g',
+                    hintText: '20',
                     floatingLabelBehavior: FloatingLabelBehavior.always,
                     contentPadding: EdgeInsets.fromLTRB(10, 20, 10, 20),
+                    suffixText: 'g',
                   ),
                   onChanged: (value) {
                     final String formatted = value.replaceAll(',', '.');
@@ -492,9 +495,10 @@ class RecipeFormState extends State<RecipeForm> {
             keyboardType: TextInputType.number,
             decoration: const InputDecoration(
               labelText: 'Calories',
-              hintText: '650 kcal',
+              hintText: '650 ',
               floatingLabelBehavior: FloatingLabelBehavior.always,
               contentPadding: EdgeInsets.fromLTRB(10, 20, 10, 20),
+              suffixText: 'kcal',
             ),
             onChanged: (value) {
               final String formatted = value.replaceAll(',', '.');
