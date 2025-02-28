@@ -71,6 +71,10 @@ class Recipe extends Equatable {
   final int servings;
   final List<Tag>? tags;
   final String? imagePath;
+  final double? carbohydrates;
+  final double? protein;
+  final double? fat;
+  final double? calories;
 
   const Recipe({
     this.id,
@@ -81,6 +85,10 @@ class Recipe extends Equatable {
     required this.servings,
     this.tags,
     this.imagePath,
+    this.carbohydrates,
+    this.protein,
+    this.fat,
+    this.calories,
   });
 
   Map<String, dynamic> toMap() {
@@ -89,6 +97,10 @@ class Recipe extends Equatable {
       'instructions': instructions,
       'favorite': favorite ? 1 : 0,
       'servings': servings,
+      'carbohydrates': carbohydrates,
+      'protein': protein,
+      'fat': fat,
+      'calories': calories,
     };
 
     if (id != null) {
@@ -107,6 +119,10 @@ class Recipe extends Equatable {
     int? servings,
     List<Tag>? tags,
     String? imagePath,
+    double? carbohydrates,
+    double? protein,
+    double? fat,
+    double? calories,
   }) {
     return Recipe(
       id: id ?? this.id,
@@ -117,12 +133,27 @@ class Recipe extends Equatable {
       servings: servings ?? this.servings,
       tags: tags ?? this.tags,
       imagePath: imagePath ?? this.imagePath,
+      carbohydrates: carbohydrates ?? this.carbohydrates,
+      protein: protein ?? this.protein,
+      fat: fat ?? this.fat,
+      calories: calories ?? this.calories,
     );
   }
 
   @override
-  List<Object?> get props =>
-      [id, name, ingredients, instructions, favorite, servings, tags];
+  List<Object?> get props => [
+        id,
+        name,
+        ingredients,
+        instructions,
+        favorite,
+        servings,
+        tags,
+        carbohydrates,
+        protein,
+        fat,
+        calories
+      ];
 }
 
 class RecipeListItem extends Equatable {
