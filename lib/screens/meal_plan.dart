@@ -321,8 +321,16 @@ class SingleMealPlanView extends StatelessWidget {
                             subtitle: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  for (var meal in day.meals)
-                                    Text('${meal.name}: ${meal.recipeName}'),
+                                  for (var meal in day.meals) ...[
+                                    Text('${meal.name}: ${meal.recipeName}')
+                                  ],
+                                  Text(
+                                    'Macros per person: '
+                                    'Carbs: ${day.meals.fold(0.0, (sum, meal) => sum + (meal.nutritionalInfo?.carbohydrates ?? 0.0))}, '
+                                    'Protein: ${day.meals.fold(0.0, (sum, meal) => sum + (meal.nutritionalInfo?.protein ?? 0.0))}, '
+                                    'Fat: ${day.meals.fold(0.0, (sum, meal) => sum + (meal.nutritionalInfo?.fat ?? 0.0))}, '
+                                    'Calories: ${day.meals.fold(0.0, (sum, meal) => sum + (meal.nutritionalInfo?.calories ?? 0.0))}',
+                                  ),
                                 ]),
                           ),
                         );
