@@ -25,10 +25,10 @@ class DatabaseClient {
             instructions TEXT NOT NULL,
             favorite BOOLEAN NOT NULL,
             servings INTEGER NOT NULL,
-            carbohydrates REAL,
-            protein REAL,
-            fat REAL,
-            calories REAL
+            carbohydrates_per_serving REAL,
+            protein_per_serving REAL,
+            fat_per_serving REAL,
+            calories_per_serving REAL
             )''');
         await db.execute('''CREATE TABLE ingredients(
             id INTEGER PRIMARY KEY, 
@@ -100,10 +100,13 @@ class DatabaseClient {
 
         if (oldVersion < 3) {
           var batch = db.batch();
-          batch.execute('ALTER TABLE recipes ADD COLUMN carbohydrates REAL');
-          batch.execute('ALTER TABLE recipes ADD COLUMN protein REAL');
-          batch.execute('ALTER TABLE recipes ADD COLUMN fat REAL');
-          batch.execute('ALTER TABLE recipes ADD COLUMN calories REAL');
+          batch.execute(
+              'ALTER TABLE recipes ADD COLUMN carbohydrates_per_serving REAL');
+          batch.execute(
+              'ALTER TABLE recipes ADD COLUMN protein_per_serving REAL');
+          batch.execute('ALTER TABLE recipes ADD COLUMN fat_per_serving REAL');
+          batch.execute(
+              'ALTER TABLE recipes ADD COLUMN calories_per_serving REAL');
           await batch.commit();
         }
       },
@@ -227,10 +230,10 @@ class DatabaseClient {
         favorite: recipe['favorite'] == 1 ? true : false,
         servings: recipe['servings'],
         tags: await getRecipeTags(recipe['id']),
-        carbohydrates: recipe['carbohydrates'],
-        protein: recipe['protein'],
-        fat: recipe['fat'],
-        calories: recipe['calories'],
+        carbohydratesPerServing: recipe['carbohydrates_per_serving'],
+        proteinPerServing: recipe['protein_per_serving'],
+        fatPerServing: recipe['fat_per_serving'],
+        caloriesPerServing: recipe['calories_per_serving'],
       ));
     }
 
@@ -318,10 +321,10 @@ class DatabaseClient {
       imagePath: imageName.isNotEmpty
           ? '${directory.path}/images/${imageName[0]['name']}'
           : null,
-      carbohydrates: recipe[0]['carbohydrates'],
-      protein: recipe[0]['protein'],
-      fat: recipe[0]['fat'],
-      calories: recipe[0]['calories'],
+      carbohydratesPerServing: recipe[0]['carbohydrates_per_serving'],
+      proteinPerServing: recipe[0]['protein_per_serving'],
+      fatPerServing: recipe[0]['fat_per_serving'],
+      caloriesPerServing: recipe[0]['calories_per_serving'],
     );
   }
 

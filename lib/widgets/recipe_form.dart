@@ -76,6 +76,10 @@ class RecipeFormState extends State<RecipeForm> {
   late int _servings;
   late bool _favorite;
   late List<Tag> _tags;
+  late double? _carbohydratesPerServing;
+  late double? _proteinPerServing;
+  late double? _fatPerServing;
+  late double? _caloriesPerServing;
 
   late List<FocusNode> _ingredientFocusNodes = [];
   final FocusNode _tagFocusNode = FocusNode();
@@ -100,6 +104,10 @@ class RecipeFormState extends State<RecipeForm> {
     _servings = widget.initialValues.servings;
     _favorite = widget.initialValues.favorite;
     _tags = widget.initialValues.tags!;
+    _carbohydratesPerServing = widget.initialValues.carbohydratesPerServing;
+    _proteinPerServing = widget.initialValues.proteinPerServing;
+    _fatPerServing = widget.initialValues.fatPerServing;
+    _caloriesPerServing = widget.initialValues.caloriesPerServing;
 
     _image = widget.initialValues.imagePath == null
         ? null
@@ -172,6 +180,10 @@ class RecipeFormState extends State<RecipeForm> {
         tags: _tags,
         imagePath: imageData
             ?.path, // may be null when user has not added or has deleted image
+        carbohydratesPerServing: _carbohydratesPerServing,
+        proteinPerServing: _proteinPerServing,
+        fatPerServing: _fatPerServing,
+        caloriesPerServing: _caloriesPerServing,
       );
 
       try {
@@ -185,6 +197,7 @@ class RecipeFormState extends State<RecipeForm> {
 
         _formKey.currentState!.reset();
       } catch (error) {
+        print(error);
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
               content: Text('Something went wrong! Please try again.')));
@@ -198,6 +211,7 @@ class RecipeFormState extends State<RecipeForm> {
     return Form(
       key: _formKey,
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
           _image != null
@@ -327,6 +341,160 @@ class RecipeFormState extends State<RecipeForm> {
                   unit: _ingredients[i].unit,
                 );
               }
+            },
+          ),
+          Row(
+            children: [
+              Expanded(
+                child: TextFormField(
+                  initialValue: _carbohydratesPerServing == null
+                      ? ''
+                      : removeTrailingZero(_carbohydratesPerServing!),
+                  textInputAction: TextInputAction.next,
+                  autovalidateMode: AutovalidateMode.onUserInteraction,
+                  validator: (value) {
+                    if (value != '') {
+                      var formatted = value!.replaceAll(',', '.');
+
+                      if (double.tryParse(formatted) == null) {
+                        return 'Please enter a valid number';
+                      }
+                      if (double.parse(formatted) <= 0) {
+                        return 'Value needs to be more than 0';
+                      }
+                      if (double.parse(formatted) >= 1000) {
+                        return 'Value needs to be under 1000';
+                      }
+                    }
+
+                    return null;
+                  },
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(
+                    labelText: 'Carbohydrates',
+                    hintText: '60 g',
+                    floatingLabelBehavior: FloatingLabelBehavior.always,
+                    contentPadding: EdgeInsets.fromLTRB(10, 20, 10, 20),
+                  ),
+                  onChanged: (value) {
+                    final String formatted = value.replaceAll(',', '.');
+
+                    _carbohydratesPerServing = double.tryParse(formatted);
+                  },
+                ),
+              ),
+              Expanded(
+                child: TextFormField(
+                  initialValue: _proteinPerServing == null
+                      ? ''
+                      : removeTrailingZero(_proteinPerServing!),
+                  textInputAction: TextInputAction.next,
+                  autovalidateMode: AutovalidateMode.onUserInteraction,
+                  validator: (value) {
+                    if (value != '') {
+                      var formatted = value!.replaceAll(',', '.');
+
+                      if (double.tryParse(formatted) == null) {
+                        return 'Please enter a valid number';
+                      }
+                      if (double.parse(formatted) <= 0) {
+                        return 'Value needs to be more than 0';
+                      }
+                      if (double.parse(formatted) >= 1000) {
+                        return 'Value needs to be under 1000';
+                      }
+                    }
+
+                    return null;
+                  },
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(
+                    labelText: 'Protein',
+                    hintText: '40 g',
+                    floatingLabelBehavior: FloatingLabelBehavior.always,
+                    contentPadding: EdgeInsets.fromLTRB(10, 20, 10, 20),
+                  ),
+                  onChanged: (value) {
+                    final String formatted = value.replaceAll(',', '.');
+
+                    _proteinPerServing = double.tryParse(formatted);
+                  },
+                ),
+              ),
+              Expanded(
+                child: TextFormField(
+                  initialValue: _fatPerServing == null
+                      ? ''
+                      : removeTrailingZero(_fatPerServing!),
+                  textInputAction: TextInputAction.next,
+                  autovalidateMode: AutovalidateMode.onUserInteraction,
+                  validator: (value) {
+                    if (value != '') {
+                      var formatted = value!.replaceAll(',', '.');
+
+                      if (double.tryParse(formatted) == null) {
+                        return 'Please enter a valid number';
+                      }
+                      if (double.parse(formatted) <= 0) {
+                        return 'Value needs to be more than 0';
+                      }
+                      if (double.parse(formatted) >= 1000) {
+                        return 'Value needs to be under 1000';
+                      }
+                    }
+
+                    return null;
+                  },
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(
+                    labelText: 'Fat',
+                    hintText: '20 g',
+                    floatingLabelBehavior: FloatingLabelBehavior.always,
+                    contentPadding: EdgeInsets.fromLTRB(10, 20, 10, 20),
+                  ),
+                  onChanged: (value) {
+                    final String formatted = value.replaceAll(',', '.');
+
+                    _fatPerServing = double.tryParse(formatted);
+                  },
+                ),
+              ),
+            ],
+          ),
+          TextFormField(
+            initialValue: _caloriesPerServing == null
+                ? ''
+                : removeTrailingZero(_caloriesPerServing!),
+            textInputAction: TextInputAction.next,
+            autovalidateMode: AutovalidateMode.onUserInteraction,
+            validator: (value) {
+              if (value != '') {
+                var formatted = value!.replaceAll(',', '.');
+
+                if (double.tryParse(formatted) == null) {
+                  return 'Please enter a valid number';
+                }
+                if (double.parse(formatted) <= 0) {
+                  return 'Value needs to be more than 0';
+                }
+                if (double.parse(formatted) >= 1000) {
+                  return 'Value needs to be under 1000';
+                }
+              }
+
+              return null;
+            },
+            keyboardType: TextInputType.number,
+            decoration: const InputDecoration(
+              labelText: 'Calories',
+              hintText: '650 kcal',
+              floatingLabelBehavior: FloatingLabelBehavior.always,
+              contentPadding: EdgeInsets.fromLTRB(10, 20, 10, 20),
+            ),
+            onChanged: (value) {
+              final String formatted = value.replaceAll(',', '.');
+
+              _caloriesPerServing = double.tryParse(formatted);
             },
           ),
           BlocBuilder<TagsBloc, TagsState>(

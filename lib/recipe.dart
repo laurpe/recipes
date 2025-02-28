@@ -71,10 +71,10 @@ class Recipe extends Equatable {
   final int servings;
   final List<Tag>? tags;
   final String? imagePath;
-  final double? carbohydrates;
-  final double? protein;
-  final double? fat;
-  final double? calories;
+  final double? carbohydratesPerServing;
+  final double? proteinPerServing;
+  final double? fatPerServing;
+  final double? caloriesPerServing;
 
   const Recipe({
     this.id,
@@ -85,10 +85,10 @@ class Recipe extends Equatable {
     required this.servings,
     this.tags,
     this.imagePath,
-    this.carbohydrates,
-    this.protein,
-    this.fat,
-    this.calories,
+    this.carbohydratesPerServing,
+    this.proteinPerServing,
+    this.fatPerServing,
+    this.caloriesPerServing,
   });
 
   Map<String, dynamic> toMap() {
@@ -97,10 +97,10 @@ class Recipe extends Equatable {
       'instructions': instructions,
       'favorite': favorite ? 1 : 0,
       'servings': servings,
-      'carbohydrates': carbohydrates,
-      'protein': protein,
-      'fat': fat,
-      'calories': calories,
+      'carbohydrates_per_serving': carbohydratesPerServing,
+      'protein_per_serving': proteinPerServing,
+      'fat_per_serving': fatPerServing,
+      'calories_per_serving': caloriesPerServing,
     };
 
     if (id != null) {
@@ -119,10 +119,10 @@ class Recipe extends Equatable {
     int? servings,
     List<Tag>? tags,
     String? imagePath,
-    double? carbohydrates,
-    double? protein,
-    double? fat,
-    double? calories,
+    double? carbohydratesPerServing,
+    double? proteinPerServing,
+    double? fatPerServing,
+    double? caloriesPerServing,
   }) {
     return Recipe(
       id: id ?? this.id,
@@ -133,10 +133,11 @@ class Recipe extends Equatable {
       servings: servings ?? this.servings,
       tags: tags ?? this.tags,
       imagePath: imagePath ?? this.imagePath,
-      carbohydrates: carbohydrates ?? this.carbohydrates,
-      protein: protein ?? this.protein,
-      fat: fat ?? this.fat,
-      calories: calories ?? this.calories,
+      carbohydratesPerServing:
+          carbohydratesPerServing ?? this.carbohydratesPerServing,
+      proteinPerServing: proteinPerServing ?? this.proteinPerServing,
+      fatPerServing: fatPerServing ?? this.fatPerServing,
+      caloriesPerServing: caloriesPerServing ?? this.caloriesPerServing,
     );
   }
 
@@ -149,10 +150,10 @@ class Recipe extends Equatable {
         favorite,
         servings,
         tags,
-        carbohydrates,
-        protein,
-        fat,
-        calories
+        carbohydratesPerServing,
+        proteinPerServing,
+        fatPerServing,
+        caloriesPerServing
       ];
 }
 
