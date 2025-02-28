@@ -47,7 +47,12 @@ Future<ImageData> storeImageToDisk(XFile image) async {
 Future<void> deleteImageFromDisk(String path) async {
   File image = File(path);
 
-  await image.delete();
+  try {
+    await image.delete();
+  } catch (error) {
+    // TODO: handle properly
+    print(error);
+  }
 }
 
 /// The ingredient amounts the user adds are for the amount of servings the recipe yields.
