@@ -507,17 +507,42 @@ class DatabaseClient {
     final List<Map<String, dynamic>> mealsMap = await _database.query('meals',
         where: 'day_id IN (${daysMap.map((d) => d['id']).join(',')})');
 
-    final recipeNames = [];
+    Set recipeIds = {};
+
+    // Get unique recipe ids in meals.
     for (var meal in mealsMap) {
-      recipeNames.add({
-        'id': meal['recipe_id'],
-        'name': await getRecipeName(meal['recipe_id'])
-      });
+      recipeIds.add(meal['recipe_id']);
     }
 
-    String findRecipeName(int recipeId) {
-      return recipeNames.firstWhere((r) => r['id'] == recipeId)['name'];
-    }
+    // Fetch recipe data.
+    List<Map<String, dynamic>> recipeDataList = await _database.query(
+      'recipes',
+      columns: [
+        'id',
+        'name',
+        'carbohydrates_per_serving',
+        'protein_per_serving',
+        'fat_per_serving',
+        'calories_per_serving'
+      ],
+      where: 'id IN (${List.filled(recipeIds.length, '?').join(',')})',
+      whereArgs: recipeIds.toList(),
+    );
+
+    // Transform data into MealRecipeData.
+    List<MealRecipeData> recipes = recipeDataList
+        .map((recipe) => MealRecipeData(
+            recipeId: recipe['id'],
+            recipeName: recipe['name'],
+            nutritionalInfo: NutritionalInfo(
+                carbohydrates: recipe['carbohydrates_per_serving'],
+                protein: recipe['protein_per_serving'],
+                fat: recipe['fat_per_serving'],
+                calories: recipe['calories_per_serving'])))
+        .toList();
+
+    // Now we have recipe data for all meals. Get correct recipe data from this list
+    // using meal's recipe_id and this list's recipeId.
 
     List<Day> days = daysMap.fold(<Day>[], (accumulator, day) {
       if (accumulator.any((d) => d.id == day['id'])) {
@@ -527,11 +552,15 @@ class DatabaseClient {
         id: day['id'],
         name: day['name'],
         meals: mealsMap.where((meal) => meal['day_id'] == day['id']).map((m) {
+          MealRecipeData recipeData =
+              recipes.firstWhere((r) => r.recipeId == m['recipe_id']);
+
           return Meal(
             id: m['id'],
             name: m['name'],
             recipeId: m['recipe_id'],
-            recipeName: findRecipeName(m['recipe_id']),
+            recipeName: recipeData.recipeName,
+            nutritionalInfo: recipeData.nutritionalInfo,
           );
         }).toList(),
       ));

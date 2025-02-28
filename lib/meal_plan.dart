@@ -83,8 +83,14 @@ class Meal extends Equatable {
   final String name;
   final int? recipeId;
   final String? recipeName;
+  final NutritionalInfo? nutritionalInfo;
 
-  const Meal({this.id, required this.name, this.recipeId, this.recipeName});
+  const Meal(
+      {this.id,
+      required this.name,
+      this.recipeId,
+      this.recipeName,
+      this.nutritionalInfo});
 
   Map<String, dynamic> toMap() {
     Map<String, dynamic> map = {
@@ -107,15 +113,27 @@ class Meal extends Equatable {
     String? name,
     int? recipeId,
     String? recipeName,
+    NutritionalInfo? nutritionalInfo,
   }) {
     return Meal(
       id: id ?? this.id,
       name: name ?? this.name,
       recipeId: recipeId ?? this.recipeId,
       recipeName: recipeName ?? this.recipeName,
+      nutritionalInfo: nutritionalInfo ?? this.nutritionalInfo,
     );
   }
 
   @override
-  List<Object?> get props => [id, name, recipeId, recipeName];
+  List<Object?> get props => [id, name, recipeId, recipeName, nutritionalInfo];
+}
+
+class NutritionalInfo {
+  final double? carbohydrates;
+  final double? protein;
+  final double? fat;
+  final double? calories;
+
+  const NutritionalInfo(
+      {this.carbohydrates, this.protein, this.fat, this.calories});
 }
