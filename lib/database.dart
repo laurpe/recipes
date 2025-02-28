@@ -645,6 +645,7 @@ class DatabaseClient {
   }
 
   Future<void> deleteRecipeImage(int recipeId) async {
-    await _database.delete('images', where: 'id = ?', whereArgs: [recipeId]);
+    await _database
+        .delete('images', where: 'recipe_id = ?', whereArgs: [recipeId]);
   }
 }
