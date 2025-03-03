@@ -5,10 +5,10 @@ import 'package:recipes/blocs/meal_plan/bloc.dart';
 import 'package:recipes/blocs/meal_plan/events.dart';
 import 'package:recipes/blocs/meal_plan/state.dart';
 import 'package:recipes/database.dart';
-import 'package:recipes/grocery.dart';
+import 'package:recipes/models/grocery.dart';
 import 'package:recipes/helpers/add_ingredients_to_groceries.dart';
-import 'package:recipes/meal_plan.dart';
-import 'package:recipes/recipe.dart';
+import 'package:recipes/models/meal_plan.dart';
+import 'package:recipes/models/recipe.dart';
 import 'package:recipes/screens/edit_meal_plan.dart';
 
 // TODO: make this and recipe result use same class

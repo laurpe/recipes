@@ -7,7 +7,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:recipes/blocs/tags/bloc.dart';
 import 'package:recipes/blocs/tags/state.dart';
 import 'package:recipes/helpers/ingredient_formatters.dart';
-import 'package:recipes/recipe.dart';
+import 'package:recipes/models/recipe.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:uuid/uuid.dart';
 import 'package:path/path.dart' as path;
