@@ -74,6 +74,25 @@ class Day extends Equatable {
     );
   }
 
+  double getCarbsPerPerson() {
+    return meals.fold(
+        0.0, (sum, meal) => sum + (meal.carbohydratesPerServing ?? 0.0));
+  }
+
+  double getProteinPerPerson() {
+    return meals.fold(
+        0.0, (sum, meal) => sum + (meal.proteinPerServing ?? 0.0));
+  }
+
+  double getFatPerPerson() {
+    return meals.fold(0.0, (sum, meal) => sum + (meal.fatPerServing ?? 0.0));
+  }
+
+  double getCaloriesPerPerson() {
+    return meals.fold(
+        0.0, (sum, meal) => sum + (meal.caloriesPerServing ?? 0.0));
+  }
+
   @override
   List<Object?> get props => [id, name, meals];
 }

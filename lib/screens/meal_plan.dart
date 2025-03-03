@@ -5,6 +5,7 @@ import 'package:recipes/blocs/meal_plan/bloc.dart';
 import 'package:recipes/blocs/meal_plan/events.dart';
 import 'package:recipes/blocs/meal_plan/state.dart';
 import 'package:recipes/database.dart';
+import 'package:recipes/helpers/number_formatters.dart';
 import 'package:recipes/models/grocery.dart';
 import 'package:recipes/helpers/add_ingredients_to_groceries.dart';
 import 'package:recipes/models/meal_plan.dart';
@@ -317,19 +318,22 @@ class SingleMealPlanView extends StatelessWidget {
                         final day = state.mealPlan.days![index];
                         return Card(
                           child: ListTile(
-                            title: Text(day.name),
+                            title: Text(day.name,
+                                style:
+                                    Theme.of(context).textTheme.headlineMedium),
                             subtitle: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   for (var meal in day.meals) ...[
                                     Text('${meal.name}: ${meal.recipeName}')
                                   ],
+                                  Divider(),
+                                  Text('Macros per person:'),
                                   Text(
-                                    'Macros per person: '
-                                    'Carbs: ${day.meals.fold(0.0, (sum, meal) => sum + (meal.carbohydratesPerServing ?? 0.0))}, '
-                                    'Protein: ${day.meals.fold(0.0, (sum, meal) => sum + (meal.proteinPerServing ?? 0.0))}, '
-                                    'Fat: ${day.meals.fold(0.0, (sum, meal) => sum + (meal.fatPerServing ?? 0.0))}, '
-                                    'Calories: ${day.meals.fold(0.0, (sum, meal) => sum + (meal.caloriesPerServing ?? 0.0))}',
+                                    'Carbs: ${removeTrailingZero(day.getCarbsPerPerson())} g, '
+                                    'Protein: ${removeTrailingZero(day.getProteinPerPerson())} g, '
+                                    'Fat: ${removeTrailingZero(day.getFatPerPerson())} g, '
+                                    'Calories: ${removeTrailingZero(day.getCaloriesPerPerson())} kcal',
                                   ),
                                 ]),
                           ),
