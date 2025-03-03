@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'package:recipes/recipe.dart';
+import 'package:recipes/models/recipe.dart';
 
 abstract class TagsEvent extends Equatable {
   const TagsEvent();

@@ -9,7 +9,7 @@ import 'package:recipes/blocs/recipe/state.dart';
 import 'package:recipes/database.dart';
 import 'package:recipes/helpers/add_ingredients_to_groceries.dart';
 import 'package:recipes/helpers/ingredient_formatters.dart';
-import 'package:recipes/recipe.dart';
+import 'package:recipes/models/recipe.dart';
 import 'package:recipes/screens/edit_recipe.dart';
 
 sealed class Result<T> {

@@ -2,10 +2,10 @@ import 'dart:async';
 import 'dart:io';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:recipes/grocery.dart';
-import 'package:recipes/meal_plan.dart';
+import 'package:recipes/models/grocery.dart';
+import 'package:recipes/models/meal_plan.dart';
 import 'package:sqflite/sqflite.dart';
-import 'package:recipes/recipe.dart';
+import 'package:recipes/models/recipe.dart';
 
 class DatabaseClient {
   late final Database _database;
@@ -507,7 +507,7 @@ class DatabaseClient {
     final List<Map<String, dynamic>> mealsMap = await _database.query('meals',
         where: 'day_id IN (${daysMap.map((d) => d['id']).join(',')})');
 
-    Set recipeIds = {};
+    Set<int> recipeIds = {};
 
     // Get unique recipe ids in meals.
     for (var meal in mealsMap) {
