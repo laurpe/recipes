@@ -534,7 +534,8 @@ class DatabaseClient {
         where: 'day_id IN (${daysMap.map((d) => d['id']).join(',')})');
 
     // Get unique recipe ids in meals.
-    Set<int> recipeIds = mealsMap.map((recipe) => recipe['id'] as int).toSet();
+    Set<int> recipeIds =
+        mealsMap.map((meal) => meal['recipe_id'] as int).toSet();
 
     // Get recipe data for meals.
     List<MealRecipe> recipes = await getMealRecipes(recipeIds);
