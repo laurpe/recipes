@@ -74,6 +74,25 @@ class Day extends Equatable {
     );
   }
 
+  double getCarbsPerPerson() {
+    return meals.fold(
+        0.0, (sum, meal) => sum + (meal.carbohydratesPerServing ?? 0.0));
+  }
+
+  double getProteinPerPerson() {
+    return meals.fold(
+        0.0, (sum, meal) => sum + (meal.proteinPerServing ?? 0.0));
+  }
+
+  double getFatPerPerson() {
+    return meals.fold(0.0, (sum, meal) => sum + (meal.fatPerServing ?? 0.0));
+  }
+
+  double getCaloriesPerPerson() {
+    return meals.fold(
+        0.0, (sum, meal) => sum + (meal.caloriesPerServing ?? 0.0));
+  }
+
   @override
   List<Object?> get props => [id, name, meals];
 }
@@ -83,8 +102,21 @@ class Meal extends Equatable {
   final String name;
   final int? recipeId;
   final String? recipeName;
+  final double? carbohydratesPerServing;
+  final double? proteinPerServing;
+  final double? fatPerServing;
+  final double? caloriesPerServing;
 
-  const Meal({this.id, required this.name, this.recipeId, this.recipeName});
+  const Meal({
+    this.id,
+    required this.name,
+    this.recipeId,
+    this.recipeName,
+    this.carbohydratesPerServing,
+    this.proteinPerServing,
+    this.fatPerServing,
+    this.caloriesPerServing,
+  });
 
   Map<String, dynamic> toMap() {
     Map<String, dynamic> map = {
@@ -107,15 +139,33 @@ class Meal extends Equatable {
     String? name,
     int? recipeId,
     String? recipeName,
+    double? carbohydratesPerServing,
+    double? proteinPerServing,
+    double? fatPerServing,
+    double? caloriesPerServing,
   }) {
     return Meal(
       id: id ?? this.id,
       name: name ?? this.name,
       recipeId: recipeId ?? this.recipeId,
       recipeName: recipeName ?? this.recipeName,
+      carbohydratesPerServing:
+          carbohydratesPerServing ?? this.carbohydratesPerServing,
+      proteinPerServing: proteinPerServing ?? this.proteinPerServing,
+      fatPerServing: fatPerServing ?? this.fatPerServing,
+      caloriesPerServing: caloriesPerServing ?? this.caloriesPerServing,
     );
   }
 
   @override
-  List<Object?> get props => [id, name, recipeId, recipeName];
+  List<Object?> get props => [
+        id,
+        name,
+        recipeId,
+        recipeName,
+        carbohydratesPerServing,
+        proteinPerServing,
+        fatPerServing,
+        caloriesPerServing
+      ];
 }
