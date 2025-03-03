@@ -8,7 +8,7 @@ import 'package:recipes/blocs/recipe/events.dart';
 import 'package:recipes/blocs/recipe/state.dart';
 import 'package:recipes/database.dart';
 import 'package:recipes/helpers/add_ingredients_to_groceries.dart';
-import 'package:recipes/helpers/ingredient_formatters.dart';
+import 'package:recipes/helpers/number_formatters.dart';
 import 'package:recipes/models/recipe.dart';
 import 'package:recipes/screens/edit_recipe.dart';
 
