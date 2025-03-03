@@ -2,10 +2,10 @@ import 'dart:async';
 import 'dart:io';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:recipes/models/grocery.dart';
-import 'package:recipes/models/meal_plan.dart';
+import 'package:recipes/grocery.dart';
+import 'package:recipes/meal_plan.dart';
 import 'package:sqflite/sqflite.dart';
-import 'package:recipes/models/recipe.dart';
+import 'package:recipes/recipe.dart';
 
 class DatabaseClient {
   late final Database _database;
@@ -24,11 +24,7 @@ class DatabaseClient {
             name TEXT NOT NULL,
             instructions TEXT NOT NULL,
             favorite BOOLEAN NOT NULL,
-            servings INTEGER NOT NULL,
-            carbohydrates_per_serving REAL,
-            protein_per_serving REAL,
-            fat_per_serving REAL,
-            calories_per_serving REAL
+            servings INTEGER NOT NULL
             )''');
         await db.execute('''CREATE TABLE ingredients(
             id INTEGER PRIMARY KEY, 
@@ -87,30 +83,16 @@ class DatabaseClient {
               )''');
       },
       onUpgrade: (db, oldVersion, newVersion) async {
-        if (oldVersion < 2) {
-          var batch = db.batch();
-          batch.execute('''CREATE TABLE IF NOT EXISTS images(
+        if (oldVersion == 1) {
+          await db.execute('''CREATE TABLE IF NOT EXISTS images(
               id INTEGER PRIMARY KEY,
               recipe_id INTEGER NOT NULL,
               name TEXT NOT NULL,
               FOREIGN KEY(recipe_id) REFERENCES recipes(id) ON DELETE CASCADE
               )''');
-          await batch.commit();
-        }
-
-        if (oldVersion < 3) {
-          var batch = db.batch();
-          batch.execute(
-              'ALTER TABLE recipes ADD COLUMN carbohydrates_per_serving REAL');
-          batch.execute(
-              'ALTER TABLE recipes ADD COLUMN protein_per_serving REAL');
-          batch.execute('ALTER TABLE recipes ADD COLUMN fat_per_serving REAL');
-          batch.execute(
-              'ALTER TABLE recipes ADD COLUMN calories_per_serving REAL');
-          await batch.commit();
         }
       },
-      version: 3,
+      version: 2,
     );
   }
 
@@ -230,10 +212,6 @@ class DatabaseClient {
         favorite: recipe['favorite'] == 1 ? true : false,
         servings: recipe['servings'],
         tags: await getRecipeTags(recipe['id']),
-        carbohydratesPerServing: recipe['carbohydrates_per_serving'],
-        proteinPerServing: recipe['protein_per_serving'],
-        fatPerServing: recipe['fat_per_serving'],
-        caloriesPerServing: recipe['calories_per_serving'],
       ));
     }
 
@@ -321,10 +299,6 @@ class DatabaseClient {
       imagePath: imageName.isNotEmpty
           ? '${directory.path}/images/${imageName[0]['name']}'
           : null,
-      carbohydratesPerServing: recipe[0]['carbohydrates_per_serving'],
-      proteinPerServing: recipe[0]['protein_per_serving'],
-      fatPerServing: recipe[0]['fat_per_serving'],
-      caloriesPerServing: recipe[0]['calories_per_serving'],
     );
   }
 
@@ -497,32 +471,6 @@ class DatabaseClient {
     return recipe[0]['name'];
   }
 
-  Future<List<MealRecipe>> getMealRecipes(Set<int> recipeIds) async {
-    List<Map<String, dynamic>> recipesMap = await _database.query(
-      'recipes',
-      columns: [
-        'id',
-        'name',
-        'carbohydrates_per_serving',
-        'protein_per_serving',
-        'fat_per_serving',
-        'calories_per_serving'
-      ],
-      where: 'id IN (${List.filled(recipeIds.length, '?').join(',')})',
-      whereArgs: recipeIds.toList(),
-    );
-
-    return recipesMap
-        .map((recipe) => MealRecipe(
-            recipeId: recipe['id'],
-            recipeName: recipe['name'],
-            carbohydratesPerServing: recipe['carbohydrates_per_serving'],
-            proteinPerServing: recipe['protein_per_serving'],
-            fatPerServing: recipe['fat_per_serving'],
-            caloriesPerServing: recipe['calories_per_serving']))
-        .toList();
-  }
-
   Future<MealPlan> getMealPlan(int mealPlanId) async {
     final List<Map<String, dynamic>> mealPlanMap = await _database
         .query('meal_plans', where: 'id = ?', whereArgs: [mealPlanId]);
@@ -533,11 +481,17 @@ class DatabaseClient {
     final List<Map<String, dynamic>> mealsMap = await _database.query('meals',
         where: 'day_id IN (${daysMap.map((d) => d['id']).join(',')})');
 
-    // Get unique recipe ids in meals.
-    Set<int> recipeIds = mealsMap.map((recipe) => recipe['id'] as int).toSet();
+    final recipeNames = [];
+    for (var meal in mealsMap) {
+      recipeNames.add({
+        'id': meal['recipe_id'],
+        'name': await getRecipeName(meal['recipe_id'])
+      });
+    }
 
-    // Get recipe data for meals.
-    List<MealRecipe> recipes = await getMealRecipes(recipeIds);
+    String findRecipeName(int recipeId) {
+      return recipeNames.firstWhere((r) => r['id'] == recipeId)['name'];
+    }
 
     List<Day> days = daysMap.fold(<Day>[], (accumulator, day) {
       if (accumulator.any((d) => d.id == day['id'])) {
@@ -547,18 +501,11 @@ class DatabaseClient {
         id: day['id'],
         name: day['name'],
         meals: mealsMap.where((meal) => meal['day_id'] == day['id']).map((m) {
-          MealRecipe recipeData =
-              recipes.firstWhere((r) => r.recipeId == m['recipe_id']);
-
           return Meal(
             id: m['id'],
             name: m['name'],
             recipeId: m['recipe_id'],
-            recipeName: recipeData.recipeName,
-            carbohydratesPerServing: recipeData.carbohydratesPerServing,
-            proteinPerServing: recipeData.proteinPerServing,
-            fatPerServing: recipeData.fatPerServing,
-            caloriesPerServing: recipeData.caloriesPerServing,
+            recipeName: findRecipeName(m['recipe_id']),
           );
         }).toList(),
       ));
@@ -672,7 +619,6 @@ class DatabaseClient {
   }
 
   Future<void> deleteRecipeImage(int recipeId) async {
-    await _database
-        .delete('images', where: 'recipe_id = ?', whereArgs: [recipeId]);
+    await _database.delete('images', where: 'id = ?', whereArgs: [recipeId]);
   }
 }

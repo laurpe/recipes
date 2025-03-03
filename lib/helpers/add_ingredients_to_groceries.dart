@@ -1,7 +1,7 @@
 import 'package:get_it/get_it.dart';
 import 'package:recipes/database.dart';
-import 'package:recipes/models/grocery.dart';
-import 'package:recipes/models/recipe.dart';
+import 'package:recipes/grocery.dart';
+import 'package:recipes/recipe.dart';
 
 /// Converts grocery units to default units.
 Grocery unitsToDefaults(Grocery grocery) {

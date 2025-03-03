@@ -8,8 +8,8 @@ import 'package:recipes/blocs/recipe/events.dart';
 import 'package:recipes/blocs/recipe/state.dart';
 import 'package:recipes/database.dart';
 import 'package:recipes/helpers/add_ingredients_to_groceries.dart';
-import 'package:recipes/helpers/number_formatters.dart';
-import 'package:recipes/models/recipe.dart';
+import 'package:recipes/helpers/ingredient_formatters.dart';
+import 'package:recipes/recipe.dart';
 import 'package:recipes/screens/edit_recipe.dart';
 
 sealed class Result<T> {
@@ -241,7 +241,7 @@ class SingleRecipeView extends StatelessWidget {
                           height: 300,
                           decoration: BoxDecoration(
                             image: DecorationImage(
-                              fit: BoxFit.cover,
+                              fit: BoxFit.fill,
                               image: FileImage(
                                 File(state.recipe.imagePath!),
                               ),
@@ -253,67 +253,6 @@ class SingleRecipeView extends StatelessWidget {
                     padding: const EdgeInsets.fromLTRB(8.0, 8.0, 8.0, 0),
                     child: Text('Servings: ${state.recipe.servings}'),
                   ),
-                  state.recipe.carbohydratesPerServing == null &&
-                          state.recipe.proteinPerServing == null &&
-                          state.recipe.fatPerServing == null &&
-                          state.recipe.caloriesPerServing == null
-                      ? SizedBox()
-                      : Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Padding(
-                              padding:
-                                  const EdgeInsets.fromLTRB(8.0, 8.0, 8.0, 0),
-                              child: Text('Macronutrients per serving:'),
-                            ),
-                            Padding(
-                              padding:
-                                  const EdgeInsets.fromLTRB(8.0, 8.0, 8.0, 0),
-                              child: Table(
-                                defaultVerticalAlignment:
-                                    TableCellVerticalAlignment.middle,
-                                children: [
-                                  TableRow(
-                                    children: [
-                                      TableCell(child: Text('Carbs')),
-                                      TableCell(child: Text('Protein')),
-                                      TableCell(child: Text('Fat')),
-                                      TableCell(child: Text('Calories')),
-                                    ],
-                                  ),
-                                  TableRow(
-                                    children: [
-                                      TableCell(
-                                          child: Text(state.recipe
-                                                      .carbohydratesPerServing !=
-                                                  null
-                                              ? '${removeTrailingZero(state.recipe.carbohydratesPerServing!)} g'
-                                              : '')),
-                                      TableCell(
-                                          child: Text(state.recipe
-                                                      .proteinPerServing !=
-                                                  null
-                                              ? '${removeTrailingZero(state.recipe.proteinPerServing!)} g'
-                                              : '')),
-                                      TableCell(
-                                          child: Text(state
-                                                      .recipe.fatPerServing !=
-                                                  null
-                                              ? '${removeTrailingZero(state.recipe.fatPerServing!)} g'
-                                              : '')),
-                                      TableCell(
-                                          child: Text(state.recipe
-                                                      .caloriesPerServing !=
-                                                  null
-                                              ? '${removeTrailingZero(state.recipe.caloriesPerServing!)} kcal'
-                                              : '')),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
                   Padding(
                     padding: const EdgeInsets.fromLTRB(8.0, 8.0, 8.0, 0),
                     child: state.recipe.tags!.isNotEmpty
