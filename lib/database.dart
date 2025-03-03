@@ -497,25 +497,8 @@ class DatabaseClient {
     return recipe[0]['name'];
   }
 
-  Future<MealPlan> getMealPlan(int mealPlanId) async {
-    final List<Map<String, dynamic>> mealPlanMap = await _database
-        .query('meal_plans', where: 'id = ?', whereArgs: [mealPlanId]);
-
-    final List<Map<String, dynamic>> daysMap = await _database
-        .query('days', where: 'meal_plan_id = ?', whereArgs: [mealPlanId]);
-
-    final List<Map<String, dynamic>> mealsMap = await _database.query('meals',
-        where: 'day_id IN (${daysMap.map((d) => d['id']).join(',')})');
-
-    Set<int> recipeIds = {};
-
-    // Get unique recipe ids in meals.
-    for (var meal in mealsMap) {
-      recipeIds.add(meal['recipe_id']);
-    }
-
-    // Fetch recipe data.
-    List<Map<String, dynamic>> recipeDataList = await _database.query(
+  Future<List<MealRecipe>> getMealRecipes(Set<int> recipeIds) async {
+    List<Map<String, dynamic>> recipesMap = await _database.query(
       'recipes',
       columns: [
         'id',
@@ -529,20 +512,32 @@ class DatabaseClient {
       whereArgs: recipeIds.toList(),
     );
 
-    // Transform data into MealRecipeData.
-    List<MealRecipeData> recipes = recipeDataList
-        .map((recipe) => MealRecipeData(
+    return recipesMap
+        .map((recipe) => MealRecipe(
             recipeId: recipe['id'],
             recipeName: recipe['name'],
-            nutritionalInfo: NutritionalInfo(
-                carbohydrates: recipe['carbohydrates_per_serving'],
-                protein: recipe['protein_per_serving'],
-                fat: recipe['fat_per_serving'],
-                calories: recipe['calories_per_serving'])))
+            carbohydratesPerServing: recipe['carbohydrates_per_serving'],
+            proteinPerServing: recipe['protein_per_serving'],
+            fatPerServing: recipe['fat_per_serving'],
+            caloriesPerServing: recipe['calories_per_serving']))
         .toList();
+  }
 
-    // Now we have recipe data for all meals. Get correct recipe data from this list
-    // using meal's recipe_id and this list's recipeId.
+  Future<MealPlan> getMealPlan(int mealPlanId) async {
+    final List<Map<String, dynamic>> mealPlanMap = await _database
+        .query('meal_plans', where: 'id = ?', whereArgs: [mealPlanId]);
+
+    final List<Map<String, dynamic>> daysMap = await _database
+        .query('days', where: 'meal_plan_id = ?', whereArgs: [mealPlanId]);
+
+    final List<Map<String, dynamic>> mealsMap = await _database.query('meals',
+        where: 'day_id IN (${daysMap.map((d) => d['id']).join(',')})');
+
+    // Get unique recipe ids in meals.
+    Set<int> recipeIds = mealsMap.map((recipe) => recipe['id'] as int).toSet();
+
+    // Get recipe data for meals.
+    List<MealRecipe> recipes = await getMealRecipes(recipeIds);
 
     List<Day> days = daysMap.fold(<Day>[], (accumulator, day) {
       if (accumulator.any((d) => d.id == day['id'])) {
@@ -552,7 +547,7 @@ class DatabaseClient {
         id: day['id'],
         name: day['name'],
         meals: mealsMap.where((meal) => meal['day_id'] == day['id']).map((m) {
-          MealRecipeData recipeData =
+          MealRecipe recipeData =
               recipes.firstWhere((r) => r.recipeId == m['recipe_id']);
 
           return Meal(
@@ -560,7 +555,10 @@ class DatabaseClient {
             name: m['name'],
             recipeId: m['recipe_id'],
             recipeName: recipeData.recipeName,
-            nutritionalInfo: recipeData.nutritionalInfo,
+            carbohydratesPerServing: recipeData.carbohydratesPerServing,
+            proteinPerServing: recipeData.proteinPerServing,
+            fatPerServing: recipeData.fatPerServing,
+            caloriesPerServing: recipeData.caloriesPerServing,
           );
         }).toList(),
       ));

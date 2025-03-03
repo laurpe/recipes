@@ -326,10 +326,10 @@ class SingleMealPlanView extends StatelessWidget {
                                   ],
                                   Text(
                                     'Macros per person: '
-                                    'Carbs: ${day.meals.fold(0.0, (sum, meal) => sum + (meal.nutritionalInfo?.carbohydrates ?? 0.0))}, '
-                                    'Protein: ${day.meals.fold(0.0, (sum, meal) => sum + (meal.nutritionalInfo?.protein ?? 0.0))}, '
-                                    'Fat: ${day.meals.fold(0.0, (sum, meal) => sum + (meal.nutritionalInfo?.fat ?? 0.0))}, '
-                                    'Calories: ${day.meals.fold(0.0, (sum, meal) => sum + (meal.nutritionalInfo?.calories ?? 0.0))}',
+                                    'Carbs: ${day.meals.fold(0.0, (sum, meal) => sum + (meal.carbohydratesPerServing ?? 0.0))}, '
+                                    'Protein: ${day.meals.fold(0.0, (sum, meal) => sum + (meal.proteinPerServing ?? 0.0))}, '
+                                    'Fat: ${day.meals.fold(0.0, (sum, meal) => sum + (meal.fatPerServing ?? 0.0))}, '
+                                    'Calories: ${day.meals.fold(0.0, (sum, meal) => sum + (meal.caloriesPerServing ?? 0.0))}',
                                   ),
                                 ]),
                           ),
