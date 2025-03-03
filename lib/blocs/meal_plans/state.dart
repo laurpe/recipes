@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'package:recipes/models/meal_plan.dart';
+import 'package:recipes/meal_plan.dart';
 
 sealed class MealPlansState extends Equatable {
   const MealPlansState();

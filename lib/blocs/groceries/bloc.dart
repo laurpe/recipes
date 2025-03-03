@@ -2,7 +2,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:recipes/blocs/groceries/events.dart';
 import 'package:recipes/blocs/groceries/state.dart';
 import 'package:recipes/database.dart';
-import 'package:recipes/models/grocery.dart';
+import 'package:recipes/grocery.dart';
 
 class GroceriesBloc extends Bloc<GroceriesEvent, GroceriesState> {
   final DatabaseClient databaseClient;

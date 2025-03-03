@@ -1,4 +1,4 @@
-import 'package:recipes/models/grocery.dart';
+import 'package:recipes/grocery.dart';
 import 'package:recipes/helpers/add_ingredients_to_groceries.dart';
 import 'package:test/test.dart';
 

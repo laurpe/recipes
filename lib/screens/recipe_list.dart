@@ -6,7 +6,7 @@ import 'package:recipes/blocs/recipes/state.dart';
 import 'package:recipes/blocs/tags/bloc.dart';
 import 'package:recipes/blocs/tags/events.dart';
 import 'package:recipes/blocs/tags/state.dart';
-import 'package:recipes/models/recipe.dart';
+import 'package:recipes/recipe.dart';
 import 'package:recipes/screens/add_recipe.dart';
 import 'package:recipes/screens/groceries.dart';
 import 'package:recipes/screens/meal_plan_list.dart';
