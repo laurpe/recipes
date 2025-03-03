@@ -83,14 +83,21 @@ class Meal extends Equatable {
   final String name;
   final int? recipeId;
   final String? recipeName;
-  final NutritionalInfo? nutritionalInfo;
+  final double? carbohydratesPerServing;
+  final double? proteinPerServing;
+  final double? fatPerServing;
+  final double? caloriesPerServing;
 
-  const Meal(
-      {this.id,
-      required this.name,
-      this.recipeId,
-      this.recipeName,
-      this.nutritionalInfo});
+  const Meal({
+    this.id,
+    required this.name,
+    this.recipeId,
+    this.recipeName,
+    this.carbohydratesPerServing,
+    this.proteinPerServing,
+    this.fatPerServing,
+    this.caloriesPerServing,
+  });
 
   Map<String, dynamic> toMap() {
     Map<String, dynamic> map = {
@@ -113,27 +120,33 @@ class Meal extends Equatable {
     String? name,
     int? recipeId,
     String? recipeName,
-    NutritionalInfo? nutritionalInfo,
+    double? carbohydratesPerServing,
+    double? proteinPerServing,
+    double? fatPerServing,
+    double? caloriesPerServing,
   }) {
     return Meal(
       id: id ?? this.id,
       name: name ?? this.name,
       recipeId: recipeId ?? this.recipeId,
       recipeName: recipeName ?? this.recipeName,
-      nutritionalInfo: nutritionalInfo ?? this.nutritionalInfo,
+      carbohydratesPerServing:
+          carbohydratesPerServing ?? this.carbohydratesPerServing,
+      proteinPerServing: proteinPerServing ?? this.proteinPerServing,
+      fatPerServing: fatPerServing ?? this.fatPerServing,
+      caloriesPerServing: caloriesPerServing ?? this.caloriesPerServing,
     );
   }
 
   @override
-  List<Object?> get props => [id, name, recipeId, recipeName, nutritionalInfo];
-}
-
-class NutritionalInfo {
-  final double? carbohydrates;
-  final double? protein;
-  final double? fat;
-  final double? calories;
-
-  const NutritionalInfo(
-      {this.carbohydrates, this.protein, this.fat, this.calories});
+  List<Object?> get props => [
+        id,
+        name,
+        recipeId,
+        recipeName,
+        carbohydratesPerServing,
+        proteinPerServing,
+        fatPerServing,
+        caloriesPerServing
+      ];
 }

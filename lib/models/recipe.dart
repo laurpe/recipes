@@ -1,5 +1,4 @@
 import 'package:equatable/equatable.dart';
-import 'package:recipes/models/meal_plan.dart';
 
 class Ingredient extends Equatable {
   final int? id;
@@ -171,11 +170,19 @@ class RecipeListItem extends Equatable {
   List<Object?> get props => [id, name];
 }
 
-class MealRecipeData {
+class MealRecipe {
   final int recipeId;
   final String recipeName;
-  final NutritionalInfo? nutritionalInfo;
+  final double? carbohydratesPerServing;
+  final double? proteinPerServing;
+  final double? fatPerServing;
+  final double? caloriesPerServing;
 
-  const MealRecipeData(
-      {required this.recipeId, required this.recipeName, this.nutritionalInfo});
+  const MealRecipe(
+      {required this.recipeId,
+      required this.recipeName,
+      this.carbohydratesPerServing,
+      this.proteinPerServing,
+      this.fatPerServing,
+      this.caloriesPerServing});
 }
