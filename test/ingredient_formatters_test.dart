@@ -1,4 +1,4 @@
-import 'package:recipes/helpers/ingredient_formatters.dart';
+import 'package:recipes/helpers/number_formatters.dart';
 import 'package:test/test.dart';
 
 void main() {
