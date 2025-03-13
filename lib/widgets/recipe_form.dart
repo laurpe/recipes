@@ -12,7 +12,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:uuid/uuid.dart';
 import 'package:path/path.dart' as path;
 
-import '../database.dart';
+import '../database_old.dart';
 
 class ImageData {
   final String name;

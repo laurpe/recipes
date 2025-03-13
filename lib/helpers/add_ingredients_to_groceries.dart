@@ -1,5 +1,5 @@
 import 'package:get_it/get_it.dart';
-import 'package:recipes/database.dart';
+import 'package:recipes/database_old.dart';
 import 'package:recipes/models/grocery.dart';
 import 'package:recipes/models/recipe.dart';
 

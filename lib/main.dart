@@ -6,7 +6,7 @@ import 'package:recipes/blocs/recipes/bloc.dart';
 import 'package:recipes/blocs/recipes/events.dart';
 import 'package:recipes/blocs/tags/bloc.dart';
 import 'package:recipes/blocs/tags/events.dart';
-import 'package:recipes/database.dart';
+import 'package:recipes/database_old.dart';
 import 'package:recipes/screens/recipe_list.dart';
 
 void main() async {

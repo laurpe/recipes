@@ -1,7 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:recipes/blocs/tags/events.dart';
 import 'package:recipes/blocs/tags/state.dart';
-import 'package:recipes/database.dart';
+import 'package:recipes/database_old.dart';
 
 class TagsBloc extends Bloc<TagsEvent, TagsState> {
   final DatabaseClient databaseClient;

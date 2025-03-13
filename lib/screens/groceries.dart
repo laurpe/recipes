@@ -4,7 +4,7 @@ import 'package:get_it/get_it.dart';
 import 'package:recipes/blocs/groceries/bloc.dart';
 import 'package:recipes/blocs/groceries/events.dart';
 import 'package:recipes/blocs/groceries/state.dart';
-import 'package:recipes/database.dart';
+import 'package:recipes/database_old.dart';
 import 'package:recipes/models/grocery.dart';
 import 'package:recipes/helpers/number_formatters.dart';
 
