@@ -1,6 +1,5 @@
 import 'package:drift/drift.dart';
 import 'package:drift_flutter/drift_flutter.dart';
-import 'package:path_provider/path_provider.dart';
 
 part 'database.g.dart';
 
@@ -18,17 +17,36 @@ class Recipes extends Table {
 
 @DriftDatabase(tables: [Recipes])
 class AppDatabase extends _$AppDatabase {
-  AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
+  AppDatabase() : super(_openConnection());
 
   @override
   int get schemaVersion => 1;
 
   static QueryExecutor _openConnection() {
     return driftDatabase(
-      name: 'recipes_database',
-      native: const DriftNativeOptions(
-        databaseDirectory: getApplicationSupportDirectory,
-      ),
+      name: 'recipes_db',
     );
   }
+
+  @override
+  MigrationStrategy get migration {
+    return MigrationStrategy(
+      beforeOpen: (details) async {
+        await customStatement('PRAGMA foreign_keys = ON');
+      },
+      onCreate: (Migrator m) async {
+        await m.createAll();
+      },
+      onUpgrade: (Migrator m, int from, int to) async {},
+    );
+  }
+
+  // RECIPES
+
+  // Add a new recipe
+  Future<int> addRecipe(Recipe recipe) {
+    return into(recipes).insert(recipe);
+  }
+
+  // Update a recipe
 }
