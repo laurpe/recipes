@@ -1,4 +1,6 @@
+import 'package:drift/drift.dart';
 import 'package:equatable/equatable.dart';
+import 'package:recipes/database.dart';
 
 class Ingredient extends Equatable {
   final int? id;
@@ -24,6 +26,14 @@ class Ingredient extends Equatable {
     }
 
     return map;
+  }
+
+  IngredientsCompanion toCompanion() {
+    return IngredientsCompanion(
+      name: Value(name),
+      amountPerServing: Value(amountPerServing),
+      unit: Value(unit),
+    );
   }
 
   @override
@@ -108,6 +118,18 @@ class Recipe extends Equatable {
     }
 
     return map;
+  }
+
+  RecipesCompanion toCompanion() {
+    return RecipesCompanion(
+        name: Value(name),
+        instructions: Value(instructions),
+        favorite: Value(favorite),
+        servings: Value(servings),
+        carbohydratesPerServing: Value(carbohydratesPerServing),
+        proteinPerServing: Value(proteinPerServing),
+        fatPerServing: Value(fatPerServing),
+        caloriesPerServing: Value(caloriesPerServing));
   }
 
   Recipe copyWith({

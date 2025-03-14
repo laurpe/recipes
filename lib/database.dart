@@ -1,8 +1,10 @@
 import 'package:drift/drift.dart';
 import 'package:drift_flutter/drift_flutter.dart';
+import 'package:recipes/models/recipe.dart';
 
 part 'database.g.dart';
 
+@DataClassName('RecipeData')
 class Recipes extends Table {
   IntColumn get id => integer().autoIncrement()();
   TextColumn get name => text()();
@@ -15,7 +17,16 @@ class Recipes extends Table {
   RealColumn get caloriesPerServing => real().nullable()();
 }
 
-@DriftDatabase(tables: [Recipes])
+@DataClassName('IngredientData')
+class Ingredients extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get name => text()();
+  RealColumn get amountPerServing => real()();
+  TextColumn get unit => text()();
+  IntColumn get recipeId => integer().references(Recipes, #id)();
+}
+
+@DriftDatabase(tables: [Recipes, Ingredients])
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
@@ -45,8 +56,17 @@ class AppDatabase extends _$AppDatabase {
 
   // Add a new recipe
   Future<int> addRecipe(Recipe recipe) {
-    return into(recipes).insert(recipe);
+    return into(recipes).insert(recipe.toCompanion());
   }
 
-  // Update a recipe
+  // INGREDIENTS
+  Future<void> addIngredients(
+      List<Ingredient> ingredientList, int recipeId) async {
+    await batch((batch) {
+      batch.insertAll(
+        ingredients,
+        ingredientList.map((ingredient) => ingredient.toCompanion()).toList(),
+      );
+    });
+  }
 }
