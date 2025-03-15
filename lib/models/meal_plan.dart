@@ -151,6 +151,7 @@ class Meal extends Equatable {
   MealsCompanion toCompanion(dayId) {
     return MealsCompanion(
       name: Value(name),
+      recipeId: Value(recipeId!),
       dayId: Value(dayId),
     );
   }
