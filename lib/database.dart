@@ -1,5 +1,8 @@
+import 'dart:io';
+
 import 'package:drift/drift.dart';
 import 'package:drift_flutter/drift_flutter.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:recipes/models/recipe.dart';
 
 part 'database.g.dart';
@@ -23,7 +26,8 @@ class Ingredients extends Table {
   TextColumn get name => text()();
   RealColumn get amountPerServing => real()();
   TextColumn get unit => text()();
-  IntColumn get recipeId => integer().references(Recipes, #id)();
+  IntColumn get recipeId =>
+      integer().references(Recipes, #id, onDelete: KeyAction.cascade)();
 }
 
 @DataClassName('TagData')
@@ -34,8 +38,10 @@ class Tags extends Table {
 
 @DataClassName('RecipeTagData')
 class RecipeTags extends Table {
-  IntColumn get recipeId => integer().references(Recipes, #id)();
-  IntColumn get tagId => integer().references(Tags, #id)();
+  IntColumn get recipeId =>
+      integer().references(Recipes, #id, onDelete: KeyAction.cascade)();
+  IntColumn get tagId =>
+      integer().references(Tags, #id, onDelete: KeyAction.cascade)();
 
   @override
   Set<Column<Object>> get primaryKey => {recipeId, tagId};
@@ -69,9 +75,199 @@ class AppDatabase extends _$AppDatabase {
 
   // RECIPES -----------------------------------
 
+  // Get recipe.
+  Future<Recipe> getRecipe(int recipeId) async {
+    final recipeData = await (select(recipes)
+          ..where((tbl) => tbl.id.equals(recipeId)))
+        .getSingle();
+
+    // TODO: add image path
+
+    // final imageData = await (select(recipeImages)
+    //       ..where((tbl) => tbl.recipeId.equals(recipeId)))
+    //     .getSingleOrNull();
+
+    // final directory = await getApplicationDocumentsDirectory();
+
+    return Recipe(
+      id: recipeData.id,
+      name: recipeData.name,
+      instructions: recipeData.instructions,
+      ingredients: await getRecipeIngredients(recipeData.id),
+      favorite: recipeData.favorite,
+      servings: recipeData.servings,
+      tags: await getRecipeTags(recipeData.id),
+      // imagePath: imageData != null
+      //     ? '${directory.path}/images/${imageData.name}'
+      //     : null,
+      carbohydratesPerServing: recipeData.carbohydratesPerServing,
+      proteinPerServing: recipeData.proteinPerServing,
+      fatPerServing: recipeData.fatPerServing,
+      caloriesPerServing: recipeData.caloriesPerServing,
+    );
+  }
+
   // Add a new recipe.
-  Future<int> addRecipe(Recipe recipe) {
-    return into(recipes).insert(recipe.toCompanion());
+  // Tags and image are added separately.
+  // TODO: add ingredients separately
+  Future<int> addRecipe(Recipe recipe) async {
+    int recipeId = await into(recipes).insert(recipe.toCompanion());
+
+    await addIngredients(recipeId, recipe.ingredients);
+
+    return recipeId;
+  }
+
+  // Update a recipe.
+  Future<void> updateRecipe(Recipe recipe) async {
+    // Delete recipe's old ingredients.
+    deleteRecipeIngredients(recipe.id!);
+
+    // Add new ingredients.
+    addIngredients(recipe.id!, recipe.ingredients);
+
+    // Update the recipe record in the recipes table.
+    await (update(recipes)..where((r) => r.id.equals(recipe.id!)))
+        .write(recipe.toCompanion());
+  }
+
+  Future<void> deleteRecipe(int recipeId) async {
+    //TODO: handle images
+
+    // final directory = await getApplicationDocumentsDirectory();
+
+    // final imageRow = await (select(recipeImages)
+    //       ..where((tbl) => tbl.recipeId.equals(recipeId)))
+    //     .getSingleOrNull();
+
+    // if (imageRow != null) {
+    //   final file = File('${directory.path}/images/${imageRow.name}');
+    //   await file.delete();
+    // }
+
+    await transaction(() async {
+      await (delete(recipes)..where((tbl) => tbl.id.equals(recipeId))).go();
+
+      // TODO: tags should be unique and shared
+      await customStatement('''
+      DELETE FROM tags 
+      WHERE id NOT IN (
+          SELECT DISTINCT tag_id FROM recipe_tags
+      )
+    ''');
+    });
+  }
+
+  Future<void> toggleFavoriteRecipe(Recipe recipe) async {
+    await (update(recipes)..where((r) => r.id.equals(recipe.id!)))
+        .write(RecipesCompanion(favorite: Value(!recipe.favorite)));
+  }
+
+  // Search recipes.
+  // TODO: refactor
+  Future<List<Recipe>> searchRecipes({
+    required int offset,
+    required String query,
+    required List<Tag> tags,
+    required bool favorites,
+  }) async {
+    late final List<Map<String, dynamic>> recipeMaps;
+
+    if (favorites) {
+      if (tags.isNotEmpty) {
+        final tagIds = tags.map((t) => t.id).join(',');
+        final sql = '''
+        SELECT recipes.* 
+        FROM recipes 
+        INNER JOIN recipe_tags ON recipes.id = recipe_tags.recipe_id 
+        WHERE (recipe_tags.tag_id IN ($tagIds)
+          AND recipes.name LIKE ?
+          AND recipes.favorite = 1)
+        GROUP BY recipes.id 
+        HAVING COUNT(DISTINCT recipe_tags.tag_id) = ${tags.length} 
+        LIMIT 15 OFFSET ?
+      ''';
+        final result = await customSelect(
+          sql,
+          variables: [
+            Variable.withString('%$query%'),
+            Variable.withInt(offset),
+          ],
+        ).get();
+        recipeMaps = result.map((row) => row.data).toList();
+      } else {
+        final sql = '''
+        SELECT * FROM recipes 
+        WHERE name LIKE ? AND favorite = 1 
+        LIMIT 15 OFFSET ?
+      ''';
+        final result = await customSelect(
+          sql,
+          variables: [
+            Variable.withString('%$query%'),
+            Variable.withInt(offset),
+          ],
+        ).get();
+        recipeMaps = result.map((row) => row.data).toList();
+      }
+    } else if (tags.isNotEmpty) {
+      final tagIds = tags.map((t) => t.id).join(',');
+      final sql = '''
+      SELECT recipes.* 
+      FROM recipes 
+      INNER JOIN recipe_tags ON recipes.id = recipe_tags.recipe_id 
+      WHERE (recipe_tags.tag_id IN ($tagIds)
+          AND recipes.name LIKE ?)
+      GROUP BY recipes.id 
+      HAVING COUNT(DISTINCT recipe_tags.tag_id) = ${tags.length} 
+      LIMIT 15 OFFSET ?
+    ''';
+      final result = await customSelect(
+        sql,
+        variables: [
+          Variable.withString('%$query%'),
+          Variable.withInt(offset),
+        ],
+      ).get();
+      recipeMaps = result.map((row) => row.data).toList();
+    } else {
+      final sql = '''
+      SELECT * FROM recipes 
+      WHERE name LIKE ? 
+      LIMIT 15 OFFSET ?
+    ''';
+      final result = await customSelect(
+        sql,
+        variables: [
+          Variable.withString('%$query%'),
+          Variable.withInt(offset),
+        ],
+      ).get();
+      recipeMaps = result.map((row) => row.data).toList();
+    }
+
+    List<Recipe> recipeList = [];
+    for (final recipe in recipeMaps) {
+      recipeList.add(
+        Recipe(
+          id: recipe['id'],
+          name: recipe['name'],
+          instructions: recipe['instructions'],
+          ingredients: await getRecipeIngredients(recipe['id']),
+          favorite: recipe['favorite'] == 1 ? true : false,
+          servings: recipe['servings'],
+          tags: await getRecipeTags(recipe['id']),
+          // TODO: add imagePath
+          // imagePath: null,
+          carbohydratesPerServing: recipe['carbohydratesPerServing'],
+          proteinPerServing: recipe['proteinPerServing'],
+          fatPerServing: recipe['fatPerServing'],
+          caloriesPerServing: recipe['caloriesPerServing'],
+        ),
+      );
+    }
+
+    return recipeList;
   }
 
   // INGREDIENTS --------------------------------
