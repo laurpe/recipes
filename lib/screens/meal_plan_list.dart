@@ -4,7 +4,7 @@ import 'package:get_it/get_it.dart';
 import 'package:recipes/blocs/meal_plans/bloc.dart';
 import 'package:recipes/blocs/meal_plans/events.dart';
 import 'package:recipes/blocs/meal_plans/state.dart';
-import 'package:recipes/database_old.dart';
+import 'package:recipes/database.dart';
 import 'package:recipes/screens/add_meal_plan.dart';
 import 'package:recipes/screens/meal_plan.dart';
 
@@ -32,7 +32,7 @@ class MealPlanList extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider(
         create: (_) {
-          final databaseClient = GetIt.I<DatabaseClient>();
+          final databaseClient = GetIt.I<AppDatabase>();
           return MealPlansBloc(databaseClient: databaseClient)
             ..add(GetMealPlans());
         },

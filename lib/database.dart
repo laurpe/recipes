@@ -356,6 +356,12 @@ class AppDatabase extends _$AppDatabase {
     }
   }
 
+  // Delete recipe image from recipeImages table.
+  Future<void> deleteRecipeImage(int recipeId) async {
+    await (delete(recipeImages)..where((ri) => ri.recipeId.equals(recipeId)))
+        .go();
+  }
+
   // Delete recipe image from disk.
   Future<void> deleteRecipeImageFromDisk(String name) async {
     final directory = await getApplicationDocumentsDirectory();
@@ -432,6 +438,19 @@ class AppDatabase extends _$AppDatabase {
     }
 
     return ids;
+  }
+
+  // Add or update tag.
+  Future<int> insertOrUpdateTag(Tag tag) async {
+    if (tag.id == null) {
+      return await into(tags).insert(
+        tag.toCompanion(),
+      );
+    } else {
+      await (update(tags)..where((t) => t.id.equals(tag.id!)))
+          .write(tag.toCompanion());
+      return tag.id!;
+    }
   }
 
 // Get a recipe's tags.

@@ -1,11 +1,11 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:recipes/database_old.dart';
 import 'package:recipes/blocs/recipes/events.dart';
 import 'package:recipes/blocs/recipes/state.dart';
+import 'package:recipes/database.dart';
 import 'package:recipes/models/recipe.dart';
 
 class RecipesBloc extends Bloc<RecipesEvent, RecipesState> {
-  final DatabaseClient databaseClient;
+  final AppDatabase databaseClient;
 
   RecipesBloc({required this.databaseClient}) : super(LoadingRecipesState()) {
     on<RecipeUpdated>(

@@ -1,5 +1,5 @@
 import 'package:get_it/get_it.dart';
-import 'package:recipes/database_old.dart';
+import 'package:recipes/database.dart';
 import 'package:recipes/models/grocery.dart';
 import 'package:recipes/models/recipe.dart';
 
@@ -49,7 +49,7 @@ List<Grocery> combineDuplicateGroceries(List<Grocery> groceries) {
 }
 
 Future<void> addIngredientsToGroceries(Recipe recipe, int servings) async {
-  final databaseClient = GetIt.I<DatabaseClient>();
+  final databaseClient = GetIt.I<AppDatabase>();
   final groceries = await databaseClient.getGroceries();
   final ingredients = recipe.ingredients;
   final List<Grocery> newGroceries = [];

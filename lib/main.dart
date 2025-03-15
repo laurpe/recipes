@@ -6,15 +6,14 @@ import 'package:recipes/blocs/recipes/bloc.dart';
 import 'package:recipes/blocs/recipes/events.dart';
 import 'package:recipes/blocs/tags/bloc.dart';
 import 'package:recipes/blocs/tags/events.dart';
-import 'package:recipes/database_old.dart';
+import 'package:recipes/database.dart';
 import 'package:recipes/screens/recipe_list.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  GetIt.I.registerSingleton<DatabaseClient>(DatabaseClient());
+  GetIt.I.registerSingleton<AppDatabase>(AppDatabase());
 
-  await GetIt.I<DatabaseClient>().initialize();
   Bloc.observer = MyBlocObserver();
 
   runApp(const RecipeApp());
@@ -29,14 +28,14 @@ class RecipeApp extends StatelessWidget {
         providers: [
           BlocProvider<RecipesBloc>(
             create: (_) {
-              final databaseClient = GetIt.I<DatabaseClient>();
+              final databaseClient = GetIt.I<AppDatabase>();
               return RecipesBloc(databaseClient: databaseClient)
                 ..add(const GetRecipes());
             },
           ),
           BlocProvider<TagsBloc>(
             create: (_) {
-              final databaseClient = GetIt.I<DatabaseClient>();
+              final databaseClient = GetIt.I<AppDatabase>();
               return TagsBloc(databaseClient: databaseClient)..add(GetTags());
             },
           ),

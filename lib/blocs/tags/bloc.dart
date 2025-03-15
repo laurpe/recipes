@@ -1,10 +1,10 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:recipes/blocs/tags/events.dart';
 import 'package:recipes/blocs/tags/state.dart';
-import 'package:recipes/database_old.dart';
+import 'package:recipes/database.dart';
 
 class TagsBloc extends Bloc<TagsEvent, TagsState> {
-  final DatabaseClient databaseClient;
+  final AppDatabase databaseClient;
 
   TagsBloc({required this.databaseClient}) : super(LoadingTagsState()) {
     on<GetTags>(
@@ -28,17 +28,16 @@ class TagsBloc extends Bloc<TagsEvent, TagsState> {
           // insert it into the database
 
           for (int i = 0; i < tags.length; i++) {
-            if (tags[i].id == null) {
-              final id = await databaseClient.insertTag(tags[i]);
-              tags[i] = tags[i].copyWith(id: id);
-            }
+            int id = await databaseClient.insertOrUpdateTag(tags[i]);
+
+            tags[i] = tags[i].copyWith(id: id);
           }
 
           // get all tag ids for adding them to the recipe
 
           final tagIds = tags.map((t) => t.id!).toList();
 
-          await databaseClient.setRecipeTags(recipeId, tagIds);
+          await databaseClient.addRecipeTags(recipeId, tagIds);
 
           // add the new tags to the state
 

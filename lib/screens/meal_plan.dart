@@ -4,7 +4,7 @@ import 'package:get_it/get_it.dart';
 import 'package:recipes/blocs/meal_plan/bloc.dart';
 import 'package:recipes/blocs/meal_plan/events.dart';
 import 'package:recipes/blocs/meal_plan/state.dart';
-import 'package:recipes/database_old.dart';
+import 'package:recipes/database.dart';
 import 'package:recipes/helpers/number_formatters.dart';
 import 'package:recipes/models/grocery.dart';
 import 'package:recipes/helpers/add_ingredients_to_groceries.dart';
@@ -33,7 +33,7 @@ class Added extends Result<MealPlan> {
 
 Future<void> addMealplanToGroceries(
     MealPlan mealPlan, BuildContext context) async {
-  final databaseClient = GetIt.I<DatabaseClient>();
+  final databaseClient = GetIt.I<AppDatabase>();
   final recipes = await databaseClient.getMealPlanRecipes(mealPlan.id!);
 
   /// TODO: could be optimized by adding all groceries at once
@@ -61,7 +61,7 @@ Future<void> addMealplanToGroceries(
 
 Future<void> addGroceries(
     Recipe recipe, int servings, BuildContext context) async {
-  final databaseClient = GetIt.I<DatabaseClient>();
+  final databaseClient = GetIt.I<AppDatabase>();
   final groceries = await databaseClient.getGroceries();
   final ingredients = recipe.ingredients;
   final List<Grocery> newGroceries = [];
@@ -128,7 +128,7 @@ Future<void> addGroceries(
   try {
     for (var grocery in finalList) {
       grocery.id == null
-          ? await databaseClient.insertGrocery(grocery)
+          ? await databaseClient.addGrocery(grocery)
           : await databaseClient.updateGrocery(grocery);
     }
   } catch (error) {
@@ -182,7 +182,7 @@ Future confirmMealPlanDelete(BuildContext context, int mealPlanId) async {
             child: const Text('Yes'),
             onPressed: () async {
               try {
-                await GetIt.I<DatabaseClient>().deleteMealPlan(mealPlanId);
+                await GetIt.I<AppDatabase>().deleteMealPlan(mealPlanId);
 
                 if (!context.mounted) return;
 
@@ -209,7 +209,7 @@ class SingleMealPlan extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider(
         create: (_) {
-          final databaseClient = GetIt.I<DatabaseClient>();
+          final databaseClient = GetIt.I<AppDatabase>();
           return MealPlanBloc(
               databaseClient: databaseClient, mealPlanId: mealPlanId)
             ..add(GetMealPlan());

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
-import 'package:recipes/database_old.dart';
+import 'package:recipes/database.dart';
 import 'package:recipes/models/meal_plan.dart';
 import 'package:recipes/models/recipe.dart';
 import 'package:recipes/screens/meal_plan.dart';
@@ -50,7 +50,7 @@ class EditMealPlanFormState extends State<EditMealPlanForm> {
   }
 
   Future<List<RecipeListItem>> getRecipeList() async {
-    return GetIt.I<DatabaseClient>().getRecipeList();
+    return GetIt.I<AppDatabase>().getRecipeList();
   }
 
   void onSubmit() async {
@@ -58,7 +58,7 @@ class EditMealPlanFormState extends State<EditMealPlanForm> {
       _formKey.currentState!.save();
 
       try {
-        await GetIt.I<DatabaseClient>().updateMealPlan(_mealPlan);
+        await GetIt.I<AppDatabase>().updateMealPlan(_mealPlan);
 
         if (mounted) {
           Navigator.of(context).pop(Updated(_mealPlan));

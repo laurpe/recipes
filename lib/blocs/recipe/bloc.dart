@@ -1,10 +1,10 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:recipes/blocs/recipe/events.dart';
 import 'package:recipes/blocs/recipe/state.dart';
-import 'package:recipes/database_old.dart';
+import 'package:recipes/database.dart';
 
 class RecipeBloc extends Bloc<RecipeEvent, RecipeState> {
-  final DatabaseClient databaseClient;
+  final AppDatabase databaseClient;
   final int recipeId;
 
   RecipeBloc({required this.databaseClient, required this.recipeId})
@@ -15,8 +15,7 @@ class RecipeBloc extends Bloc<RecipeEvent, RecipeState> {
           if (state is LoadedRecipeState) {
             final currentState = state as LoadedRecipeState;
 
-            await databaseClient.toggleFavoriteRecipe(
-                currentState.recipe, !currentState.recipe.favorite);
+            await databaseClient.toggleFavoriteRecipe(currentState.recipe);
 
             final updatedRecipe = currentState.recipe.copyWith(
               favorite: !currentState.recipe.favorite,
