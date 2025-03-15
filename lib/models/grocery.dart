@@ -1,4 +1,6 @@
+import 'package:drift/drift.dart';
 import 'package:equatable/equatable.dart';
+import 'package:recipes/database.dart';
 
 class Grocery extends Equatable {
   final int? id;
@@ -32,6 +34,16 @@ class Grocery extends Equatable {
     }
 
     return map;
+  }
+
+  GroceriesCompanion toCompanion() {
+    return GroceriesCompanion(
+      amount: Value(amount),
+      unit: Value(unit),
+      name: Value(name),
+      isBought: Value(isBought),
+      listOrder: Value(listOrder),
+    );
   }
 
   Grocery copyWith({

@@ -1405,6 +1405,340 @@ class RecipeImagesCompanion extends UpdateCompanion<RecipeImageData> {
   }
 }
 
+class $GroceriesTable extends Groceries
+    with TableInfo<$GroceriesTable, GroceryData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $GroceriesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+      'id', aliasedName, false,
+      hasAutoIncrement: true,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+      'name', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _amountMeta = const VerificationMeta('amount');
+  @override
+  late final GeneratedColumn<double> amount = GeneratedColumn<double>(
+      'amount', aliasedName, false,
+      type: DriftSqlType.double, requiredDuringInsert: true);
+  static const VerificationMeta _unitMeta = const VerificationMeta('unit');
+  @override
+  late final GeneratedColumn<String> unit = GeneratedColumn<String>(
+      'unit', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _isBoughtMeta =
+      const VerificationMeta('isBought');
+  @override
+  late final GeneratedColumn<bool> isBought = GeneratedColumn<bool>(
+      'is_bought', aliasedName, false,
+      type: DriftSqlType.bool,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('CHECK ("is_bought" IN (0, 1))'),
+      defaultValue: const Constant(false));
+  static const VerificationMeta _listOrderMeta =
+      const VerificationMeta('listOrder');
+  @override
+  late final GeneratedColumn<int> listOrder = GeneratedColumn<int>(
+      'list_order', aliasedName, false,
+      type: DriftSqlType.int, requiredDuringInsert: true);
+  @override
+  List<GeneratedColumn> get $columns =>
+      [id, name, amount, unit, isBought, listOrder];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'groceries';
+  @override
+  VerificationContext validateIntegrity(Insertable<GroceryData> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+          _nameMeta, name.isAcceptableOrUnknown(data['name']!, _nameMeta));
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('amount')) {
+      context.handle(_amountMeta,
+          amount.isAcceptableOrUnknown(data['amount']!, _amountMeta));
+    } else if (isInserting) {
+      context.missing(_amountMeta);
+    }
+    if (data.containsKey('unit')) {
+      context.handle(
+          _unitMeta, unit.isAcceptableOrUnknown(data['unit']!, _unitMeta));
+    } else if (isInserting) {
+      context.missing(_unitMeta);
+    }
+    if (data.containsKey('is_bought')) {
+      context.handle(_isBoughtMeta,
+          isBought.isAcceptableOrUnknown(data['is_bought']!, _isBoughtMeta));
+    }
+    if (data.containsKey('list_order')) {
+      context.handle(_listOrderMeta,
+          listOrder.isAcceptableOrUnknown(data['list_order']!, _listOrderMeta));
+    } else if (isInserting) {
+      context.missing(_listOrderMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  GroceryData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return GroceryData(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      name: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}name'])!,
+      amount: attachedDatabase.typeMapping
+          .read(DriftSqlType.double, data['${effectivePrefix}amount'])!,
+      unit: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}unit'])!,
+      isBought: attachedDatabase.typeMapping
+          .read(DriftSqlType.bool, data['${effectivePrefix}is_bought'])!,
+      listOrder: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}list_order'])!,
+    );
+  }
+
+  @override
+  $GroceriesTable createAlias(String alias) {
+    return $GroceriesTable(attachedDatabase, alias);
+  }
+}
+
+class GroceryData extends DataClass implements Insertable<GroceryData> {
+  final int id;
+  final String name;
+  final double amount;
+  final String unit;
+  final bool isBought;
+  final int listOrder;
+  const GroceryData(
+      {required this.id,
+      required this.name,
+      required this.amount,
+      required this.unit,
+      required this.isBought,
+      required this.listOrder});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['name'] = Variable<String>(name);
+    map['amount'] = Variable<double>(amount);
+    map['unit'] = Variable<String>(unit);
+    map['is_bought'] = Variable<bool>(isBought);
+    map['list_order'] = Variable<int>(listOrder);
+    return map;
+  }
+
+  GroceriesCompanion toCompanion(bool nullToAbsent) {
+    return GroceriesCompanion(
+      id: Value(id),
+      name: Value(name),
+      amount: Value(amount),
+      unit: Value(unit),
+      isBought: Value(isBought),
+      listOrder: Value(listOrder),
+    );
+  }
+
+  factory GroceryData.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return GroceryData(
+      id: serializer.fromJson<int>(json['id']),
+      name: serializer.fromJson<String>(json['name']),
+      amount: serializer.fromJson<double>(json['amount']),
+      unit: serializer.fromJson<String>(json['unit']),
+      isBought: serializer.fromJson<bool>(json['isBought']),
+      listOrder: serializer.fromJson<int>(json['listOrder']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'name': serializer.toJson<String>(name),
+      'amount': serializer.toJson<double>(amount),
+      'unit': serializer.toJson<String>(unit),
+      'isBought': serializer.toJson<bool>(isBought),
+      'listOrder': serializer.toJson<int>(listOrder),
+    };
+  }
+
+  GroceryData copyWith(
+          {int? id,
+          String? name,
+          double? amount,
+          String? unit,
+          bool? isBought,
+          int? listOrder}) =>
+      GroceryData(
+        id: id ?? this.id,
+        name: name ?? this.name,
+        amount: amount ?? this.amount,
+        unit: unit ?? this.unit,
+        isBought: isBought ?? this.isBought,
+        listOrder: listOrder ?? this.listOrder,
+      );
+  GroceryData copyWithCompanion(GroceriesCompanion data) {
+    return GroceryData(
+      id: data.id.present ? data.id.value : this.id,
+      name: data.name.present ? data.name.value : this.name,
+      amount: data.amount.present ? data.amount.value : this.amount,
+      unit: data.unit.present ? data.unit.value : this.unit,
+      isBought: data.isBought.present ? data.isBought.value : this.isBought,
+      listOrder: data.listOrder.present ? data.listOrder.value : this.listOrder,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('GroceryData(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('amount: $amount, ')
+          ..write('unit: $unit, ')
+          ..write('isBought: $isBought, ')
+          ..write('listOrder: $listOrder')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, name, amount, unit, isBought, listOrder);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is GroceryData &&
+          other.id == this.id &&
+          other.name == this.name &&
+          other.amount == this.amount &&
+          other.unit == this.unit &&
+          other.isBought == this.isBought &&
+          other.listOrder == this.listOrder);
+}
+
+class GroceriesCompanion extends UpdateCompanion<GroceryData> {
+  final Value<int> id;
+  final Value<String> name;
+  final Value<double> amount;
+  final Value<String> unit;
+  final Value<bool> isBought;
+  final Value<int> listOrder;
+  const GroceriesCompanion({
+    this.id = const Value.absent(),
+    this.name = const Value.absent(),
+    this.amount = const Value.absent(),
+    this.unit = const Value.absent(),
+    this.isBought = const Value.absent(),
+    this.listOrder = const Value.absent(),
+  });
+  GroceriesCompanion.insert({
+    this.id = const Value.absent(),
+    required String name,
+    required double amount,
+    required String unit,
+    this.isBought = const Value.absent(),
+    required int listOrder,
+  })  : name = Value(name),
+        amount = Value(amount),
+        unit = Value(unit),
+        listOrder = Value(listOrder);
+  static Insertable<GroceryData> custom({
+    Expression<int>? id,
+    Expression<String>? name,
+    Expression<double>? amount,
+    Expression<String>? unit,
+    Expression<bool>? isBought,
+    Expression<int>? listOrder,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (name != null) 'name': name,
+      if (amount != null) 'amount': amount,
+      if (unit != null) 'unit': unit,
+      if (isBought != null) 'is_bought': isBought,
+      if (listOrder != null) 'list_order': listOrder,
+    });
+  }
+
+  GroceriesCompanion copyWith(
+      {Value<int>? id,
+      Value<String>? name,
+      Value<double>? amount,
+      Value<String>? unit,
+      Value<bool>? isBought,
+      Value<int>? listOrder}) {
+    return GroceriesCompanion(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      amount: amount ?? this.amount,
+      unit: unit ?? this.unit,
+      isBought: isBought ?? this.isBought,
+      listOrder: listOrder ?? this.listOrder,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (amount.present) {
+      map['amount'] = Variable<double>(amount.value);
+    }
+    if (unit.present) {
+      map['unit'] = Variable<String>(unit.value);
+    }
+    if (isBought.present) {
+      map['is_bought'] = Variable<bool>(isBought.value);
+    }
+    if (listOrder.present) {
+      map['list_order'] = Variable<int>(listOrder.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('GroceriesCompanion(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('amount: $amount, ')
+          ..write('unit: $unit, ')
+          ..write('isBought: $isBought, ')
+          ..write('listOrder: $listOrder')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -1413,12 +1747,13 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $TagsTable tags = $TagsTable(this);
   late final $RecipeTagsTable recipeTags = $RecipeTagsTable(this);
   late final $RecipeImagesTable recipeImages = $RecipeImagesTable(this);
+  late final $GroceriesTable groceries = $GroceriesTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
   List<DatabaseSchemaEntity> get allSchemaEntities =>
-      [recipes, ingredients, tags, recipeTags, recipeImages];
+      [recipes, ingredients, tags, recipeTags, recipeImages, groceries];
   @override
   StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules(
         [
@@ -2924,6 +3259,180 @@ typedef $$RecipeImagesTableProcessedTableManager = ProcessedTableManager<
     (RecipeImageData, $$RecipeImagesTableReferences),
     RecipeImageData,
     PrefetchHooks Function({bool recipeId})>;
+typedef $$GroceriesTableCreateCompanionBuilder = GroceriesCompanion Function({
+  Value<int> id,
+  required String name,
+  required double amount,
+  required String unit,
+  Value<bool> isBought,
+  required int listOrder,
+});
+typedef $$GroceriesTableUpdateCompanionBuilder = GroceriesCompanion Function({
+  Value<int> id,
+  Value<String> name,
+  Value<double> amount,
+  Value<String> unit,
+  Value<bool> isBought,
+  Value<int> listOrder,
+});
+
+class $$GroceriesTableFilterComposer
+    extends Composer<_$AppDatabase, $GroceriesTable> {
+  $$GroceriesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get name => $composableBuilder(
+      column: $table.name, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<double> get amount => $composableBuilder(
+      column: $table.amount, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get unit => $composableBuilder(
+      column: $table.unit, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<bool> get isBought => $composableBuilder(
+      column: $table.isBought, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get listOrder => $composableBuilder(
+      column: $table.listOrder, builder: (column) => ColumnFilters(column));
+}
+
+class $$GroceriesTableOrderingComposer
+    extends Composer<_$AppDatabase, $GroceriesTable> {
+  $$GroceriesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get name => $composableBuilder(
+      column: $table.name, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<double> get amount => $composableBuilder(
+      column: $table.amount, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get unit => $composableBuilder(
+      column: $table.unit, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<bool> get isBought => $composableBuilder(
+      column: $table.isBought, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get listOrder => $composableBuilder(
+      column: $table.listOrder, builder: (column) => ColumnOrderings(column));
+}
+
+class $$GroceriesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $GroceriesTable> {
+  $$GroceriesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<double> get amount =>
+      $composableBuilder(column: $table.amount, builder: (column) => column);
+
+  GeneratedColumn<String> get unit =>
+      $composableBuilder(column: $table.unit, builder: (column) => column);
+
+  GeneratedColumn<bool> get isBought =>
+      $composableBuilder(column: $table.isBought, builder: (column) => column);
+
+  GeneratedColumn<int> get listOrder =>
+      $composableBuilder(column: $table.listOrder, builder: (column) => column);
+}
+
+class $$GroceriesTableTableManager extends RootTableManager<
+    _$AppDatabase,
+    $GroceriesTable,
+    GroceryData,
+    $$GroceriesTableFilterComposer,
+    $$GroceriesTableOrderingComposer,
+    $$GroceriesTableAnnotationComposer,
+    $$GroceriesTableCreateCompanionBuilder,
+    $$GroceriesTableUpdateCompanionBuilder,
+    (GroceryData, BaseReferences<_$AppDatabase, $GroceriesTable, GroceryData>),
+    GroceryData,
+    PrefetchHooks Function()> {
+  $$GroceriesTableTableManager(_$AppDatabase db, $GroceriesTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$GroceriesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$GroceriesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$GroceriesTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            Value<String> name = const Value.absent(),
+            Value<double> amount = const Value.absent(),
+            Value<String> unit = const Value.absent(),
+            Value<bool> isBought = const Value.absent(),
+            Value<int> listOrder = const Value.absent(),
+          }) =>
+              GroceriesCompanion(
+            id: id,
+            name: name,
+            amount: amount,
+            unit: unit,
+            isBought: isBought,
+            listOrder: listOrder,
+          ),
+          createCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            required String name,
+            required double amount,
+            required String unit,
+            Value<bool> isBought = const Value.absent(),
+            required int listOrder,
+          }) =>
+              GroceriesCompanion.insert(
+            id: id,
+            name: name,
+            amount: amount,
+            unit: unit,
+            isBought: isBought,
+            listOrder: listOrder,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ));
+}
+
+typedef $$GroceriesTableProcessedTableManager = ProcessedTableManager<
+    _$AppDatabase,
+    $GroceriesTable,
+    GroceryData,
+    $$GroceriesTableFilterComposer,
+    $$GroceriesTableOrderingComposer,
+    $$GroceriesTableAnnotationComposer,
+    $$GroceriesTableCreateCompanionBuilder,
+    $$GroceriesTableUpdateCompanionBuilder,
+    (GroceryData, BaseReferences<_$AppDatabase, $GroceriesTable, GroceryData>),
+    GroceryData,
+    PrefetchHooks Function()>;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -2937,4 +3446,6 @@ class $AppDatabaseManager {
       $$RecipeTagsTableTableManager(_db, _db.recipeTags);
   $$RecipeImagesTableTableManager get recipeImages =>
       $$RecipeImagesTableTableManager(_db, _db.recipeImages);
+  $$GroceriesTableTableManager get groceries =>
+      $$GroceriesTableTableManager(_db, _db.groceries);
 }

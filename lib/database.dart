@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:drift/drift.dart';
 import 'package:drift_flutter/drift_flutter.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:recipes/models/grocery.dart';
 import 'package:recipes/models/recipe.dart';
 
 part 'database.g.dart';
@@ -55,7 +56,18 @@ class RecipeImages extends Table {
       integer().references(Recipes, #id, onDelete: KeyAction.cascade)();
 }
 
-@DriftDatabase(tables: [Recipes, Ingredients, Tags, RecipeTags, RecipeImages])
+@DataClassName('GroceryData')
+class Groceries extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get name => text()();
+  RealColumn get amount => real()();
+  TextColumn get unit => text()();
+  BoolColumn get isBought => boolean().withDefault(const Constant(false))();
+  IntColumn get listOrder => integer()();
+}
+
+@DriftDatabase(
+    tables: [Recipes, Ingredients, Tags, RecipeTags, RecipeImages, Groceries])
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
@@ -129,6 +141,7 @@ class AppDatabase extends _$AppDatabase {
         .write(recipe.toCompanion());
   }
 
+  // Delete a recipe, remove orphaned tasks and delete recipe image from disk.
   Future<void> deleteRecipe(int recipeId) async {
     // Fetch recipe image if it has one.
     final imageRow = await (select(recipeImages)
@@ -265,6 +278,26 @@ class AppDatabase extends _$AppDatabase {
     return recipeList;
   }
 
+  // Get recipe list for front page.
+  // TODO: is this necessary? fetching all recipe data anyway
+  Future<List<RecipeListItem>> getRecipeList() async {
+    final List<RecipeData> recipeDataList = await select(recipes).get();
+
+    return recipeDataList
+        .map((data) => RecipeListItem(
+              id: data.id,
+              name: data.name,
+            ))
+        .toList();
+  }
+
+  // Get recipe count.
+  Future<int> getRecipesCount() async {
+    final query = selectOnly(recipes)..addColumns([recipes.id.count()]);
+    final row = await query.getSingle();
+    return row.read(recipes.id.count()) ?? 0;
+  }
+
   // RECIPE IMAGES -----------------------------
 
   // Add image to recipe or update it.
@@ -288,6 +321,7 @@ class AppDatabase extends _$AppDatabase {
     }
   }
 
+  // Delete recipe image from disk.
   Future<void> deleteRecipeImageFromDisk(String name) async {
     final directory = await getApplicationDocumentsDirectory();
 
@@ -402,5 +436,67 @@ class AppDatabase extends _$AppDatabase {
   // Delete recipe's tags.
   Future<void> deleteRecipeTags(int recipeId) async {
     await (delete(recipeTags)..where((t) => t.recipeId.equals(recipeId))).go();
+  }
+
+  // GROCERIES ---------------------------
+
+  // Get groceries.
+  Future<List<Grocery>> getGroceries() async {
+    final groceriesList = await (select(groceries)
+          ..orderBy([(g) => OrderingTerm(expression: g.listOrder)]))
+        .get();
+
+    return groceriesList
+        .map((g) => Grocery(
+              id: g.id,
+              name: g.name,
+              amount: g.amount,
+              unit: g.unit,
+              isBought: g.isBought,
+              listOrder: g.listOrder,
+            ))
+        .toList();
+  }
+
+  // Add a grocery.
+  Future<int> addGrocery(Grocery grocery) async {
+    return await into(groceries).insert(grocery.toCompanion());
+  }
+
+  // Update a grocery.
+  Future<void> updateGrocery(Grocery grocery) async {
+    await (update(groceries)..where((g) => g.id.equals(grocery.id!)))
+        .write(grocery.toCompanion());
+  }
+
+  // Delete a grocery.
+  Future<void> deleteGrocery(int groceryId) async {
+    await (delete(groceries)..where((g) => g.id.equals(groceryId))).go();
+  }
+
+  // Add or update groceries.
+  // TODO: use this instead of the separate add or update methods when adding groceries from a recipe or a meal plan
+  Future<void> insertOrUpdateGroceries(List<Grocery> groceryList) async {
+    await transaction(() async {
+      for (final grocery in groceryList) {
+        if (grocery.id == null) {
+          await into(groceries).insert(grocery.toCompanion());
+        } else {
+          await (update(groceries)..where((g) => g.id.equals(grocery.id!)))
+              .write(grocery.toCompanion());
+        }
+      }
+    });
+  }
+
+  // Delete all groceries.
+  Future<void> deleteGroceries() async {
+    await delete(groceries).go();
+  }
+
+  // TODO: check where this is used to remove the boolean argument
+  Future<void> toggleGroceryBought(Grocery grocery) async {
+    await (update(groceries)..where((g) => g.id.equals(grocery.id!)))
+        .write(GroceriesCompanion(isBought: Value(!grocery.isBought)));
   }
 }
