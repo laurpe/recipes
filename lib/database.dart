@@ -649,12 +649,12 @@ class AppDatabase extends _$AppDatabase {
         .getSingle();
 
     // Fetch the days belonging to this meal plan.
-    final dayDataList = await (select(days)
+    final dayList = await (select(days)
           ..where((d) => d.mealPlanId.equals(mealPlanId)))
         .get();
 
     // Get the IDs of all days.
-    final dayIds = dayDataList.map((d) => d.id).toList();
+    final dayIds = dayList.map((d) => d.id).toList();
 
     // Fetch the meals for these days.
     final mealDataList =
@@ -665,7 +665,7 @@ class AppDatabase extends _$AppDatabase {
     final mealRecipes = await getRecipes(recipeIds);
 
     // Build a list of Day objects.
-    final List<Day> daysList = dayDataList.map((dayData) {
+    final List<Day> daysList = dayList.map((dayData) {
       // Filter meals that belong to the current day.
       final mealsForDay =
           mealDataList.where((m) => m.dayId == dayData.id).map((mealData) {
@@ -706,21 +706,20 @@ class AppDatabase extends _$AppDatabase {
     );
   }
 
-  // Get meal plan's recipes to add their ingredients to groceries.
+  // Get a meal plan's recipes (all, not unique) to add all their total ingredients to groceries.
+  // TODO: rethink
   Future<List<Recipe>> getMealPlanRecipes(int mealPlanId) async {
-    // Get days for the meal plan.
-    final dayDataList = await (select(days)
+    final dayList = await (select(days)
           ..where((d) => d.mealPlanId.equals(mealPlanId)))
         .get();
-    final dayIds = dayDataList.map((d) => d.id).toList();
 
-    // Get meals for these days.
+    final dayIds = dayList.map((d) => d.id).toList();
+
     final mealDataList =
         await (select(meals)..where((m) => m.dayId.isIn(dayIds))).get();
 
-    // Extract unique recipe IDs.
-    final recipeIds = mealDataList.map((m) => m.recipeId).toSet();
-    // Use your helper function getRecipe(recipeId) for each ID.
-    return Future.wait(recipeIds.map((id) => getRecipe(id)));
+    return Future.wait(
+      mealDataList.map((meal) => getRecipe(meal.recipeId)),
+    );
   }
 }
