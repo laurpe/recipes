@@ -28,12 +28,12 @@ class Ingredient extends Equatable {
     return map;
   }
 
-  IngredientsCompanion toCompanion() {
+  IngredientsCompanion toCompanion(int recipeId) {
     return IngredientsCompanion(
-      name: Value(name),
-      amountPerServing: Value(amountPerServing),
-      unit: Value(unit),
-    );
+        name: Value(name),
+        amountPerServing: Value(amountPerServing),
+        unit: Value(unit),
+        recipeId: Value(recipeId));
   }
 
   @override

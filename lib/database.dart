@@ -4,6 +4,7 @@ import 'package:drift/drift.dart';
 import 'package:drift_flutter/drift_flutter.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:recipes/models/grocery.dart';
+import 'package:recipes/models/meal_plan.dart';
 import 'package:recipes/models/recipe.dart';
 
 part 'database.g.dart';
@@ -66,8 +67,42 @@ class Groceries extends Table {
   IntColumn get listOrder => integer()();
 }
 
-@DriftDatabase(
-    tables: [Recipes, Ingredients, Tags, RecipeTags, RecipeImages, Groceries])
+@DataClassName('MealPlanData')
+class MealPlans extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get name => text()();
+  IntColumn get servingsPerMeal => integer()();
+}
+
+@DataClassName('DayData')
+class Days extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get name => text()();
+  IntColumn get mealPlanId =>
+      integer().references(MealPlans, #id, onDelete: KeyAction.cascade)();
+}
+
+@DataClassName('MealData')
+class Meals extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get name => text()();
+  IntColumn get dayId =>
+      integer().references(Days, #id, onDelete: KeyAction.cascade)();
+  IntColumn get recipeId =>
+      integer().references(Recipes, #id, onDelete: KeyAction.cascade)();
+}
+
+@DriftDatabase(tables: [
+  Recipes,
+  Ingredients,
+  Tags,
+  RecipeTags,
+  RecipeImages,
+  Groceries,
+  MealPlans,
+  Days,
+  Meals
+])
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
@@ -350,7 +385,9 @@ class AppDatabase extends _$AppDatabase {
     await batch((batch) {
       batch.insertAll(
         ingredients,
-        ingredientList.map((ingredient) => ingredient.toCompanion()).toList(),
+        ingredientList
+            .map((ingredient) => ingredient.toCompanion(recipeId))
+            .toList(),
       );
     });
   }
@@ -498,5 +535,173 @@ class AppDatabase extends _$AppDatabase {
   Future<void> toggleGroceryBought(Grocery grocery) async {
     await (update(groceries)..where((g) => g.id.equals(grocery.id!)))
         .write(GroceriesCompanion(isBought: Value(!grocery.isBought)));
+  }
+
+  // MEAL PLANS ----------------------
+
+  // Add a meal.
+  Future<int> addMeal(Meal meal, int dayId) async {
+    return await into(meals).insert(meal.toCompanion(dayId));
+  }
+
+  // TODO: does this need to return id?
+  Future<int> updateMeal(Meal meal, int dayId) async {
+    return await (update(meals)..where((m) => m.id.equals(meal.id!)))
+        .write(meal.toCompanion(dayId));
+  }
+
+  // Add a day.
+  Future<int> addDay(Day day, int mealPlanId) async {
+    return await into(days).insert(day.toCompanion(mealPlanId));
+  }
+
+  // Update a day.
+  Future<int> updateDay(Day day, int mealPlanId) async {
+    return await (update(days)..where((d) => d.id.equals(day.id!)))
+        .write(day.toCompanion(mealPlanId));
+  }
+
+  // Add a meal plan.
+  Future<void> addMealPlan(MealPlan mealPlan) async {
+    final mealPlanId = await into(mealPlans).insert(mealPlan.toCompanion());
+
+    for (final day in mealPlan.days!) {
+      final dayId = await addDay(day, mealPlanId);
+      for (final meal in day.meals) {
+        await addMeal(meal, dayId);
+      }
+    }
+  }
+
+  // Update a meal plan.
+  Future<void> updateMealPlan(MealPlan mealPlan) async {
+    await (update(mealPlans)..where((m) => m.id.equals(mealPlan.id!)))
+        .write(mealPlan.toCompanion());
+
+    for (final day in mealPlan.days!) {
+      await updateDay(day, mealPlan.id!);
+      for (final meal in day.meals) {
+        await updateMeal(meal, day.id!);
+      }
+    }
+  }
+
+  // Delete a meal plan.
+  Future<void> deleteMealPlan(int mealPlanId) async {
+    await (delete(mealPlans)..where((m) => m.id.equals(mealPlanId))).go();
+  }
+
+  // Get list of meal plans.
+  Future<List<MealPlan>> getMealPlansList() async {
+    final mealPlanDataList = await select(mealPlans).get();
+
+    return mealPlanDataList
+        .map((data) => MealPlan(
+              id: data.id,
+              name: data.name,
+              servingsPerMeal: data.servingsPerMeal,
+              days: null,
+            ))
+        .toList();
+  }
+
+  // Get a recipe detail for a set of recipes.
+  // TODO: rename MealRecipe
+  Future<List<MealRecipe>> getRecipes(Set<int> recipeIds) async {
+    final recipeList = await (select(recipes)
+          ..where((r) => r.id.isIn(recipeIds.toList())))
+        .get();
+    return recipeList
+        .map((r) => MealRecipe(
+              recipeId: r.id,
+              recipeName: r.name,
+              carbohydratesPerServing: r.carbohydratesPerServing,
+              proteinPerServing: r.proteinPerServing,
+              fatPerServing: r.fatPerServing,
+              caloriesPerServing: r.caloriesPerServing,
+            ))
+        .toList();
+  }
+
+  Future<MealPlan> getMealPlan(int mealPlanId) async {
+    // Fetch the meal plan row.
+    final mealPlanData = await (select(mealPlans)
+          ..where((m) => m.id.equals(mealPlanId)))
+        .getSingle();
+
+    // Fetch the days belonging to this meal plan.
+    final dayDataList = await (select(days)
+          ..where((d) => d.mealPlanId.equals(mealPlanId)))
+        .get();
+
+    // Get the IDs of all days.
+    final dayIds = dayDataList.map((d) => d.id).toList();
+
+    // Fetch the meals for these days.
+    final mealDataList =
+        await (select(meals)..where((m) => m.dayId.isIn(dayIds))).get();
+
+    // Collect the unique recipe IDs from the meals.
+    final recipeIds = mealDataList.map((m) => m.recipeId).toSet();
+    final mealRecipes = await getRecipes(recipeIds);
+
+    // Build a list of Day objects.
+    final List<Day> daysList = dayDataList.map((dayData) {
+      // Filter meals that belong to the current day.
+      final mealsForDay =
+          mealDataList.where((m) => m.dayId == dayData.id).map((mealData) {
+        final recipeData = mealRecipes.firstWhere(
+          (r) => r.recipeId == mealData.recipeId,
+          orElse: () => MealRecipe(
+              recipeId: mealData.recipeId,
+              recipeName: '',
+              carbohydratesPerServing: 0,
+              proteinPerServing: 0,
+              fatPerServing: 0,
+              caloriesPerServing: 0),
+        );
+        return Meal(
+          id: mealData.id,
+          name: mealData.name,
+          recipeId: mealData.recipeId,
+          recipeName: recipeData.recipeName,
+          carbohydratesPerServing: recipeData.carbohydratesPerServing,
+          proteinPerServing: recipeData.proteinPerServing,
+          fatPerServing: recipeData.fatPerServing,
+          caloriesPerServing: recipeData.caloriesPerServing,
+        );
+      }).toList();
+
+      return Day(
+        id: dayData.id,
+        name: dayData.name,
+        meals: mealsForDay,
+      );
+    }).toList();
+
+    return MealPlan(
+      id: mealPlanData.id,
+      name: mealPlanData.name,
+      servingsPerMeal: mealPlanData.servingsPerMeal,
+      days: daysList,
+    );
+  }
+
+  // Get meal plan's recipes to add their ingredients to groceries.
+  Future<List<Recipe>> getMealPlanRecipes(int mealPlanId) async {
+    // Get days for the meal plan.
+    final dayDataList = await (select(days)
+          ..where((d) => d.mealPlanId.equals(mealPlanId)))
+        .get();
+    final dayIds = dayDataList.map((d) => d.id).toList();
+
+    // Get meals for these days.
+    final mealDataList =
+        await (select(meals)..where((m) => m.dayId.isIn(dayIds))).get();
+
+    // Extract unique recipe IDs.
+    final recipeIds = mealDataList.map((m) => m.recipeId).toSet();
+    // Use your helper function getRecipe(recipeId) for each ID.
+    return Future.wait(recipeIds.map((id) => getRecipe(id)));
   }
 }
