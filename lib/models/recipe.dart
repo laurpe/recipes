@@ -58,6 +58,12 @@ class Tag extends Equatable {
     return map;
   }
 
+  TagsCompanion toCompanion() {
+    return TagsCompanion(
+      name: Value(name),
+    );
+  }
+
   Tag copyWith({
     int? id,
     String? name,
