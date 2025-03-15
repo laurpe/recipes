@@ -47,7 +47,15 @@ class RecipeTags extends Table {
   Set<Column<Object>> get primaryKey => {recipeId, tagId};
 }
 
-@DriftDatabase(tables: [Recipes, Ingredients, Tags, RecipeTags])
+@DataClassName('RecipeImageData')
+class RecipeImages extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get name => text()();
+  IntColumn get recipeId =>
+      integer().references(Recipes, #id, onDelete: KeyAction.cascade)();
+}
+
+@DriftDatabase(tables: [Recipes, Ingredients, Tags, RecipeTags, RecipeImages])
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
@@ -78,16 +86,8 @@ class AppDatabase extends _$AppDatabase {
   // Get recipe.
   Future<Recipe> getRecipe(int recipeId) async {
     final recipeData = await (select(recipes)
-          ..where((tbl) => tbl.id.equals(recipeId)))
+          ..where((r) => r.id.equals(recipeId)))
         .getSingle();
-
-    // TODO: add image path
-
-    // final imageData = await (select(recipeImages)
-    //       ..where((tbl) => tbl.recipeId.equals(recipeId)))
-    //     .getSingleOrNull();
-
-    // final directory = await getApplicationDocumentsDirectory();
 
     return Recipe(
       id: recipeData.id,
@@ -97,9 +97,7 @@ class AppDatabase extends _$AppDatabase {
       favorite: recipeData.favorite,
       servings: recipeData.servings,
       tags: await getRecipeTags(recipeData.id),
-      // imagePath: imageData != null
-      //     ? '${directory.path}/images/${imageData.name}'
-      //     : null,
+      imagePath: await getRecipeImagePath(recipeId),
       carbohydratesPerServing: recipeData.carbohydratesPerServing,
       proteinPerServing: recipeData.proteinPerServing,
       fatPerServing: recipeData.fatPerServing,
@@ -132,32 +130,30 @@ class AppDatabase extends _$AppDatabase {
   }
 
   Future<void> deleteRecipe(int recipeId) async {
-    //TODO: handle images
-
-    // final directory = await getApplicationDocumentsDirectory();
-
-    // final imageRow = await (select(recipeImages)
-    //       ..where((tbl) => tbl.recipeId.equals(recipeId)))
-    //     .getSingleOrNull();
-
-    // if (imageRow != null) {
-    //   final file = File('${directory.path}/images/${imageRow.name}');
-    //   await file.delete();
-    // }
+    // Fetch recipe image if it has one.
+    final imageRow = await (select(recipeImages)
+          ..where((i) => i.recipeId.equals(recipeId)))
+        .getSingleOrNull();
 
     await transaction(() async {
-      await (delete(recipes)..where((tbl) => tbl.id.equals(recipeId))).go();
+      await (delete(recipes)..where((r) => r.id.equals(recipeId))).go();
 
-      // TODO: tags should be unique and shared
+      // Remove orphaned tags.
       await customStatement('''
-      DELETE FROM tags 
-      WHERE id NOT IN (
-          SELECT DISTINCT tag_id FROM recipe_tags
-      )
-    ''');
+        DELETE FROM tags 
+        WHERE id NOT IN (
+            SELECT DISTINCT tag_id FROM recipe_tags
+        )
+      ''');
     });
+
+    // Delete image from disk.
+    if (imageRow != null) {
+      await deleteRecipeImageFromDisk(imageRow.name);
+    }
   }
 
+  // TODO: check where this is used, doesn't take the boolean anymore
   Future<void> toggleFavoriteRecipe(Recipe recipe) async {
     await (update(recipes)..where((r) => r.id.equals(recipe.id!)))
         .write(RecipesCompanion(favorite: Value(!recipe.favorite)));
@@ -257,8 +253,7 @@ class AppDatabase extends _$AppDatabase {
           favorite: recipe['favorite'] == 1 ? true : false,
           servings: recipe['servings'],
           tags: await getRecipeTags(recipe['id']),
-          // TODO: add imagePath
-          // imagePath: null,
+          imagePath: await getRecipeImagePath(recipe['id']),
           carbohydratesPerServing: recipe['carbohydratesPerServing'],
           proteinPerServing: recipe['proteinPerServing'],
           fatPerServing: recipe['fatPerServing'],
@@ -268,6 +263,49 @@ class AppDatabase extends _$AppDatabase {
     }
 
     return recipeList;
+  }
+
+  // RECIPE IMAGES -----------------------------
+
+  // Add image to recipe or update it.
+  Future<void> insertOrUpdateRecipeImage(int recipeId, String name) async {
+    final imageData = await (select(recipeImages)
+          ..where((ri) => ri.recipeId.equals(recipeId)))
+        .getSingleOrNull();
+
+    if (imageData != null) {
+      await (update(recipeImages)..where((ri) => ri.id.equals(imageData.id)))
+          .write(RecipeImagesCompanion(
+        name: Value(name),
+      ));
+    } else {
+      await into(recipeImages).insert(
+        RecipeImagesCompanion.insert(
+          recipeId: recipeId,
+          name: name,
+        ),
+      );
+    }
+  }
+
+  Future<void> deleteRecipeImageFromDisk(String name) async {
+    final directory = await getApplicationDocumentsDirectory();
+
+    final file = File('${directory.path}/images/$name');
+    await file.delete();
+  }
+
+  // Helper to get recipe image path.
+  Future<String?> getRecipeImagePath(int recipeId) async {
+    final imageData = await (select(recipeImages)
+          ..where((ri) => ri.recipeId.equals(recipeId)))
+        .getSingleOrNull();
+
+    final directory = await getApplicationDocumentsDirectory();
+
+    return imageData != null
+        ? '${directory.path}/images/${imageData.name}'
+        : null;
   }
 
   // INGREDIENTS --------------------------------
