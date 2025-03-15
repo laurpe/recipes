@@ -10,6 +10,7 @@ import 'package:recipes/widgets/recipe_form.dart';
 
 Future<int> submitRecipe(BuildContext context, Recipe recipe) async {
   int recipeId = await GetIt.I<AppDatabase>().addRecipe(recipe);
+  await GetIt.I<AppDatabase>().addIngredients(recipeId, recipe.ingredients);
 
   if (context.mounted) {
     BlocProvider.of<TagsBloc>(context)

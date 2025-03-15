@@ -153,25 +153,13 @@ class AppDatabase extends _$AppDatabase {
   }
 
   // Add a new recipe.
-  // Tags and image are added separately.
-  // TODO: add ingredients separately
+  // Ingredients, tags and image are added separately.
   Future<int> addRecipe(Recipe recipe) async {
-    int recipeId = await into(recipes).insert(recipe.toCompanion());
-
-    await addIngredients(recipeId, recipe.ingredients);
-
-    return recipeId;
+    return await into(recipes).insert(recipe.toCompanion());
   }
 
   // Update a recipe.
   Future<void> updateRecipe(Recipe recipe) async {
-    // Delete recipe's old ingredients.
-    deleteRecipeIngredients(recipe.id!);
-
-    // Add new ingredients.
-    addIngredients(recipe.id!, recipe.ingredients);
-
-    // Update the recipe record in the recipes table.
     await (update(recipes)..where((r) => r.id.equals(recipe.id!)))
         .write(recipe.toCompanion());
   }
@@ -396,6 +384,14 @@ class AppDatabase extends _$AppDatabase {
             .toList(),
       );
     });
+  }
+
+  // Update a recipe's ingredients.
+  // TODO: actually update instead of deleting and adding again
+  Future<void> updateRecipeIngredients(
+      int recipeId, List<Ingredient> ingredientList) async {
+    await deleteRecipeIngredients(recipeId);
+    await addIngredients(recipeId, ingredientList);
   }
 
   // Get a recipe's ingredients.
