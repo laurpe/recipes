@@ -33,14 +33,14 @@ class TagsBloc extends Bloc<TagsEvent, TagsState> {
             tags[i] = tags[i].copyWith(id: id);
           }
 
-          // get all tag ids for adding them to the recipe
+          // get all tag ids to add them to the recipe
 
           final tagIds = tags.map((t) => t.id!).toList();
 
-          await databaseClient.addRecipeTags(recipeId, tagIds);
+          // this deletes recipe's tags and adds the updated ones
+          await databaseClient.updateRecipeTags(recipeId, tagIds);
 
           // add the new tags to the state
-
           final newTags = tags.where((tag) {
             return !currentState.tags.any((t) => t.id == tag.id);
           }).toList();

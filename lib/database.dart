@@ -479,15 +479,32 @@ class AppDatabase extends _$AppDatabase {
     });
   }
 
-  // Update a recipe's tags (delete old ones and add new ones).
+  // Update a recipe's tags (delete old ones, add new ones and remove orphaned ones).
+  // TODO: refactor
   Future<void> updateRecipeTags(int recipeId, List<int> tagIds) async {
-    await deleteRecipeTags(recipeId);
-    await addRecipeTags(recipeId, tagIds);
+    await transaction(() async {
+      await deleteRecipeTags(recipeId);
+      await addRecipeTags(recipeId, tagIds);
+      await deleteOrphanedTags();
+    });
   }
 
   // Delete recipe's tags.
   Future<void> deleteRecipeTags(int recipeId) async {
-    await (delete(recipeTags)..where((t) => t.recipeId.equals(recipeId))).go();
+    await transaction(() async {
+      await (delete(recipeTags)..where((t) => t.recipeId.equals(recipeId)))
+          .go();
+    });
+  }
+
+  // Remove orphaned tags.
+  Future<void> deleteOrphanedTags() async {
+    await customStatement('''
+        DELETE FROM tags 
+        WHERE id NOT IN (
+            SELECT DISTINCT tag_id FROM recipe_tags
+        )
+      ''');
   }
 
   // GROCERIES ---------------------------
