@@ -1,4 +1,5 @@
 import 'package:recipes/database.dart';
+import 'package:recipes/models/grocery.dart';
 import 'package:recipes/models/ingredient.dart';
 import 'package:recipes/models/recipe_detail.dart';
 import 'package:recipes/models/tag.dart';
@@ -12,11 +13,11 @@ class DataMapper {
     return RecipeDetail(
         id: recipeData.id,
         name: recipeData.name,
-        ingredients: ingredientListFromData(ingredientsData),
+        ingredients: ingredientsFromData(ingredientsData),
         instructions: recipeData.instructions,
         favorite: recipeData.favorite,
         servings: recipeData.servings,
-        tags: tagListFromData(tagsData),
+        tags: tagsFromData(tagsData),
         imagePath: imageData?.path,
         carbohydratesPerServing: recipeData.carbohydratesPerServing,
         proteinPerServing: recipeData.proteinPerServing,
@@ -31,16 +32,26 @@ class DataMapper {
         name: data.name);
   }
 
-  static List<Ingredient> ingredientListFromData(
-      List<IngredientData> dataList) {
-    return dataList.map(ingredientFromData).toList();
+  static List<Ingredient> ingredientsFromData(List<IngredientData> data) {
+    return data.map(ingredientFromData).toList();
   }
 
   static Tag tagFromData(TagData data) {
     return Tag(id: data.id, name: data.name);
   }
 
-  static List<Tag> tagListFromData(List<TagData> dataList) {
-    return dataList.map(tagFromData).toList();
+  static List<Tag> tagsFromData(List<TagData> data) {
+    return data.map(tagFromData).toList();
+  }
+
+  static List<Grocery> groceriesFromData(List<GroceryData> data) {
+    return data.map((item) {
+      return Grocery(
+          name: item.name,
+          amount: item.amount,
+          unit: item.unit,
+          isBought: item.isBought,
+          listOrder: item.listOrder);
+    }).toList();
   }
 }

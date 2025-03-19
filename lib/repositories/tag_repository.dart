@@ -9,9 +9,9 @@ class TagRepository {
   TagRepository();
 
   Future<List<Tag>> getTags() async {
-    List<TagData> dataList = await database.getTags();
+    List<TagData> tagsData = await database.getTags();
 
-    return DataMapper.tagListFromData(dataList);
+    return DataMapper.tagsFromData(tagsData);
   }
 
   Future<List<int>> addTags(List<Tag> tags) async {
