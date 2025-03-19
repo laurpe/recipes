@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'package:recipes/models/recipe.dart';
+import 'package:recipes/models/ingredient.dart';
 
 abstract class RecipeEvent extends Equatable {
   const RecipeEvent();

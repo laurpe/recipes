@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
-import 'package:recipes/models/recipe.dart';
+import 'package:recipes/models/recipe_detail.dart';
+import 'package:recipes/models/tag.dart';
 
 sealed class RecipesState extends Equatable {
   const RecipesState();
@@ -9,7 +10,7 @@ sealed class RecipesState extends Equatable {
 }
 
 class LoadedRecipesState extends RecipesState {
-  final List<Recipe> recipes;
+  final List<RecipeDetail> recipes;
   final String? query;
   final int? offset;
   final List<Tag>? tags;

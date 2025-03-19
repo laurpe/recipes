@@ -2,7 +2,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:recipes/blocs/recipes/events.dart';
 import 'package:recipes/blocs/recipes/state.dart';
 import 'package:recipes/database.dart';
-import 'package:recipes/models/recipe.dart';
+import 'package:recipes/models/recipe_detail.dart';
+import 'package:recipes/models/tag.dart';
 
 class RecipesBloc extends Bloc<RecipesEvent, RecipesState> {
   final AppDatabase databaseClient;
@@ -66,7 +67,7 @@ class RecipesBloc extends Bloc<RecipesEvent, RecipesState> {
       (event, emit) async {
         try {
           int? offset = event.offset;
-          List<Recipe> recipes = [];
+          List<RecipeDetail> recipes = [];
           String? query = event.query;
           List<Tag>? tags = event.tags;
           bool? favorites = event.favorites;

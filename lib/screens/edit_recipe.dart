@@ -4,11 +4,11 @@ import 'package:get_it/get_it.dart';
 import 'package:recipes/blocs/tags/bloc.dart';
 import 'package:recipes/blocs/tags/events.dart';
 import 'package:recipes/database.dart';
-import 'package:recipes/models/recipe.dart';
+import 'package:recipes/models/recipe_detail.dart';
 import 'package:recipes/screens/recipe.dart';
 import 'package:recipes/widgets/recipe_form.dart';
 
-Future<int> submitRecipe(BuildContext context, Recipe recipe) async {
+Future<int> submitRecipe(BuildContext context, RecipeDetail recipe) async {
   await GetIt.I<AppDatabase>().updateRecipe(recipe);
   await GetIt.I<AppDatabase>()
       .updateRecipeIngredients(recipe.id!, recipe.ingredients);
@@ -24,11 +24,11 @@ Future<int> submitRecipe(BuildContext context, Recipe recipe) async {
 }
 
 class EditRecipeFormView extends StatelessWidget {
-  final Recipe initialValues;
+  final RecipeDetail initialValues;
 
-  EditRecipeFormView({super.key, Recipe? recipe})
+  EditRecipeFormView({super.key, RecipeDetail? recipe})
       : initialValues = recipe ??
-            Recipe(
+            RecipeDetail(
               name: '',
               instructions: '',
               ingredients: [],

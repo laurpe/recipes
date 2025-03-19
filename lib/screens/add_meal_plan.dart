@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:recipes/database.dart';
 import 'package:recipes/models/meal_plan.dart';
-import 'package:recipes/models/recipe.dart';
+import 'package:recipes/models/recipe_detail.dart';
 import 'package:recipes/screens/meal_plan.dart';
 
 class MealPlanFormView extends StatelessWidget {

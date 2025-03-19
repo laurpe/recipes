@@ -8,8 +8,10 @@ import 'package:recipes/blocs/tags/bloc.dart';
 import 'package:recipes/blocs/tags/state.dart';
 import 'package:recipes/database.dart';
 import 'package:recipes/helpers/number_formatters.dart';
-import 'package:recipes/models/recipe.dart';
+import 'package:recipes/models/ingredient.dart';
+import 'package:recipes/models/recipe_detail.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:recipes/models/tag.dart';
 import 'package:uuid/uuid.dart';
 import 'package:path/path.dart' as path;
 
@@ -58,7 +60,7 @@ Future<void> deleteImageFromDisk(String path) async {
 /// From that input, ingredient amount_per_serving is calculated and stored to the database.
 
 class RecipeForm extends StatefulWidget {
-  final Recipe initialValues;
+  final RecipeDetail initialValues;
   final Function submitRecipe;
 
   const RecipeForm(
@@ -175,7 +177,7 @@ class RecipeFormState extends State<RecipeForm> {
       ImageData? imageData =
           _image != null ? await storeImageToDisk(_image!) : null;
 
-      final recipe = Recipe(
+      final recipe = RecipeDetail(
         id: _id,
         name: _name,
         instructions: _instructions,
