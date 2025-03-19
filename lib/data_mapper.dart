@@ -1,11 +1,15 @@
 import 'package:recipes/database.dart';
-import 'package:recipes/models/recipe.dart';
+import 'package:recipes/models/ingredient.dart';
+import 'package:recipes/models/recipe_detail.dart';
+import 'package:recipes/models/tag.dart';
 
 class DataMapper {
-  // TODO: handle imagePath
-  static Recipe recipeFromData(RecipeData recipeData,
-      List<IngredientData> ingredientsData, List<TagData> tagsData) {
-    return Recipe(
+  static RecipeDetail recipeFromData(
+      RecipeData recipeData,
+      List<IngredientData> ingredientsData,
+      List<TagData> tagsData,
+      RecipeImageData? imageData) {
+    return RecipeDetail(
         id: recipeData.id,
         name: recipeData.name,
         ingredients: ingredientListFromData(ingredientsData),
@@ -13,6 +17,7 @@ class DataMapper {
         favorite: recipeData.favorite,
         servings: recipeData.servings,
         tags: tagListFromData(tagsData),
+        imagePath: imageData?.path,
         carbohydratesPerServing: recipeData.carbohydratesPerServing,
         proteinPerServing: recipeData.proteinPerServing,
         fatPerServing: recipeData.fatPerServing,
