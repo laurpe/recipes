@@ -52,7 +52,7 @@ class RecipeTags extends Table {
 @DataClassName('RecipeImageData')
 class RecipeImages extends Table {
   IntColumn get id => integer().autoIncrement()();
-  TextColumn get name => text()();
+  TextColumn get path => text()();
   IntColumn get recipeId =>
       integer().references(Recipes, #id, onDelete: KeyAction.cascade)();
 }
@@ -185,7 +185,7 @@ class AppDatabase extends _$AppDatabase {
 
     // Delete image from disk.
     if (imageRow != null) {
-      await deleteRecipeImageFromDisk(imageRow.name);
+      await deleteRecipeImageFromDisk(imageRow.path);
     }
   }
 
@@ -332,13 +332,13 @@ class AppDatabase extends _$AppDatabase {
     if (imageData != null) {
       await (update(recipeImages)..where((ri) => ri.id.equals(imageData.id)))
           .write(RecipeImagesCompanion(
-        name: Value(name),
+        path: Value(name),
       ));
     } else {
       await into(recipeImages).insert(
         RecipeImagesCompanion.insert(
           recipeId: recipeId,
-          name: name,
+          path: name,
         ),
       );
     }
@@ -367,7 +367,7 @@ class AppDatabase extends _$AppDatabase {
     final directory = await getApplicationDocumentsDirectory();
 
     return imageData != null
-        ? '${directory.path}/images/${imageData.name}'
+        ? '${directory.path}/images/${imageData.path}'
         : null;
   }
 
