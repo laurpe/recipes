@@ -1,6 +1,7 @@
 import 'package:recipes/database.dart';
 import 'package:recipes/models/grocery.dart';
 import 'package:recipes/models/ingredient.dart';
+import 'package:recipes/models/meal_recipe.dart';
 import 'package:recipes/models/recipe_detail.dart';
 import 'package:recipes/models/tag.dart';
 
@@ -52,6 +53,19 @@ class DataMapper {
           unit: item.unit,
           isBought: item.isBought,
           listOrder: item.listOrder);
+    }).toList();
+  }
+
+  static List<MealRecipe> mealRecipesFromData(List<RecipeData> data) {
+    return data.map((item) {
+      return MealRecipe(
+        id: item.id,
+        name: item.name,
+        carbohydratesPerServing: item.caloriesPerServing,
+        proteinPerServing: item.proteinPerServing,
+        fatPerServing: item.fatPerServing,
+        caloriesPerServing: item.caloriesPerServing,
+      );
     }).toList();
   }
 }

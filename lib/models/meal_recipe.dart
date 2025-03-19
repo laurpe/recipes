@@ -1,14 +1,14 @@
 class MealRecipe {
-  final int recipeId;
-  final String recipeName;
+  final int id;
+  final String name;
   final double? carbohydratesPerServing;
   final double? proteinPerServing;
   final double? fatPerServing;
   final double? caloriesPerServing;
 
   const MealRecipe(
-      {required this.recipeId,
-      required this.recipeName,
+      {required this.id,
+      required this.name,
       this.carbohydratesPerServing,
       this.proteinPerServing,
       this.fatPerServing,

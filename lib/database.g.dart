@@ -1192,15 +1192,6 @@ class $RecipeImagesTable extends RecipeImages
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
   $RecipeImagesTable(this.attachedDatabase, [this._alias]);
-  static const VerificationMeta _idMeta = const VerificationMeta('id');
-  @override
-  late final GeneratedColumn<int> id = GeneratedColumn<int>(
-      'id', aliasedName, false,
-      hasAutoIncrement: true,
-      type: DriftSqlType.int,
-      requiredDuringInsert: false,
-      defaultConstraints:
-          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
   static const VerificationMeta _pathMeta = const VerificationMeta('path');
   @override
   late final GeneratedColumn<String> path = GeneratedColumn<String>(
@@ -1216,7 +1207,7 @@ class $RecipeImagesTable extends RecipeImages
       defaultConstraints: GeneratedColumn.constraintIsAlways(
           'REFERENCES recipes (id) ON DELETE CASCADE'));
   @override
-  List<GeneratedColumn> get $columns => [id, path, recipeId];
+  List<GeneratedColumn> get $columns => [path, recipeId];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -1227,9 +1218,6 @@ class $RecipeImagesTable extends RecipeImages
       {bool isInserting = false}) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
-    if (data.containsKey('id')) {
-      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
-    }
     if (data.containsKey('path')) {
       context.handle(
           _pathMeta, path.isAcceptableOrUnknown(data['path']!, _pathMeta));
@@ -1246,13 +1234,11 @@ class $RecipeImagesTable extends RecipeImages
   }
 
   @override
-  Set<GeneratedColumn> get $primaryKey => {id};
+  Set<GeneratedColumn> get $primaryKey => {path};
   @override
   RecipeImageData map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return RecipeImageData(
-      id: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
       path: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}path'])!,
       recipeId: attachedDatabase.typeMapping
@@ -1267,15 +1253,12 @@ class $RecipeImagesTable extends RecipeImages
 }
 
 class RecipeImageData extends DataClass implements Insertable<RecipeImageData> {
-  final int id;
   final String path;
   final int recipeId;
-  const RecipeImageData(
-      {required this.id, required this.path, required this.recipeId});
+  const RecipeImageData({required this.path, required this.recipeId});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
-    map['id'] = Variable<int>(id);
     map['path'] = Variable<String>(path);
     map['recipe_id'] = Variable<int>(recipeId);
     return map;
@@ -1283,7 +1266,6 @@ class RecipeImageData extends DataClass implements Insertable<RecipeImageData> {
 
   RecipeImagesCompanion toCompanion(bool nullToAbsent) {
     return RecipeImagesCompanion(
-      id: Value(id),
       path: Value(path),
       recipeId: Value(recipeId),
     );
@@ -1293,7 +1275,6 @@ class RecipeImageData extends DataClass implements Insertable<RecipeImageData> {
       {ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return RecipeImageData(
-      id: serializer.fromJson<int>(json['id']),
       path: serializer.fromJson<String>(json['path']),
       recipeId: serializer.fromJson<int>(json['recipeId']),
     );
@@ -1302,21 +1283,17 @@ class RecipeImageData extends DataClass implements Insertable<RecipeImageData> {
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
-      'id': serializer.toJson<int>(id),
       'path': serializer.toJson<String>(path),
       'recipeId': serializer.toJson<int>(recipeId),
     };
   }
 
-  RecipeImageData copyWith({int? id, String? path, int? recipeId}) =>
-      RecipeImageData(
-        id: id ?? this.id,
+  RecipeImageData copyWith({String? path, int? recipeId}) => RecipeImageData(
         path: path ?? this.path,
         recipeId: recipeId ?? this.recipeId,
       );
   RecipeImageData copyWithCompanion(RecipeImagesCompanion data) {
     return RecipeImageData(
-      id: data.id.present ? data.id.value : this.id,
       path: data.path.present ? data.path.value : this.path,
       recipeId: data.recipeId.present ? data.recipeId.value : this.recipeId,
     );
@@ -1325,7 +1302,6 @@ class RecipeImageData extends DataClass implements Insertable<RecipeImageData> {
   @override
   String toString() {
     return (StringBuffer('RecipeImageData(')
-          ..write('id: $id, ')
           ..write('path: $path, ')
           ..write('recipeId: $recipeId')
           ..write(')'))
@@ -1333,63 +1309,62 @@ class RecipeImageData extends DataClass implements Insertable<RecipeImageData> {
   }
 
   @override
-  int get hashCode => Object.hash(id, path, recipeId);
+  int get hashCode => Object.hash(path, recipeId);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is RecipeImageData &&
-          other.id == this.id &&
           other.path == this.path &&
           other.recipeId == this.recipeId);
 }
 
 class RecipeImagesCompanion extends UpdateCompanion<RecipeImageData> {
-  final Value<int> id;
   final Value<String> path;
   final Value<int> recipeId;
+  final Value<int> rowid;
   const RecipeImagesCompanion({
-    this.id = const Value.absent(),
     this.path = const Value.absent(),
     this.recipeId = const Value.absent(),
+    this.rowid = const Value.absent(),
   });
   RecipeImagesCompanion.insert({
-    this.id = const Value.absent(),
     required String path,
     required int recipeId,
+    this.rowid = const Value.absent(),
   })  : path = Value(path),
         recipeId = Value(recipeId);
   static Insertable<RecipeImageData> custom({
-    Expression<int>? id,
     Expression<String>? path,
     Expression<int>? recipeId,
+    Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
-      if (id != null) 'id': id,
       if (path != null) 'path': path,
       if (recipeId != null) 'recipe_id': recipeId,
+      if (rowid != null) 'rowid': rowid,
     });
   }
 
   RecipeImagesCompanion copyWith(
-      {Value<int>? id, Value<String>? path, Value<int>? recipeId}) {
+      {Value<String>? path, Value<int>? recipeId, Value<int>? rowid}) {
     return RecipeImagesCompanion(
-      id: id ?? this.id,
       path: path ?? this.path,
       recipeId: recipeId ?? this.recipeId,
+      rowid: rowid ?? this.rowid,
     );
   }
 
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
-    if (id.present) {
-      map['id'] = Variable<int>(id.value);
-    }
     if (path.present) {
       map['path'] = Variable<String>(path.value);
     }
     if (recipeId.present) {
       map['recipe_id'] = Variable<int>(recipeId.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
     }
     return map;
   }
@@ -1397,9 +1372,9 @@ class RecipeImagesCompanion extends UpdateCompanion<RecipeImageData> {
   @override
   String toString() {
     return (StringBuffer('RecipeImagesCompanion(')
-          ..write('id: $id, ')
           ..write('path: $path, ')
-          ..write('recipeId: $recipeId')
+          ..write('recipeId: $recipeId, ')
+          ..write('rowid: $rowid')
           ..write(')'))
         .toString();
   }
@@ -3831,15 +3806,15 @@ typedef $$RecipeTagsTableProcessedTableManager = ProcessedTableManager<
     PrefetchHooks Function({bool recipeId, bool tagId})>;
 typedef $$RecipeImagesTableCreateCompanionBuilder = RecipeImagesCompanion
     Function({
-  Value<int> id,
   required String path,
   required int recipeId,
+  Value<int> rowid,
 });
 typedef $$RecipeImagesTableUpdateCompanionBuilder = RecipeImagesCompanion
     Function({
-  Value<int> id,
   Value<String> path,
   Value<int> recipeId,
+  Value<int> rowid,
 });
 
 final class $$RecipeImagesTableReferences
@@ -3871,9 +3846,6 @@ class $$RecipeImagesTableFilterComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnFilters<int> get id => $composableBuilder(
-      column: $table.id, builder: (column) => ColumnFilters(column));
-
   ColumnFilters<String> get path => $composableBuilder(
       column: $table.path, builder: (column) => ColumnFilters(column));
 
@@ -3907,9 +3879,6 @@ class $$RecipeImagesTableOrderingComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnOrderings<int> get id => $composableBuilder(
-      column: $table.id, builder: (column) => ColumnOrderings(column));
-
   ColumnOrderings<String> get path => $composableBuilder(
       column: $table.path, builder: (column) => ColumnOrderings(column));
 
@@ -3943,9 +3912,6 @@ class $$RecipeImagesTableAnnotationComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  GeneratedColumn<int> get id =>
-      $composableBuilder(column: $table.id, builder: (column) => column);
-
   GeneratedColumn<String> get path =>
       $composableBuilder(column: $table.path, builder: (column) => column);
 
@@ -3993,24 +3959,24 @@ class $$RecipeImagesTableTableManager extends RootTableManager<
           createComputedFieldComposer: () =>
               $$RecipeImagesTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
-            Value<int> id = const Value.absent(),
             Value<String> path = const Value.absent(),
             Value<int> recipeId = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
           }) =>
               RecipeImagesCompanion(
-            id: id,
             path: path,
             recipeId: recipeId,
+            rowid: rowid,
           ),
           createCompanionCallback: ({
-            Value<int> id = const Value.absent(),
             required String path,
             required int recipeId,
+            Value<int> rowid = const Value.absent(),
           }) =>
               RecipeImagesCompanion.insert(
-            id: id,
             path: path,
             recipeId: recipeId,
+            rowid: rowid,
           ),
           withReferenceMapper: (p0) => p0
               .map((e) => (

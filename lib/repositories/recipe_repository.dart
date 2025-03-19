@@ -1,6 +1,7 @@
 import 'package:get_it/get_it.dart';
 import 'package:recipes/data_mapper.dart';
 import 'package:recipes/database.dart';
+import 'package:recipes/models/meal_recipe.dart';
 import 'package:recipes/models/recipe_detail.dart';
 import 'package:recipes/models/recipe_list_item.dart';
 import 'package:recipes/models/tag.dart';
@@ -49,5 +50,11 @@ class RecipeRepository {
 
   Future<int> getRecipesCount() {
     return database.getRecipesCount();
+  }
+
+  Future<List<MealRecipe>> getRecipesById(Set<int> recipeIds) async {
+    List<RecipeData> data = await database.getRecipesById(recipeIds);
+
+    return DataMapper.mealRecipesFromData(data);
   }
 }

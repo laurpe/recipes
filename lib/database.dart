@@ -1,13 +1,23 @@
-import 'dart:io';
-
 import 'package:drift/drift.dart';
 import 'package:drift_flutter/drift_flutter.dart';
-import 'package:path_provider/path_provider.dart';
+import 'package:recipes/helpers/delete_image_from_disk.dart';
 import 'package:recipes/models/grocery.dart';
+import 'package:recipes/models/ingredient.dart';
 import 'package:recipes/models/meal_plan.dart';
-import 'package:recipes/models/recipe.dart';
+import 'package:recipes/models/recipe_detail.dart';
+import 'package:recipes/models/recipe_list_item.dart';
+import 'package:recipes/models/tag.dart';
 
 part 'database.g.dart';
+
+// Has limited recipe data, tags and image path.
+class RecipeListItemData {
+  final RecipeData recipe;
+  final List<TagData> tags;
+  final RecipeImageData image;
+
+  RecipeListItemData(this.recipe, this.tags, this.image);
+}
 
 @DataClassName('RecipeData')
 class Recipes extends Table {
@@ -51,10 +61,12 @@ class RecipeTags extends Table {
 
 @DataClassName('RecipeImageData')
 class RecipeImages extends Table {
-  IntColumn get id => integer().autoIncrement()();
   TextColumn get path => text()();
   IntColumn get recipeId =>
       integer().references(Recipes, #id, onDelete: KeyAction.cascade)();
+
+  @override
+  Set<Column<Object>> get primaryKey => {path};
 }
 
 @DataClassName('GroceryData')
@@ -128,38 +140,31 @@ class AppDatabase extends _$AppDatabase {
     );
   }
 
-  // RECIPES -----------------------------------
+// -------------------------------------------
 
-  // Get recipe.
-  Future<Recipe> getRecipe(int recipeId) async {
-    final recipeData = await (select(recipes)
-          ..where((r) => r.id.equals(recipeId)))
-        .getSingle();
+  Future<List<TagData>> getRecipeTags(int recipeId) async {
+    final query = select(recipeTags).join([
+      innerJoin(tags, tags.id.equalsExp(recipeTags.tagId)),
+    ])
+      ..where(recipeTags.recipeId.equals(recipeId));
 
-    return Recipe(
-      id: recipeData.id,
-      name: recipeData.name,
-      instructions: recipeData.instructions,
-      ingredients: await getRecipeIngredients(recipeData.id),
-      favorite: recipeData.favorite,
-      servings: recipeData.servings,
-      tags: await getRecipeTags(recipeData.id),
-      imagePath: await getRecipeImagePath(recipeId),
-      carbohydratesPerServing: recipeData.carbohydratesPerServing,
-      proteinPerServing: recipeData.proteinPerServing,
-      fatPerServing: recipeData.fatPerServing,
-      caloriesPerServing: recipeData.caloriesPerServing,
-    );
+    List<TypedResult> rows = await query.get();
+
+    return rows.map((row) {
+      return row.readTable(tags);
+    }).toList();
   }
 
-  // Add a new recipe.
-  // Ingredients, tags and image are added separately.
-  Future<int> addRecipe(Recipe recipe) async {
-    return await into(recipes).insert(recipe.toCompanion());
+  Future<RecipeData> getRecipe(int recipeId) async {
+    return (select(recipes)..where((r) => r.id.equals(recipeId))).getSingle();
+  }
+
+  Future<int> addRecipe(RecipeDetail recipe) async {
+    return into(recipes).insert(recipe.toCompanion());
   }
 
   // Update a recipe.
-  Future<void> updateRecipe(Recipe recipe) async {
+  Future<void> updateRecipe(RecipeDetail recipe) async {
     await (update(recipes)..where((r) => r.id.equals(recipe.id!)))
         .write(recipe.toCompanion());
   }
@@ -185,19 +190,19 @@ class AppDatabase extends _$AppDatabase {
 
     // Delete image from disk.
     if (imageRow != null) {
-      await deleteRecipeImageFromDisk(imageRow.path);
+      await deleteImageFromDisk(imageRow.path);
     }
   }
 
   // TODO: check where this is used, doesn't take the boolean anymore
-  Future<void> toggleFavoriteRecipe(Recipe recipe) async {
+  Future<void> toggleFavoriteRecipe(RecipeDetail recipe) async {
     await (update(recipes)..where((r) => r.id.equals(recipe.id!)))
         .write(RecipesCompanion(favorite: Value(!recipe.favorite)));
   }
 
   // Search recipes.
-  // TODO: refactor
-  Future<List<Recipe>> searchRecipes({
+  // TODO: refactor + just give out recipedata
+  Future<List<RecipeListItem>> searchRecipes({
     required int offset,
     required String query,
     required List<Tag> tags,
@@ -278,40 +283,18 @@ class AppDatabase extends _$AppDatabase {
       recipeMaps = result.map((row) => row.data).toList();
     }
 
-    List<Recipe> recipeList = [];
+    List<RecipeListItem> recipeList = [];
     for (final recipe in recipeMaps) {
       recipeList.add(
-        Recipe(
+        RecipeListItem(
           id: recipe['id'],
           name: recipe['name'],
-          instructions: recipe['instructions'],
-          ingredients: await getRecipeIngredients(recipe['id']),
           favorite: recipe['favorite'] == 1 ? true : false,
-          servings: recipe['servings'],
-          tags: await getRecipeTags(recipe['id']),
-          imagePath: await getRecipeImagePath(recipe['id']),
-          carbohydratesPerServing: recipe['carbohydratesPerServing'],
-          proteinPerServing: recipe['proteinPerServing'],
-          fatPerServing: recipe['fatPerServing'],
-          caloriesPerServing: recipe['caloriesPerServing'],
         ),
       );
     }
 
     return recipeList;
-  }
-
-  // Get recipe list for front page.
-  // TODO: is this necessary? fetching all recipe data anyway
-  Future<List<RecipeListItem>> getRecipeList() async {
-    final List<RecipeData> recipeDataList = await select(recipes).get();
-
-    return recipeDataList
-        .map((data) => RecipeListItem(
-              id: data.id,
-              name: data.name,
-            ))
-        .toList();
   }
 
   // Get recipe count.
@@ -321,54 +304,42 @@ class AppDatabase extends _$AppDatabase {
     return row.read(recipes.id.count()) ?? 0;
   }
 
+  // RECIPES -----------------------------------
+
   // RECIPE IMAGES -----------------------------
 
   // Add image to recipe or update it.
-  Future<void> insertOrUpdateRecipeImage(int recipeId, String name) async {
+  Future<void> insertOrUpdateRecipeImage(int recipeId, String path) async {
     final imageData = await (select(recipeImages)
           ..where((ri) => ri.recipeId.equals(recipeId)))
         .getSingleOrNull();
 
     if (imageData != null) {
-      await (update(recipeImages)..where((ri) => ri.id.equals(imageData.id)))
+      await (update(recipeImages)
+            ..where((ri) => ri.path.equals(imageData.path)))
           .write(RecipeImagesCompanion(
-        path: Value(name),
+        path: Value(path),
       ));
     } else {
       await into(recipeImages).insert(
         RecipeImagesCompanion.insert(
           recipeId: recipeId,
-          path: name,
+          path: path,
         ),
       );
     }
   }
 
+  Future<RecipeImageData?> getRecipeImage(int recipeId) {
+    return (select(recipeImages)..where((ri) => ri.recipeId.equals(recipeId)))
+        .getSingleOrNull();
+  }
+
   // Delete recipe image from recipeImages table.
+  // TODO: handle situation where there is no image
   Future<void> deleteRecipeImage(int recipeId) async {
     await (delete(recipeImages)..where((ri) => ri.recipeId.equals(recipeId)))
         .go();
-  }
-
-  // Delete recipe image from disk.
-  Future<void> deleteRecipeImageFromDisk(String name) async {
-    final directory = await getApplicationDocumentsDirectory();
-
-    final file = File('${directory.path}/images/$name');
-    await file.delete();
-  }
-
-  // Helper to get recipe image path.
-  Future<String?> getRecipeImagePath(int recipeId) async {
-    final imageData = await (select(recipeImages)
-          ..where((ri) => ri.recipeId.equals(recipeId)))
-        .getSingleOrNull();
-
-    final directory = await getApplicationDocumentsDirectory();
-
-    return imageData != null
-        ? '${directory.path}/images/${imageData.path}'
-        : null;
   }
 
   // INGREDIENTS --------------------------------
@@ -394,19 +365,9 @@ class AppDatabase extends _$AppDatabase {
     await addIngredients(recipeId, ingredientList);
   }
 
-  // Get a recipe's ingredients.
-  Future<List<Ingredient>> getRecipeIngredients(int recipeId) async {
-    List<IngredientData> ingredientList = await (select(ingredients)
-          ..where((i) => i.recipeId.equals(recipeId)))
+  Future<List<IngredientData>> getRecipeIngredients(int recipeId) async {
+    return (select(ingredients)..where((i) => i.recipeId.equals(recipeId)))
         .get();
-
-    return ingredientList
-        .map((i) => Ingredient(
-            id: i.id,
-            name: i.name,
-            amountPerServing: i.amountPerServing,
-            unit: i.unit))
-        .toList();
   }
 
   // Delete a recipe's ingredients.
@@ -417,9 +378,8 @@ class AppDatabase extends _$AppDatabase {
   // TAGS ---------------------------------------
 
   // Get all tags.
-  Future<List<Tag>> getTags() async {
-    List<TagData> tagList = await select(tags).get();
-    return tagList.map((tag) => Tag(id: tag.id, name: tag.name)).toList();
+  Future<List<TagData>> getTags() async {
+    return select(tags).get();
   }
 
   // Add a list of tags and return their ids.
@@ -447,23 +407,6 @@ class AppDatabase extends _$AppDatabase {
           .write(tag.toCompanion());
       return tag.id!;
     }
-  }
-
-// Get a recipe's tags.
-  Future<List<Tag>> getRecipeTags(int recipeId) async {
-    final query = select(recipeTags).join([
-      innerJoin(tags, tags.id.equalsExp(recipeTags.tagId)),
-    ])
-      ..where(recipeTags.recipeId.equals(recipeId));
-
-    final rows = await query.get();
-    return rows.map((row) {
-      final tagData = row.readTable(tags);
-      return Tag(
-        id: tagData.id,
-        name: tagData.name,
-      );
-    }).toList();
   }
 
   // Add tags to a recipe.
@@ -510,26 +453,15 @@ class AppDatabase extends _$AppDatabase {
   // GROCERIES ---------------------------
 
   // Get groceries.
-  Future<List<Grocery>> getGroceries() async {
-    final groceriesList = await (select(groceries)
+  Future<List<GroceryData>> getGroceries() async {
+    return (select(groceries)
           ..orderBy([(g) => OrderingTerm(expression: g.listOrder)]))
         .get();
-
-    return groceriesList
-        .map((g) => Grocery(
-              id: g.id,
-              name: g.name,
-              amount: g.amount,
-              unit: g.unit,
-              isBought: g.isBought,
-              listOrder: g.listOrder,
-            ))
-        .toList();
   }
 
   // Add a grocery.
   Future<int> addGrocery(Grocery grocery) async {
-    return await into(groceries).insert(grocery.toCompanion());
+    return into(groceries).insert(grocery.toCompanion());
   }
 
   // Update a grocery.
@@ -563,7 +495,6 @@ class AppDatabase extends _$AppDatabase {
     await delete(groceries).go();
   }
 
-  // TODO: check where this is used to remove the boolean argument
   Future<void> toggleGroceryBought(Grocery grocery) async {
     await (update(groceries)..where((g) => g.id.equals(grocery.id!)))
         .write(GroceriesCompanion(isBought: Value(!grocery.isBought)));
@@ -573,12 +504,11 @@ class AppDatabase extends _$AppDatabase {
 
   // Add a meal.
   Future<int> addMeal(Meal meal, int dayId) async {
-    return await into(meals).insert(meal.toCompanion(dayId));
+    return into(meals).insert(meal.toCompanion(dayId));
   }
 
-  // TODO: does this need to return id?
   Future<int> updateMeal(Meal meal, int dayId) async {
-    return await (update(meals)..where((m) => m.id.equals(meal.id!)))
+    return (update(meals)..where((m) => m.id.equals(meal.id!)))
         .write(meal.toCompanion(dayId));
   }
 
@@ -589,12 +519,12 @@ class AppDatabase extends _$AppDatabase {
 
   // Update a day.
   Future<int> updateDay(Day day, int mealPlanId) async {
-    return await (update(days)..where((d) => d.id.equals(day.id!)))
+    return (update(days)..where((d) => d.id.equals(day.id!)))
         .write(day.toCompanion(mealPlanId));
   }
 
   // Add a meal plan.
-  Future<void> addMealPlan(MealPlan mealPlan) async {
+  Future<int> addMealPlan(MealPlan mealPlan) async {
     final mealPlanId = await into(mealPlans).insert(mealPlan.toCompanion());
 
     for (final day in mealPlan.days!) {
@@ -603,6 +533,8 @@ class AppDatabase extends _$AppDatabase {
         await addMeal(meal, dayId);
       }
     }
+
+    return mealPlanId;
   }
 
   // Update a meal plan.
@@ -638,21 +570,8 @@ class AppDatabase extends _$AppDatabase {
   }
 
   // Get a recipe detail for a set of recipes.
-  // TODO: rename MealRecipe
-  Future<List<MealRecipe>> getRecipes(Set<int> recipeIds) async {
-    final recipeList = await (select(recipes)
-          ..where((r) => r.id.isIn(recipeIds.toList())))
-        .get();
-    return recipeList
-        .map((r) => MealRecipe(
-              recipeId: r.id,
-              recipeName: r.name,
-              carbohydratesPerServing: r.carbohydratesPerServing,
-              proteinPerServing: r.proteinPerServing,
-              fatPerServing: r.fatPerServing,
-              caloriesPerServing: r.caloriesPerServing,
-            ))
-        .toList();
+  Future<List<RecipeData>> getRecipesById(Set<int> recipeIds) async {
+    return (select(recipes)..where((r) => r.id.isIn(recipeIds.toList()))).get();
   }
 
   Future<MealPlan> getMealPlan(int mealPlanId) async {
@@ -675,28 +594,21 @@ class AppDatabase extends _$AppDatabase {
 
     // Collect the unique recipe IDs from the meals.
     final recipeIds = mealDataList.map((m) => m.recipeId).toSet();
-    final mealRecipes = await getRecipes(recipeIds);
+    final mealRecipes = await getRecipesById(recipeIds);
 
     // Build a list of Day objects.
     final List<Day> daysList = dayList.map((dayData) {
       // Filter meals that belong to the current day.
       final mealsForDay =
           mealDataList.where((m) => m.dayId == dayData.id).map((mealData) {
-        final recipeData = mealRecipes.firstWhere(
-          (r) => r.recipeId == mealData.recipeId,
-          orElse: () => MealRecipe(
-              recipeId: mealData.recipeId,
-              recipeName: '',
-              carbohydratesPerServing: 0,
-              proteinPerServing: 0,
-              fatPerServing: 0,
-              caloriesPerServing: 0),
-        );
+        final recipeData =
+            mealRecipes.firstWhere((r) => r.id == mealData.recipeId);
+
         return Meal(
           id: mealData.id,
           name: mealData.name,
           recipeId: mealData.recipeId,
-          recipeName: recipeData.recipeName,
+          recipeName: recipeData.name,
           carbohydratesPerServing: recipeData.carbohydratesPerServing,
           proteinPerServing: recipeData.proteinPerServing,
           fatPerServing: recipeData.fatPerServing,
@@ -719,20 +631,42 @@ class AppDatabase extends _$AppDatabase {
     );
   }
 
-  // Get a meal plan's recipes (all, not unique) to add all their total ingredients to groceries.
-  // TODO: rethink
-  Future<List<Recipe>> getMealPlanRecipes(int mealPlanId) async {
-    final dayList = await (select(days)
-          ..where((d) => d.mealPlanId.equals(mealPlanId)))
-        .get();
+  // Get a meal plan's recipes' ingredients for adding them to groceries list. Returns a map of ingredient and servings.
+  Future<Map<IngredientData, double>> getMealPlanIngredients(
+      int mealPlanId) async {
+    final mealPlan = await (select(mealPlans)
+          ..where((m) => m.id.equals(mealPlanId)))
+        .getSingleOrNull();
 
-    final dayIds = dayList.map((d) => d.id).toList();
+    final dayQuery =
+        (select(days)..where((d) => d.mealPlanId.equals(mealPlanId)));
 
-    final mealDataList =
+    final dayIds = await dayQuery.map((row) => row.id).get();
+
+    final mealList =
         await (select(meals)..where((m) => m.dayId.isIn(dayIds))).get();
 
-    return Future.wait(
-      mealDataList.map((meal) => getRecipe(meal.recipeId)),
-    );
+    Map<int, int> recipeCount = {};
+
+    for (var meal in mealList) {
+      recipeCount.update(meal.recipeId, (count) => count++, ifAbsent: () => 1);
+    }
+
+    List<IngredientData> ingredientList = await (select(ingredients)
+          ..where((i) => i.recipeId.isIn(recipeCount.keys)))
+        .get();
+
+    Map<IngredientData, double> ingredientServings = {};
+
+    for (var ingredient in ingredientList) {
+      ingredientServings.update(
+          ingredient,
+          (count) =>
+              ingredient.amountPerServing *
+              mealPlan!.servingsPerMeal *
+              recipeCount[ingredient.recipeId]!);
+    }
+
+    return ingredientServings;
   }
 }
