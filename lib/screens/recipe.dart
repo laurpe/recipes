@@ -10,6 +10,7 @@ import 'package:recipes/database.dart';
 import 'package:recipes/helpers/add_ingredients_to_groceries.dart';
 import 'package:recipes/helpers/number_formatters.dart';
 import 'package:recipes/models/recipe_detail.dart';
+import 'package:recipes/repositories/recipe_repository.dart';
 import 'package:recipes/screens/edit_recipe.dart';
 
 sealed class Result<T> {
@@ -83,8 +84,9 @@ class SingleRecipe extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (_) {
-        final databaseClient = GetIt.I<AppDatabase>();
-        return RecipeBloc(databaseClient: databaseClient, recipeId: recipeId)
+        final recipeRepository = GetIt.I<RecipeRepository>();
+        return RecipeBloc(
+            recipeRepository: recipeRepository, recipeId: recipeId)
           ..add(GetRecipe());
       },
       child: const SingleRecipeView(),

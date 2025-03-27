@@ -1,11 +1,10 @@
-import 'package:get_it/get_it.dart';
 import 'package:recipes/database.dart';
 import 'package:recipes/widgets/recipe_form.dart';
 
 class RecipeImageRepository {
-  AppDatabase database = GetIt.I<AppDatabase>();
+  final AppDatabase database;
 
-  RecipeImageRepository();
+  RecipeImageRepository({required this.database});
 
   Future<void> insertOrUpdateImage(int recipeId, String path) {
     return database.insertOrUpdateRecipeImage(recipeId, path);

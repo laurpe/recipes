@@ -1,12 +1,11 @@
-import 'package:get_it/get_it.dart';
 import 'package:recipes/data_mapper.dart';
 import 'package:recipes/database.dart';
 import 'package:recipes/models/tag.dart';
 
 class TagRepository {
-  AppDatabase database = GetIt.I<AppDatabase>();
+  final AppDatabase database;
 
-  TagRepository();
+  TagRepository({required this.database});
 
   Future<List<Tag>> getTags() async {
     List<TagData> tagsData = await database.getTags();

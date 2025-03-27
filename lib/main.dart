@@ -7,12 +7,31 @@ import 'package:recipes/blocs/recipes/events.dart';
 import 'package:recipes/blocs/tags/bloc.dart';
 import 'package:recipes/blocs/tags/events.dart';
 import 'package:recipes/database.dart';
+import 'package:recipes/repositories/grocery_repository.dart';
+import 'package:recipes/repositories/ingredient_repository.dart';
+import 'package:recipes/repositories/meal_plan_repository.dart';
+import 'package:recipes/repositories/recipe_image_repository.dart';
+import 'package:recipes/repositories/recipe_repository.dart';
+import 'package:recipes/repositories/tag_repository.dart';
 import 'package:recipes/screens/recipe_list.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  GetIt.I.registerSingleton<AppDatabase>(AppDatabase());
+  final database = GetIt.I.registerSingleton<AppDatabase>(AppDatabase());
+
+  GetIt.I.registerLazySingleton<RecipeRepository>(
+      () => RecipeRepository(database: database));
+  GetIt.I.registerLazySingleton<IngredientRepository>(
+      () => IngredientRepository(database: database));
+  GetIt.I.registerLazySingleton<TagRepository>(
+      () => TagRepository(database: database));
+  GetIt.I.registerLazySingleton<GroceryRepository>(
+      () => GroceryRepository(database: database));
+  GetIt.I.registerLazySingleton<MealPlanRepository>(
+      () => MealPlanRepository(database: database));
+  GetIt.I.registerLazySingleton<RecipeImageRepository>(
+      () => RecipeImageRepository(database: database));
 
   Bloc.observer = MyBlocObserver();
 
@@ -28,15 +47,15 @@ class RecipeApp extends StatelessWidget {
         providers: [
           BlocProvider<RecipesBloc>(
             create: (_) {
-              final databaseClient = GetIt.I<AppDatabase>();
-              return RecipesBloc(databaseClient: databaseClient)
+              final recipeRepository = GetIt.I<RecipeRepository>();
+              return RecipesBloc(recipeRepository: recipeRepository)
                 ..add(const GetRecipes());
             },
           ),
           BlocProvider<TagsBloc>(
             create: (_) {
-              final databaseClient = GetIt.I<AppDatabase>();
-              return TagsBloc(databaseClient: databaseClient)..add(GetTags());
+              final tagRepository = GetIt.I<TagRepository>();
+              return TagsBloc(tagRepository: tagRepository)..add(GetTags());
             },
           ),
         ],

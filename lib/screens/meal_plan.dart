@@ -10,6 +10,7 @@ import 'package:recipes/models/grocery.dart';
 import 'package:recipes/helpers/add_ingredients_to_groceries.dart';
 import 'package:recipes/models/meal_plan.dart';
 import 'package:recipes/models/recipe_detail.dart';
+import 'package:recipes/repositories/meal_plan_repository.dart';
 import 'package:recipes/screens/edit_meal_plan.dart';
 
 // TODO: make this and recipe result use same class
@@ -33,8 +34,9 @@ class Added extends Result<MealPlan> {
 
 Future<void> addMealplanToGroceries(
     MealPlan mealPlan, BuildContext context) async {
-  final databaseClient = GetIt.I<AppDatabase>();
-  final recipes = await databaseClient.getMealPlanRecipes(mealPlan.id!);
+  // TODO: rewrite to use new method
+  final mealPlanRepository = GetIt.I<MealPlanRepository>();
+  final recipes = await mealPlanRepository.getMealPlanRecipes(mealPlan.id!);
 
   /// TODO: could be optimized by adding all groceries at once
   try {
@@ -60,7 +62,7 @@ Future<void> addMealplanToGroceries(
 }
 
 Future<void> addGroceries(
-    Recipe recipe, int servings, BuildContext context) async {
+    RecipeDetail recipe, int servings, BuildContext context) async {
   final databaseClient = GetIt.I<AppDatabase>();
   final groceries = await databaseClient.getGroceries();
   final ingredients = recipe.ingredients;
@@ -209,9 +211,9 @@ class SingleMealPlan extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider(
         create: (_) {
-          final databaseClient = GetIt.I<AppDatabase>();
+          final mealPlanRepository = GetIt.I<MealPlanRepository>();
           return MealPlanBloc(
-              databaseClient: databaseClient, mealPlanId: mealPlanId)
+              mealPlanRepository: mealPlanRepository, mealPlanId: mealPlanId)
             ..add(GetMealPlan());
         },
         child: const SingleMealPlanView());

@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:recipes/database.dart';
 import 'package:recipes/models/meal_plan.dart';
-import 'package:recipes/models/recipe_detail.dart';
 import 'package:recipes/models/recipe_list_item.dart';
+import 'package:recipes/repositories/recipe_repository.dart';
 import 'package:recipes/screens/meal_plan.dart';
 
 class EditMealPlan extends StatelessWidget {
@@ -51,7 +51,9 @@ class EditMealPlanFormState extends State<EditMealPlanForm> {
   }
 
   Future<List<RecipeListItem>> getRecipeList() async {
-    return GetIt.I<AppDatabase>().getRecipeList();
+    // TODO: what happened to this method
+    final recipeRepository = GetIt.I<RecipeRepository>();
+    return recipeRepository.getRecipeList();
   }
 
   void onSubmit() async {

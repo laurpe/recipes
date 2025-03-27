@@ -1,16 +1,16 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:recipes/blocs/tags/events.dart';
 import 'package:recipes/blocs/tags/state.dart';
-import 'package:recipes/database.dart';
+import 'package:recipes/repositories/tag_repository.dart';
 
 class TagsBloc extends Bloc<TagsEvent, TagsState> {
-  final AppDatabase databaseClient;
+  final TagRepository tagRepository;
 
-  TagsBloc({required this.databaseClient}) : super(LoadingTagsState()) {
+  TagsBloc({required this.tagRepository}) : super(LoadingTagsState()) {
     on<GetTags>(
       (event, emit) async {
         try {
-          emit(LoadedTagsState(tags: await databaseClient.getTags()));
+          emit(LoadedTagsState(tags: await tagRepository.getTags()));
         } catch (error) {
           emit(ErrorLoadingTagsState());
         }
@@ -28,7 +28,7 @@ class TagsBloc extends Bloc<TagsEvent, TagsState> {
           // insert it into the database
 
           for (int i = 0; i < tags.length; i++) {
-            int id = await databaseClient.insertOrUpdateTag(tags[i]);
+            int id = await tagRepository.insertOrUpdateTag(tags[i]);
 
             tags[i] = tags[i].copyWith(id: id);
           }
@@ -38,7 +38,7 @@ class TagsBloc extends Bloc<TagsEvent, TagsState> {
           final tagIds = tags.map((t) => t.id!).toList();
 
           // this deletes recipe's tags and adds the updated ones
-          await databaseClient.updateRecipeTags(recipeId, tagIds);
+          await tagRepository.updateRecipeTags(recipeId, tagIds);
 
           // add the new tags to the state
           final newTags = tags.where((tag) {

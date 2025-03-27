@@ -7,6 +7,7 @@ import 'package:recipes/blocs/groceries/state.dart';
 import 'package:recipes/database.dart';
 import 'package:recipes/models/grocery.dart';
 import 'package:recipes/helpers/number_formatters.dart';
+import 'package:recipes/repositories/grocery_repository.dart';
 
 class GroceriesList extends StatelessWidget {
   const GroceriesList({super.key});
@@ -15,8 +16,8 @@ class GroceriesList extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (context) {
-        final databaseClient = GetIt.I<AppDatabase>();
-        return GroceriesBloc(databaseClient: databaseClient)
+        final groceryRepository = GetIt.I<GroceryRepository>();
+        return GroceriesBloc(groceryRepository: groceryRepository)
           ..add(GetGroceries());
       },
       child: const GroceriesListView(),

@@ -1,4 +1,3 @@
-import 'package:get_it/get_it.dart';
 import 'package:recipes/data_mapper.dart';
 import 'package:recipes/database.dart';
 import 'package:recipes/models/meal_recipe.dart';
@@ -7,9 +6,9 @@ import 'package:recipes/models/recipe_list_item.dart';
 import 'package:recipes/models/tag.dart';
 
 class RecipeRepository {
-  AppDatabase database = GetIt.I<AppDatabase>();
+  final AppDatabase database;
 
-  RecipeRepository();
+  RecipeRepository({required this.database});
 
   Future<RecipeDetail> getRecipe(int id) async {
     RecipeData recipeData = await database.getRecipe(id);
@@ -34,12 +33,12 @@ class RecipeRepository {
     return database.deleteRecipe(id);
   }
 
-  Future<void> toggleFavorite(RecipeDetail recipe) {
+  Future<void> toggleFavoriteRecipe(RecipeDetail recipe) {
     return database.toggleFavoriteRecipe(recipe);
   }
 
   // TODO: do searchRecipes parameters need to be required?
-  Future<List<RecipeListItem>> search(
+  Future<List<RecipeListItem>> searchRecipes(
       {required int offset,
       required String query,
       required List<Tag> tags,

@@ -1,14 +1,14 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:recipes/blocs/recipes/events.dart';
 import 'package:recipes/blocs/recipes/state.dart';
-import 'package:recipes/database.dart';
-import 'package:recipes/models/recipe_detail.dart';
+import 'package:recipes/models/recipe_list_item.dart';
 import 'package:recipes/models/tag.dart';
+import 'package:recipes/repositories/recipe_repository.dart';
 
 class RecipesBloc extends Bloc<RecipesEvent, RecipesState> {
-  final AppDatabase databaseClient;
+  final RecipeRepository recipeRepository;
 
-  RecipesBloc({required this.databaseClient}) : super(LoadingRecipesState()) {
+  RecipesBloc({required this.recipeRepository}) : super(LoadingRecipesState()) {
     on<RecipeUpdated>(
       (event, emit) async {
         try {
@@ -19,7 +19,7 @@ class RecipesBloc extends Bloc<RecipesEvent, RecipesState> {
 
             final recipes = currentState.recipes.map((r) {
               if (r.id == recipe.id) {
-                return recipe;
+                return recipe.toRecipeListItem();
               }
               return r;
             }).toList();
@@ -67,12 +67,12 @@ class RecipesBloc extends Bloc<RecipesEvent, RecipesState> {
       (event, emit) async {
         try {
           int? offset = event.offset;
-          List<RecipeDetail> recipes = [];
+          List<RecipeListItem> recipes = [];
           String? query = event.query;
           List<Tag>? tags = event.tags;
           bool? favorites = event.favorites;
 
-          int totalCount = await databaseClient.getRecipesCount();
+          int totalCount = await recipeRepository.getRecipesCount();
           int pageSize = 15;
           int pages = (totalCount / pageSize).ceil();
           int currentPage = (offset ?? 0 / pageSize).ceil() +
@@ -97,7 +97,7 @@ class RecipesBloc extends Bloc<RecipesEvent, RecipesState> {
             }
           }
 
-          final newRecipes = await databaseClient.searchRecipes(
+          final newRecipes = await recipeRepository.searchRecipes(
             offset: offset ?? 0,
             query: query ?? '',
             tags: tags ?? [],
