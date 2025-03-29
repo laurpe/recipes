@@ -30,11 +30,11 @@ class MealPlanRepository {
 
   Future<MealPlan> getMealPlan(int id) async => database.getMealPlan(id);
 
-  Future<Map<Ingredient, double>> getMealPlanIngredients(int mealPlanId) async {
-    Map<IngredientData, double> data =
+  Future<Map<Ingredient, int>> getMealPlanIngredients(int mealPlanId) async {
+    Map<IngredientData, int> data =
         await database.getMealPlanIngredients(mealPlanId);
 
-    Map<Ingredient, double> result = {};
+    Map<Ingredient, int> result = {};
 
     for (var key in data.keys) {
       result[DataMapper.ingredientFromData(key)] = data[key]!;

@@ -89,8 +89,7 @@ Future<void> addRecipeIngredientsToGroceries(
   }
 }
 
-Future<void> addIngredientsToGroceries(
-    Map<Ingredient, double> ingredients) async {
+Future<void> addIngredientsToGroceries(Map<Ingredient, int> ingredients) async {
   final groceryRepository = GetIt.I<GroceryRepository>();
   final oldGroceries = await groceryRepository.getGroceries();
 
@@ -101,6 +100,7 @@ Future<void> addIngredientsToGroceries(
   final newGroceries = ingredientList.mapIndexed((index, ingredient) {
     return Grocery(
       name: ingredient.key.name,
+      // multiply amountPerServing by ingredient multiplier
       amount: ingredient.key.amountPerServing * ingredient.value,
       unit: ingredient.key.unit,
       isBought: false,

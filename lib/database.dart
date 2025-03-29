@@ -637,7 +637,7 @@ class AppDatabase extends _$AppDatabase {
   }
 
   // Get a meal plan's recipes' ingredients for adding them to groceries list. Returns a map of ingredient and servings.
-  Future<Map<IngredientData, double>> getMealPlanIngredients(
+  Future<Map<IngredientData, int>> getMealPlanIngredients(
       int mealPlanId) async {
     final mealPlan = await (select(mealPlans)
           ..where((m) => m.id.equals(mealPlanId)))
@@ -651,25 +651,29 @@ class AppDatabase extends _$AppDatabase {
     final mealList =
         await (select(meals)..where((m) => m.dayId.isIn(dayIds))).get();
 
+    // <recipeId, count>
     Map<int, int> recipeCount = {};
 
     for (var meal in mealList) {
-      recipeCount.update(meal.recipeId, (count) => count++, ifAbsent: () => 1);
+      recipeCount.update(meal.recipeId, (count) => count + 1,
+          ifAbsent: () => 1);
     }
 
     List<IngredientData> ingredientList = await (select(ingredients)
           ..where((i) => i.recipeId.isIn(recipeCount.keys)))
         .get();
 
-    Map<IngredientData, double> ingredientServings = {};
+    // <Ingredient, count>
+    Map<IngredientData, int> ingredientServings = {};
 
     for (var ingredient in ingredientList) {
       ingredientServings.update(
           ingredient,
           (count) =>
-              ingredient.amountPerServing *
-              mealPlan!.servingsPerMeal *
-              recipeCount[ingredient.recipeId]!);
+              count +
+              mealPlan!.servingsPerMeal * recipeCount[ingredient.recipeId]!,
+          ifAbsent: () =>
+              (mealPlan!.servingsPerMeal * recipeCount[ingredient.recipeId]!));
     }
 
     return ingredientServings;
