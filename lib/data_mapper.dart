@@ -38,6 +38,7 @@ class DataMapper {
 
   static Ingredient ingredientFromData(IngredientData data) {
     return Ingredient(
+        id: data.id,
         amountPerServing: data.amountPerServing,
         unit: data.unit,
         name: data.name);
@@ -58,6 +59,7 @@ class DataMapper {
   static List<Grocery> groceriesFromData(List<GroceryData> data) {
     return data.map((item) {
       return Grocery(
+          id: item.id,
           name: item.name,
           amount: item.amount,
           unit: item.unit,
