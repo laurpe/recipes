@@ -1,3 +1,4 @@
+import 'package:path_provider/path_provider.dart';
 import 'package:recipes/data_mapper.dart';
 import 'package:recipes/database.dart';
 import 'package:recipes/models/meal_recipe.dart';
@@ -11,14 +12,15 @@ class RecipeRepository {
   RecipeRepository({required this.database});
 
   Future<RecipeDetail> getRecipe(int id) async {
-    RecipeData recipeData = await database.getRecipe(id);
-    List<IngredientData> ingredientsData =
-        await database.getRecipeIngredients(id);
-    List<TagData> tagsData = await database.getRecipeTags(id);
-    RecipeImageData? imageData = await database.getRecipeImage(id);
+    final recipeData = await database.getRecipe(id);
+    final ingredientsData = await database.getRecipeIngredients(id);
+    final tagsData = await database.getRecipeTags(id);
+    final imageData = await database.getRecipeImage(id);
+
+    final directory = await getApplicationDocumentsDirectory();
 
     return DataMapper.recipeFromData(
-        recipeData, ingredientsData, tagsData, imageData);
+        recipeData, ingredientsData, tagsData, imageData, directory.path);
   }
 
   Future<List<RecipeListItem>> getRecipes() async {

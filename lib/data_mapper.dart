@@ -11,7 +11,8 @@ class DataMapper {
       RecipeData recipeData,
       List<IngredientData> ingredientsData,
       List<TagData> tagsData,
-      RecipeImageData? imageData) {
+      RecipeImageData? imageData,
+      String? path) {
     return RecipeDetail(
         id: recipeData.id,
         name: recipeData.name,
@@ -20,7 +21,7 @@ class DataMapper {
         favorite: recipeData.favorite,
         servings: recipeData.servings,
         tags: tagsFromData(tagsData),
-        imagePath: imageData?.path,
+        imagePath: imageData != null ? '$path/images/${imageData.path}' : null,
         carbohydratesPerServing: recipeData.carbohydratesPerServing,
         proteinPerServing: recipeData.proteinPerServing,
         fatPerServing: recipeData.fatPerServing,
