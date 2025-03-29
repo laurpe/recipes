@@ -34,7 +34,7 @@ class Added extends Result<RecipeDetail> {
 Future<void> addRecipeToGroceries(
     RecipeDetail recipe, BuildContext context) async {
   try {
-    await addIngredientsToGroceries(recipe, recipe.servings);
+    await addRecipeIngredientsToGroceries(recipe, recipe.servings);
 
     if (!context.mounted) return;
 

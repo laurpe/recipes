@@ -270,9 +270,9 @@ class RecipeListTile extends StatelessWidget {
                 : Container(),
           ],
         ),
-        subtitle: recipe.tags!.isNotEmpty
-            ? Text(recipe.tags!.map((tag) => tag.name).join(', '))
-            : null,
+        // subtitle: recipe.tags!.isNotEmpty
+        //     ? Text(recipe.tags!.map((tag) => tag.name).join(', '))
+        //     : null,
       ),
     );
   }

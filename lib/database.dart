@@ -159,6 +159,12 @@ class AppDatabase extends _$AppDatabase {
     return (select(recipes)..where((r) => r.id.equals(recipeId))).getSingle();
   }
 
+  // Get basic recipe data for adding recipes to meal plan.
+  // TODO: select only id and name columns?
+  Future<List<RecipeData>> getRecipes() async {
+    return select(recipes).get();
+  }
+
   Future<int> addRecipe(RecipeDetail recipe) async {
     return into(recipes).insert(recipe.toCompanion());
   }
@@ -476,7 +482,6 @@ class AppDatabase extends _$AppDatabase {
   }
 
   // Add or update groceries.
-  // TODO: use this instead of the separate add or update methods when adding groceries from a recipe or a meal plan
   Future<void> insertOrUpdateGroceries(List<Grocery> groceryList) async {
     await transaction(() async {
       for (final grocery in groceryList) {

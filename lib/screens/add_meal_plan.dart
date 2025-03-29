@@ -3,6 +3,7 @@ import 'package:get_it/get_it.dart';
 import 'package:recipes/database.dart';
 import 'package:recipes/models/meal_plan.dart';
 import 'package:recipes/models/recipe_list_item.dart';
+import 'package:recipes/repositories/recipe_repository.dart';
 import 'package:recipes/screens/meal_plan.dart';
 
 class MealPlanFormView extends StatelessWidget {
@@ -33,6 +34,7 @@ class MealPlanForm extends StatefulWidget {
 class MealPlanFormState extends State<MealPlanForm> {
   final _formKey = GlobalKey<FormState>();
   late List<RecipeListItem> _recipes = [];
+  final RecipeRepository recipeRepository = GetIt.I<RecipeRepository>();
 
   MealPlan mealPlan = const MealPlan(name: '', servingsPerMeal: 2, days: [
     Day(name: 'Monday', meals: [
@@ -57,16 +59,13 @@ class MealPlanFormState extends State<MealPlanForm> {
     ]),
   ]);
 
-  Future<List<RecipeListItem>> getRecipeList() async {
-    // TODO: this method
-    return await GetIt.I<AppDatabase>().getRecipeList();
-  }
-
   @override
   void initState() {
     super.initState();
 
-    getRecipeList().then((value) => setState(() => _recipes = value));
+    recipeRepository
+        .getRecipes()
+        .then((value) => setState(() => _recipes = value));
   }
 
   void onSubmit() async {

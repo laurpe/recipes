@@ -40,20 +40,17 @@ class EditMealPlanFormState extends State<EditMealPlanForm> {
   final _formKey = GlobalKey<FormState>();
   late List<RecipeListItem> _recipes = [];
   late MealPlan _mealPlan;
+  final RecipeRepository recipeRepository = GetIt.I<RecipeRepository>();
 
   @override
   void initState() {
     super.initState();
 
-    getRecipeList().then((value) => setState(() => _recipes = value));
+    recipeRepository
+        .getRecipes()
+        .then((value) => setState(() => _recipes = value));
 
     _mealPlan = widget.mealPlan;
-  }
-
-  Future<List<RecipeListItem>> getRecipeList() async {
-    // TODO: what happened to this method
-    final recipeRepository = GetIt.I<RecipeRepository>();
-    return recipeRepository.getRecipeList();
   }
 
   void onSubmit() async {

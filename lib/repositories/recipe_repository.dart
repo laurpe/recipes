@@ -21,6 +21,12 @@ class RecipeRepository {
         recipeData, ingredientsData, tagsData, imageData);
   }
 
+  Future<List<RecipeListItem>> getRecipes() async {
+    List<RecipeData> recipeData = await database.getRecipes();
+
+    return DataMapper.recipesFromData(recipeData);
+  }
+
   Future<int> addRecipe(RecipeDetail recipe) {
     return database.addRecipe(recipe);
   }

@@ -1,5 +1,7 @@
+import 'package:collection/collection.dart';
 import 'package:get_it/get_it.dart';
 import 'package:recipes/models/grocery.dart';
+import 'package:recipes/models/ingredient.dart';
 import 'package:recipes/models/recipe_detail.dart';
 import 'package:recipes/repositories/grocery_repository.dart';
 
@@ -48,7 +50,8 @@ List<Grocery> combineDuplicateGroceries(List<Grocery> groceries) {
   return resultMap.values.toList();
 }
 
-Future<void> addIngredientsToGroceries(
+// TODO: combine this and next method
+Future<void> addRecipeIngredientsToGroceries(
     RecipeDetail recipe, int servings) async {
   final groceryRepository = GetIt.I<GroceryRepository>();
   final groceries = await groceryRepository.getGroceries();
@@ -69,6 +72,43 @@ Future<void> addIngredientsToGroceries(
   }
 
   final allGroceries = groceries + newGroceries;
+
+  List<Grocery> unitCorrectedGroceries = [];
+
+  for (var grocery in allGroceries) {
+    unitCorrectedGroceries.add(unitsToDefaults(grocery));
+  }
+
+  List<Grocery> combinedGroceries =
+      combineDuplicateGroceries(unitCorrectedGroceries);
+
+  try {
+    groceryRepository.insertOrUpdateGroceries(combinedGroceries);
+  } catch (error) {
+    rethrow;
+  }
+}
+
+Future<void> addIngredientsToGroceries(
+    Map<Ingredient, double> ingredients) async {
+  final groceryRepository = GetIt.I<GroceryRepository>();
+  final oldGroceries = await groceryRepository.getGroceries();
+
+  final int timestamp = DateTime.now().millisecondsSinceEpoch;
+
+  final ingredientList = ingredients.entries.toList();
+
+  final newGroceries = ingredientList.mapIndexed((index, ingredient) {
+    return Grocery(
+      name: ingredient.key.name,
+      amount: ingredient.key.amountPerServing * ingredient.value,
+      unit: ingredient.key.unit,
+      isBought: false,
+      listOrder: timestamp + index,
+    );
+  });
+
+  final allGroceries = oldGroceries + newGroceries.toList();
 
   List<Grocery> unitCorrectedGroceries = [];
 
