@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
-import 'package:recipes/database.dart';
+import 'package:recipes/database/database.dart';
 import 'package:recipes/models/meal_plan.dart';
 import 'package:recipes/models/recipe_list_item.dart';
 import 'package:recipes/repositories/recipe_repository.dart';
@@ -73,7 +73,7 @@ class MealPlanFormState extends State<MealPlanForm> {
       _formKey.currentState!.save();
 
       try {
-        await GetIt.I<AppDatabase>().addMealPlan(mealPlan);
+        await GetIt.I<AppDatabase>().mealPlansDao.addMealPlan(mealPlan);
 
         if (mounted) {
           Navigator.of(context).pop(Added(mealPlan));

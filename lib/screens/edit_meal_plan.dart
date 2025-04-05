@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
-import 'package:recipes/database.dart';
+import 'package:recipes/database/database.dart';
 import 'package:recipes/models/meal_plan.dart';
 import 'package:recipes/models/recipe_list_item.dart';
 import 'package:recipes/repositories/recipe_repository.dart';
@@ -58,7 +58,7 @@ class EditMealPlanFormState extends State<EditMealPlanForm> {
       _formKey.currentState!.save();
 
       try {
-        await GetIt.I<AppDatabase>().updateMealPlan(_mealPlan);
+        await GetIt.I<AppDatabase>().mealPlansDao.updateMealPlan(_mealPlan);
 
         if (mounted) {
           Navigator.of(context).pop(Updated(_mealPlan));

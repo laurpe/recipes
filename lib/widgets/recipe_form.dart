@@ -6,7 +6,7 @@ import 'package:get_it/get_it.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:recipes/blocs/tags/bloc.dart';
 import 'package:recipes/blocs/tags/state.dart';
-import 'package:recipes/database.dart';
+import 'package:recipes/database/database.dart';
 import 'package:recipes/helpers/number_formatters.dart';
 import 'package:recipes/models/ingredient.dart';
 import 'package:recipes/models/recipe_detail.dart';
@@ -171,7 +171,9 @@ class RecipeFormState extends State<RecipeForm> {
         // TODO: this method exists in database client and here, move somewhere to share
         deleteImageFromDisk(widget.initialValues.imagePath!);
 
-        GetIt.I<AppDatabase>().deleteRecipeImage(widget.initialValues.id!);
+        GetIt.I<AppDatabase>()
+            .recipesDao
+            .deleteRecipeImage(widget.initialValues.id!);
       }
 
       ImageData? imageData =
@@ -199,6 +201,7 @@ class RecipeFormState extends State<RecipeForm> {
 
         if (imageData != null) {
           GetIt.I<AppDatabase>()
+              .recipesDao
               .insertOrUpdateRecipeImage(recipeId, imageData.name);
         }
 

@@ -1,5 +1,5 @@
 import 'package:recipes/data_mapper.dart';
-import 'package:recipes/database.dart';
+import 'package:recipes/database/database.dart';
 import 'package:recipes/models/tag.dart';
 
 class TagRepository {
@@ -8,24 +8,24 @@ class TagRepository {
   TagRepository({required this.database});
 
   Future<List<Tag>> getTags() async {
-    List<TagData> tagsData = await database.getTags();
+    List<TagData> tagsData = await database.tagsDao.getTags();
 
     return DataMapper.tagsFromData(tagsData);
   }
 
   Future<List<int>> addTags(List<Tag> tags) async {
-    return database.addTags(tags);
+    return database.tagsDao.addTags(tags);
   }
 
   Future<int> insertOrUpdateTag(Tag tag) async {
-    return database.insertOrUpdateTag(tag);
+    return database.tagsDao.insertOrUpdateTag(tag);
   }
 
   Future<void> addRecipeTags(int recipeId, List<int> tagIds) async {
-    return database.addRecipeTags(recipeId, tagIds);
+    return database.tagsDao.addRecipeTags(recipeId, tagIds);
   }
 
   Future<void> updateRecipeTags(int recipeId, List<int> tagIds) async {
-    return database.updateRecipeTags(recipeId, tagIds);
+    return database.tagsDao.updateRecipeTags(recipeId, tagIds);
   }
 }

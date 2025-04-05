@@ -3,15 +3,17 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:recipes/blocs/tags/bloc.dart';
 import 'package:recipes/blocs/tags/events.dart';
-import 'package:recipes/database.dart';
+import 'package:recipes/database/database.dart';
 import 'package:recipes/models/ingredient.dart';
 import 'package:recipes/models/recipe_detail.dart';
 import 'package:recipes/screens/recipe.dart';
 import 'package:recipes/widgets/recipe_form.dart';
 
 Future<int> submitRecipe(BuildContext context, RecipeDetail recipe) async {
-  int recipeId = await GetIt.I<AppDatabase>().addRecipe(recipe);
-  await GetIt.I<AppDatabase>().addIngredients(recipeId, recipe.ingredients);
+  int recipeId = await GetIt.I<AppDatabase>().recipesDao.addRecipe(recipe);
+  await GetIt.I<AppDatabase>()
+      .ingredientsDao
+      .addIngredients(recipeId, recipe.ingredients);
 
   if (context.mounted) {
     BlocProvider.of<TagsBloc>(context)

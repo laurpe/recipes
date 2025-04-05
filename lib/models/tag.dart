@@ -1,6 +1,6 @@
 import 'package:drift/drift.dart';
 import 'package:equatable/equatable.dart';
-import 'package:recipes/database.dart';
+import 'package:recipes/database/database.dart';
 
 class Tag extends Equatable {
   final int? id;

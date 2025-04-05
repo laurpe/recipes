@@ -4,7 +4,7 @@ import 'package:get_it/get_it.dart';
 import 'package:recipes/blocs/groceries/bloc.dart';
 import 'package:recipes/blocs/groceries/events.dart';
 import 'package:recipes/blocs/groceries/state.dart';
-import 'package:recipes/database.dart';
+import 'package:recipes/database/database.dart';
 import 'package:recipes/models/grocery.dart';
 import 'package:recipes/helpers/number_formatters.dart';
 import 'package:recipes/repositories/grocery_repository.dart';
@@ -153,7 +153,7 @@ class ReorderableGroceryListState extends State<ReorderableGroceryList> {
       });
 
       try {
-        int id = await GetIt.I<AppDatabase>().addGrocery(grocery);
+        int id = await GetIt.I<AppDatabase>().groceriesDao.addGrocery(grocery);
 
         Grocery newGrocery = grocery.copyWith(id: id);
 
@@ -297,6 +297,7 @@ class ReorderableGroceryListState extends State<ReorderableGroceryList> {
                               listOrder: DateTime.now().millisecondsSinceEpoch);
 
                           await GetIt.I<AppDatabase>()
+                              .groceriesDao
                               .updateGrocery(updatedGrocery);
                           setState(() {
                             _groceries.remove(grocery);
@@ -309,6 +310,7 @@ class ReorderableGroceryListState extends State<ReorderableGroceryList> {
                               grocery.copyWith(isBought: false);
 
                           await GetIt.I<AppDatabase>()
+                              .groceriesDao
                               .updateGrocery(updatedGrocery);
                           setState(() {
                             _groceries.remove(grocery);
@@ -350,6 +352,7 @@ class ReorderableGroceryListState extends State<ReorderableGroceryList> {
                               onPressed: () async {
                                 setState(() {
                                   GetIt.I<AppDatabase>()
+                                      .groceriesDao
                                       .deleteGrocery(grocery.id!);
                                   _groceries.remove(grocery);
                                 });

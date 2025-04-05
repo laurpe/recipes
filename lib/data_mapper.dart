@@ -1,4 +1,4 @@
-import 'package:recipes/database.dart';
+import 'package:recipes/database/database.dart';
 import 'package:recipes/models/grocery.dart';
 import 'package:recipes/models/ingredient.dart';
 import 'package:recipes/models/meal_recipe.dart';

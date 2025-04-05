@@ -1,4 +1,4 @@
-import 'package:recipes/database.dart';
+import 'package:recipes/database/database.dart';
 import 'package:recipes/widgets/recipe_form.dart';
 
 class RecipeImageRepository {
@@ -7,11 +7,11 @@ class RecipeImageRepository {
   RecipeImageRepository({required this.database});
 
   Future<void> insertOrUpdateImage(int recipeId, String path) {
-    return database.insertOrUpdateRecipeImage(recipeId, path);
+    return database.recipesDao.insertOrUpdateRecipeImage(recipeId, path);
   }
 
   Future<void> deleteImage(int recipeId, String path) async {
-    await database.deleteRecipeImage(recipeId);
+    await database.recipesDao.deleteRecipeImage(recipeId);
 
     await deleteImageFromDisk(path);
   }

@@ -1,6 +1,6 @@
 import 'package:drift/drift.dart';
 import 'package:equatable/equatable.dart';
-import 'package:recipes/database.dart';
+import 'package:recipes/database/database.dart';
 import 'package:recipes/models/ingredient.dart';
 import 'package:recipes/models/recipe_list_item.dart';
 import 'package:recipes/models/tag.dart';

@@ -1,5 +1,5 @@
 import 'package:recipes/data_mapper.dart';
-import 'package:recipes/database.dart';
+import 'package:recipes/database/database.dart';
 import 'package:recipes/models/ingredient.dart';
 import 'package:recipes/models/meal_plan.dart';
 
@@ -9,30 +9,32 @@ class MealPlanRepository {
   MealPlanRepository({required this.database});
 
   Future<int> addMeal(Meal meal, int dayId) async =>
-      database.addMeal(meal, dayId);
+      database.mealPlansDao.addMeal(meal, dayId);
 
   Future<int> updateMeal(Meal meal, int dayId) async =>
-      database.updateMeal(meal, dayId);
+      database.mealPlansDao.updateMeal(meal, dayId);
 
   Future<int> addDay(Day day, int mealPlanId) async =>
-      database.addDay(day, mealPlanId);
+      database.mealPlansDao.addDay(day, mealPlanId);
 
   Future<int> addMealPlan(MealPlan mealPlan) async =>
-      database.addMealPlan(mealPlan);
+      database.mealPlansDao.addMealPlan(mealPlan);
 
   Future<void> updateMealPlan(MealPlan mealPlan) async =>
-      database.updateMealPlan(mealPlan);
+      database.mealPlansDao.updateMealPlan(mealPlan);
 
-  Future<void> deleteMealPlan(int id) async => database.deleteMealPlan(id);
+  Future<void> deleteMealPlan(int id) async =>
+      database.mealPlansDao.deleteMealPlan(id);
 
   Future<List<MealPlan>> getMealPlansList() async =>
-      database.getMealPlansList();
+      database.mealPlansDao.getMealPlansList();
 
-  Future<MealPlan> getMealPlan(int id) async => database.getMealPlan(id);
+  Future<MealPlan> getMealPlan(int id) async =>
+      database.mealPlansDao.getMealPlan(id);
 
   Future<Map<Ingredient, int>> getMealPlanIngredients(int mealPlanId) async {
     Map<IngredientData, int> data =
-        await database.getMealPlanIngredients(mealPlanId);
+        await database.mealPlansDao.getMealPlanIngredients(mealPlanId);
 
     Map<Ingredient, int> result = {};
 

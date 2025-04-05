@@ -6,7 +6,7 @@ import 'package:recipes/blocs/recipes/bloc.dart';
 import 'package:recipes/blocs/recipes/events.dart';
 import 'package:recipes/blocs/tags/bloc.dart';
 import 'package:recipes/blocs/tags/events.dart';
-import 'package:recipes/database.dart';
+import 'package:recipes/database/database.dart';
 import 'package:recipes/repositories/grocery_repository.dart';
 import 'package:recipes/repositories/ingredient_repository.dart';
 import 'package:recipes/repositories/meal_plan_repository.dart';

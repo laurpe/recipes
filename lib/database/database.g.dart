@@ -2426,6 +2426,12 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $MealPlansTable mealPlans = $MealPlansTable(this);
   late final $DaysTable days = $DaysTable(this);
   late final $MealsTable meals = $MealsTable(this);
+  late final RecipesDao recipesDao = RecipesDao(this as AppDatabase);
+  late final IngredientsDao ingredientsDao =
+      IngredientsDao(this as AppDatabase);
+  late final TagsDao tagsDao = TagsDao(this as AppDatabase);
+  late final GroceriesDao groceriesDao = GroceriesDao(this as AppDatabase);
+  late final MealPlansDao mealPlansDao = MealPlansDao(this as AppDatabase);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
