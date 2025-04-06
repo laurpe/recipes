@@ -179,18 +179,18 @@ class SingleMealPlanView extends StatelessWidget {
                       );
                     },
                     menuChildren: [
-                      MenuItemButton(
-                        child: const Row(
-                          children: [
-                            Icon(Icons.edit),
-                            SizedBox(width: 8),
-                            Text('Edit'),
-                          ],
-                        ),
-                        onPressed: () {
-                          openEditMealPlan(context, state.mealPlan);
-                        },
-                      ),
+                      // MenuItemButton(
+                      //   child: const Row(
+                      //     children: [
+                      //       Icon(Icons.edit),
+                      //       SizedBox(width: 8),
+                      //       Text('Edit'),
+                      //     ],
+                      //   ),
+                      //   onPressed: () {
+                      //     openEditMealPlan(context, state.mealPlan);
+                      //   },
+                      // ),
                       MenuItemButton(
                         child: const Row(
                           children: [
