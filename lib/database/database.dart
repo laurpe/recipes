@@ -8,15 +8,6 @@ import 'package:recipes/database/daos/meal_plans_dao.dart';
 
 part 'database.g.dart';
 
-// Has limited recipe data, tags and image path.
-class RecipeListItemData {
-  final RecipeData recipe;
-  final List<TagData> tags;
-  final RecipeImageData image;
-
-  RecipeListItemData(this.recipe, this.tags, this.image);
-}
-
 @DataClassName('RecipeData')
 class Recipes extends Table {
   IntColumn get id => integer().autoIncrement()();

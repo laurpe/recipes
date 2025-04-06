@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
@@ -9,7 +8,7 @@ import 'package:recipes/blocs/tags/state.dart';
 import 'package:recipes/database/database.dart';
 import 'package:recipes/helpers/number_formatters.dart';
 import 'package:recipes/models/ingredient.dart';
-import 'package:recipes/models/recipe_detail.dart';
+import 'package:recipes/models/recipe.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:recipes/models/tag.dart';
 import 'package:uuid/uuid.dart';
@@ -60,7 +59,7 @@ Future<void> deleteImageFromDisk(String path) async {
 /// From that input, ingredient amount_per_serving is calculated and stored to the database.
 
 class RecipeForm extends StatefulWidget {
-  final RecipeDetail initialValues;
+  final Recipe initialValues;
   final Function submitRecipe;
 
   const RecipeForm(
@@ -106,7 +105,7 @@ class RecipeFormState extends State<RecipeForm> {
     _id = widget.initialValues.id;
     _name = widget.initialValues.name;
     _instructions = widget.initialValues.instructions;
-    _ingredients = widget.initialValues.ingredients;
+    _ingredients = widget.initialValues.ingredients ?? [];
     _servings = widget.initialValues.servings;
     _favorite = widget.initialValues.favorite;
     _tags = widget.initialValues.tags!;
@@ -179,7 +178,7 @@ class RecipeFormState extends State<RecipeForm> {
       ImageData? imageData =
           _image != null ? await storeImageToDisk(_image!) : null;
 
-      final recipe = RecipeDetail(
+      final recipe = Recipe(
         id: _id,
         name: _name,
         instructions: _instructions,

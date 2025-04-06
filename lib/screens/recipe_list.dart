@@ -6,7 +6,8 @@ import 'package:recipes/blocs/recipes/state.dart';
 import 'package:recipes/blocs/tags/bloc.dart';
 import 'package:recipes/blocs/tags/events.dart';
 import 'package:recipes/blocs/tags/state.dart';
-import 'package:recipes/models/recipe_list_item.dart';
+import 'package:recipes/models/recipe.dart';
+
 import 'package:recipes/models/tag.dart';
 import 'package:recipes/screens/add_recipe.dart';
 import 'package:recipes/screens/groceries.dart';
@@ -218,7 +219,7 @@ class _RecipeListViewState extends State<RecipeListView> {
 }
 
 class RecipeListTile extends StatelessWidget {
-  final RecipeListItem recipe;
+  final Recipe recipe;
 
   const RecipeListTile({
     super.key,

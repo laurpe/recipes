@@ -2,8 +2,8 @@ import 'package:path_provider/path_provider.dart';
 import 'package:recipes/data_mapper.dart';
 import 'package:recipes/database/database.dart';
 import 'package:recipes/models/meal_recipe.dart';
-import 'package:recipes/models/recipe_detail.dart';
-import 'package:recipes/models/recipe_list_item.dart';
+import 'package:recipes/models/recipe.dart';
+
 import 'package:recipes/models/tag.dart';
 
 class RecipeRepository {
@@ -11,7 +11,7 @@ class RecipeRepository {
 
   RecipeRepository({required this.database});
 
-  Future<RecipeDetail> getRecipe(int id) async {
+  Future<Recipe> getRecipe(int id) async {
     final recipeData = await database.recipesDao.getRecipe(id);
     final ingredientsData =
         await database.ingredientsDao.getRecipeIngredients(id);
@@ -24,17 +24,17 @@ class RecipeRepository {
         recipeData, ingredientsData, tagsData, imageData, directory.path);
   }
 
-  Future<List<RecipeListItem>> getRecipes() async {
+  Future<List<Recipe>> getRecipes() async {
     List<RecipeData> recipeData = await database.recipesDao.getRecipes();
 
     return DataMapper.recipesFromData(recipeData);
   }
 
-  Future<int> addRecipe(RecipeDetail recipe) {
+  Future<int> addRecipe(Recipe recipe) {
     return database.recipesDao.addRecipe(recipe);
   }
 
-  Future<void> updateRecipe(RecipeDetail recipe) {
+  Future<void> updateRecipe(Recipe recipe) {
     return database.recipesDao.updateRecipe(recipe);
   }
 
@@ -42,12 +42,12 @@ class RecipeRepository {
     return database.recipesDao.deleteRecipe(id);
   }
 
-  Future<void> toggleFavoriteRecipe(RecipeDetail recipe) {
+  Future<void> toggleFavoriteRecipe(Recipe recipe) {
     return database.recipesDao.toggleFavoriteRecipe(recipe);
   }
 
   // TODO: do searchRecipes parameters need to be required?
-  Future<List<RecipeListItem>> searchRecipes(
+  Future<List<Recipe>> searchRecipes(
       {required int offset,
       required String query,
       required List<Tag> tags,

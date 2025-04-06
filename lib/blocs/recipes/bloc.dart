@@ -1,7 +1,8 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:recipes/blocs/recipes/events.dart';
 import 'package:recipes/blocs/recipes/state.dart';
-import 'package:recipes/models/recipe_list_item.dart';
+import 'package:recipes/models/recipe.dart';
+
 import 'package:recipes/models/tag.dart';
 import 'package:recipes/repositories/recipe_repository.dart';
 
@@ -19,7 +20,7 @@ class RecipesBloc extends Bloc<RecipesEvent, RecipesState> {
 
             final recipes = currentState.recipes.map((r) {
               if (r.id == recipe.id) {
-                return recipe.toRecipeListItem();
+                return recipe;
               }
               return r;
             }).toList();
@@ -67,7 +68,7 @@ class RecipesBloc extends Bloc<RecipesEvent, RecipesState> {
       (event, emit) async {
         try {
           int? offset = event.offset;
-          List<RecipeListItem> recipes = [];
+          List<Recipe> recipes = [];
           String? query = event.query;
           List<Tag>? tags = event.tags;
           bool? favorites = event.favorites;

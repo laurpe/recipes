@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'package:recipes/models/recipe_detail.dart';
+import 'package:recipes/models/recipe.dart';
 import 'package:recipes/models/tag.dart';
 
 abstract class RecipesEvent extends Equatable {
@@ -19,7 +19,7 @@ class GetRecipes extends RecipesEvent {
 }
 
 class RecipeUpdated extends RecipesEvent {
-  final RecipeDetail recipe;
+  final Recipe recipe;
 
   const RecipeUpdated({required this.recipe});
 }

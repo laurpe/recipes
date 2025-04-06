@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'package:recipes/models/recipe_detail.dart';
+import 'package:recipes/models/recipe.dart';
 
 sealed class RecipeState extends Equatable {
   const RecipeState();
@@ -9,7 +9,7 @@ sealed class RecipeState extends Equatable {
 }
 
 class LoadedRecipeState extends RecipeState {
-  final RecipeDetail recipe;
+  final Recipe recipe;
 
   const LoadedRecipeState({required this.recipe});
 

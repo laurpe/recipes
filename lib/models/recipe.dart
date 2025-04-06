@@ -2,13 +2,12 @@ import 'package:drift/drift.dart';
 import 'package:equatable/equatable.dart';
 import 'package:recipes/database/database.dart';
 import 'package:recipes/models/ingredient.dart';
-import 'package:recipes/models/recipe_list_item.dart';
 import 'package:recipes/models/tag.dart';
 
-class RecipeDetail extends Equatable {
+class Recipe extends Equatable {
   final int? id;
   final String name;
-  final List<Ingredient> ingredients;
+  final List<Ingredient>? ingredients;
   final String instructions;
   final bool favorite;
   final int servings;
@@ -19,10 +18,10 @@ class RecipeDetail extends Equatable {
   final double? fatPerServing;
   final double? caloriesPerServing;
 
-  const RecipeDetail({
+  const Recipe({
     this.id,
     required this.name,
-    required this.ingredients,
+    this.ingredients,
     required this.instructions,
     required this.favorite,
     required this.servings,
@@ -33,15 +32,6 @@ class RecipeDetail extends Equatable {
     this.fatPerServing,
     this.caloriesPerServing,
   });
-
-  RecipeListItem toRecipeListItem() {
-    return RecipeListItem(
-        id: id,
-        name: name,
-        favorite: favorite,
-        tags: tags,
-        imagePath: imagePath);
-  }
 
   RecipesCompanion toCompanion() {
     return RecipesCompanion(
@@ -55,7 +45,7 @@ class RecipeDetail extends Equatable {
         caloriesPerServing: Value(caloriesPerServing));
   }
 
-  RecipeDetail copyWith({
+  Recipe copyWith({
     int? id,
     String? name,
     List<Ingredient>? ingredients,
@@ -69,7 +59,7 @@ class RecipeDetail extends Equatable {
     double? fatPerServing,
     double? caloriesPerServing,
   }) {
-    return RecipeDetail(
+    return Recipe(
       id: id ?? this.id,
       name: name ?? this.name,
       ingredients: ingredients ?? this.ingredients,

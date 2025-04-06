@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:recipes/database/database.dart';
 import 'package:recipes/models/meal_plan.dart';
-import 'package:recipes/models/recipe_list_item.dart';
+import 'package:recipes/models/recipe.dart';
+
 import 'package:recipes/repositories/recipe_repository.dart';
 import 'package:recipes/screens/meal_plan.dart';
 
@@ -33,7 +34,7 @@ class MealPlanForm extends StatefulWidget {
 
 class MealPlanFormState extends State<MealPlanForm> {
   final _formKey = GlobalKey<FormState>();
-  late List<RecipeListItem> _recipes = [];
+  late List<Recipe> _recipes = [];
   final RecipeRepository recipeRepository = GetIt.I<RecipeRepository>();
 
   MealPlan mealPlan = const MealPlan(name: '', servingsPerMeal: 2, days: [

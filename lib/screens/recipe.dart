@@ -9,7 +9,7 @@ import 'package:recipes/blocs/recipe/state.dart';
 import 'package:recipes/database/database.dart';
 import 'package:recipes/helpers/add_ingredients_to_groceries.dart';
 import 'package:recipes/helpers/number_formatters.dart';
-import 'package:recipes/models/recipe_detail.dart';
+import 'package:recipes/models/recipe.dart';
 import 'package:recipes/repositories/recipe_repository.dart';
 import 'package:recipes/screens/edit_recipe.dart';
 
@@ -19,20 +19,19 @@ sealed class Result<T> {
   Result(this.data);
 }
 
-class Updated extends Result<RecipeDetail> {
-  Updated(RecipeDetail data) : super(data);
+class Updated extends Result<Recipe> {
+  Updated(Recipe data) : super(data);
 }
 
 class Deleted extends Result<int> {
   Deleted(int data) : super(data);
 }
 
-class Added extends Result<RecipeDetail> {
-  Added(RecipeDetail data) : super(data);
+class Added extends Result<Recipe> {
+  Added(Recipe data) : super(data);
 }
 
-Future<void> addRecipeToGroceries(
-    RecipeDetail recipe, BuildContext context) async {
+Future<void> addRecipeToGroceries(Recipe recipe, BuildContext context) async {
   try {
     await addRecipeIngredientsToGroceries(recipe, recipe.servings);
 
@@ -54,7 +53,7 @@ Future<void> addRecipeToGroceries(
   }
 }
 
-Future<void> openEditRecipe(BuildContext context, RecipeDetail recipe) async {
+Future<void> openEditRecipe(BuildContext context, Recipe recipe) async {
   final Result? result = await Navigator.push(
     context,
     MaterialPageRoute(
@@ -337,7 +336,7 @@ class SingleRecipeView extends StatelessWidget {
                       padding: const EdgeInsets.all(8.0),
                       shrinkWrap: true,
                       children: [
-                        for (var ingredient in state.recipe.ingredients)
+                        for (var ingredient in state.recipe.ingredients ?? [])
                           Row(
                             children: [
                               SizedBox(

@@ -1,8 +1,8 @@
 import 'package:drift/drift.dart';
 import 'package:recipes/database/database.dart';
 import 'package:recipes/helpers/delete_image_from_disk.dart';
-import 'package:recipes/models/recipe_detail.dart';
-import 'package:recipes/models/recipe_list_item.dart';
+import 'package:recipes/models/recipe.dart';
+
 import 'package:recipes/models/tag.dart';
 
 part 'recipes_dao.g.dart';
@@ -21,12 +21,12 @@ class RecipesDao extends DatabaseAccessor<AppDatabase> with _$RecipesDaoMixin {
     return select(recipes).get();
   }
 
-  Future<int> addRecipe(RecipeDetail recipe) async {
+  Future<int> addRecipe(Recipe recipe) async {
     return into(recipes).insert(recipe.toCompanion());
   }
 
   // Update a recipe.
-  Future<void> updateRecipe(RecipeDetail recipe) async {
+  Future<void> updateRecipe(Recipe recipe) async {
     await (update(recipes)..where((r) => r.id.equals(recipe.id!)))
         .write(recipe.toCompanion());
   }
@@ -57,14 +57,14 @@ class RecipesDao extends DatabaseAccessor<AppDatabase> with _$RecipesDaoMixin {
   }
 
   // TODO: check where this is used, doesn't take the boolean anymore
-  Future<void> toggleFavoriteRecipe(RecipeDetail recipe) async {
+  Future<void> toggleFavoriteRecipe(Recipe recipe) async {
     await (update(recipes)..where((r) => r.id.equals(recipe.id!)))
         .write(RecipesCompanion(favorite: Value(!recipe.favorite)));
   }
 
   // Search recipes.
   // TODO: refactor + just give out recipedata
-  Future<List<RecipeListItem>> searchRecipes({
+  Future<List<Recipe>> searchRecipes({
     required int offset,
     required String query,
     required List<Tag> tags,
@@ -145,13 +145,15 @@ class RecipesDao extends DatabaseAccessor<AppDatabase> with _$RecipesDaoMixin {
       recipeMaps = result.map((row) => row.data).toList();
     }
 
-    List<RecipeListItem> recipeList = [];
+    List<Recipe> recipeList = [];
     for (final recipe in recipeMaps) {
       recipeList.add(
-        RecipeListItem(
+        Recipe(
           id: recipe['id'],
           name: recipe['name'],
           favorite: recipe['favorite'] == 1 ? true : false,
+          instructions: recipe['instructions'],
+          servings: recipe['servings'],
         ),
       );
     }

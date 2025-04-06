@@ -2,7 +2,7 @@ import 'package:collection/collection.dart';
 import 'package:get_it/get_it.dart';
 import 'package:recipes/models/grocery.dart';
 import 'package:recipes/models/ingredient.dart';
-import 'package:recipes/models/recipe_detail.dart';
+import 'package:recipes/models/recipe.dart';
 import 'package:recipes/repositories/grocery_repository.dart';
 
 /// Converts grocery units to default units.
@@ -52,10 +52,10 @@ List<Grocery> combineDuplicateGroceries(List<Grocery> groceries) {
 
 // TODO: combine this and next method
 Future<void> addRecipeIngredientsToGroceries(
-    RecipeDetail recipe, int servings) async {
+    Recipe recipe, int servings) async {
   final groceryRepository = GetIt.I<GroceryRepository>();
   final groceries = await groceryRepository.getGroceries();
-  final ingredients = recipe.ingredients;
+  final ingredients = recipe.ingredients ?? [];
   final List<Grocery> newGroceries = [];
   final int timestamp = DateTime.now().millisecondsSinceEpoch;
 

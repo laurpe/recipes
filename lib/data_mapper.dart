@@ -2,18 +2,17 @@ import 'package:recipes/database/database.dart';
 import 'package:recipes/models/grocery.dart';
 import 'package:recipes/models/ingredient.dart';
 import 'package:recipes/models/meal_recipe.dart';
-import 'package:recipes/models/recipe_detail.dart';
-import 'package:recipes/models/recipe_list_item.dart';
+import 'package:recipes/models/recipe.dart';
 import 'package:recipes/models/tag.dart';
 
 class DataMapper {
-  static RecipeDetail recipeFromData(
+  static Recipe recipeFromData(
       RecipeData recipeData,
       List<IngredientData> ingredientsData,
       List<TagData> tagsData,
       RecipeImageData? imageData,
       String? path) {
-    return RecipeDetail(
+    return Recipe(
         id: recipeData.id,
         name: recipeData.name,
         ingredients: ingredientsFromData(ingredientsData),
@@ -28,11 +27,15 @@ class DataMapper {
         caloriesPerServing: recipeData.caloriesPerServing);
   }
 
-  // Use RecipeListItem to avoid creating another model for recipe with only id and name. Favorite is not needed but is required by the model.
-  static List<RecipeListItem> recipesFromData(List<RecipeData> data) {
-    return data.map((recipe) {
-      return RecipeListItem(
-          id: recipe.id, name: recipe.name, favorite: recipe.favorite);
+  static List<Recipe> recipesFromData(List<RecipeData> data) {
+    return data.map((item) {
+      return Recipe(
+        id: item.id,
+        name: item.name,
+        instructions: item.instructions,
+        favorite: item.favorite,
+        servings: item.servings,
+      );
     }).toList();
   }
 
