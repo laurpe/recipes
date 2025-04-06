@@ -1,4 +1,6 @@
+import 'package:drift/drift.dart';
 import 'package:equatable/equatable.dart';
+import 'package:recipes/database/database.dart';
 
 class MealPlan extends Equatable {
   final int? id;
@@ -23,6 +25,13 @@ class MealPlan extends Equatable {
     }
 
     return map;
+  }
+
+  MealPlansCompanion toCompanion() {
+    return MealPlansCompanion(
+      name: Value(name),
+      servingsPerMeal: Value(servingsPerMeal),
+    );
   }
 
   MealPlan copyWith({
@@ -62,6 +71,10 @@ class Day extends Equatable {
     return map;
   }
 
+  DaysCompanion toCompanion(int mealPlanId) {
+    return DaysCompanion(name: Value(name), mealPlanId: Value(mealPlanId));
+  }
+
   Day copyWith({
     int? id,
     String? name,
@@ -98,6 +111,7 @@ class Day extends Equatable {
 }
 
 class Meal extends Equatable {
+  // TODO: should recipeId be here or passed separately?
   final int? id;
   final String name;
   final int? recipeId;
@@ -132,6 +146,14 @@ class Meal extends Equatable {
     }
 
     return map;
+  }
+
+  MealsCompanion toCompanion(dayId) {
+    return MealsCompanion(
+      name: Value(name),
+      recipeId: Value(recipeId!),
+      dayId: Value(dayId),
+    );
   }
 
   Meal copyWith({

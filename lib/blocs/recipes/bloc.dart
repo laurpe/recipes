@@ -1,13 +1,15 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:recipes/database.dart';
 import 'package:recipes/blocs/recipes/events.dart';
 import 'package:recipes/blocs/recipes/state.dart';
 import 'package:recipes/models/recipe.dart';
 
-class RecipesBloc extends Bloc<RecipesEvent, RecipesState> {
-  final DatabaseClient databaseClient;
+import 'package:recipes/models/tag.dart';
+import 'package:recipes/repositories/recipe_repository.dart';
 
-  RecipesBloc({required this.databaseClient}) : super(LoadingRecipesState()) {
+class RecipesBloc extends Bloc<RecipesEvent, RecipesState> {
+  final RecipeRepository recipeRepository;
+
+  RecipesBloc({required this.recipeRepository}) : super(LoadingRecipesState()) {
     on<RecipeUpdated>(
       (event, emit) async {
         try {
@@ -71,7 +73,7 @@ class RecipesBloc extends Bloc<RecipesEvent, RecipesState> {
           List<Tag>? tags = event.tags;
           bool? favorites = event.favorites;
 
-          int totalCount = await databaseClient.getRecipesCount();
+          int totalCount = await recipeRepository.getRecipesCount();
           int pageSize = 15;
           int pages = (totalCount / pageSize).ceil();
           int currentPage = (offset ?? 0 / pageSize).ceil() +
@@ -96,7 +98,7 @@ class RecipesBloc extends Bloc<RecipesEvent, RecipesState> {
             }
           }
 
-          final newRecipes = await databaseClient.searchRecipes(
+          final newRecipes = await recipeRepository.searchRecipes(
             offset: offset ?? 0,
             query: query ?? '',
             tags: tags ?? [],

@@ -1,17 +1,17 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:recipes/blocs/groceries/events.dart';
 import 'package:recipes/blocs/groceries/state.dart';
-import 'package:recipes/database.dart';
 import 'package:recipes/models/grocery.dart';
+import 'package:recipes/repositories/grocery_repository.dart';
 
 class GroceriesBloc extends Bloc<GroceriesEvent, GroceriesState> {
-  final DatabaseClient databaseClient;
+  GroceryRepository groceryRepository;
 
-  GroceriesBloc({required this.databaseClient})
+  GroceriesBloc({required this.groceryRepository})
       : super(LoadingGroceriesState()) {
     on<GetGroceries>((event, emit) async {
       try {
-        List<Grocery> groceries = await databaseClient.getGroceries();
+        List<Grocery> groceries = await groceryRepository.getGroceries();
         groceries.sort((a, b) {
           if (a.isBought && !b.isBought) {
             return 1;
@@ -28,7 +28,7 @@ class GroceriesBloc extends Bloc<GroceriesEvent, GroceriesState> {
     });
     on<DeleteGroceries>((event, emit) async {
       try {
-        await databaseClient.deleteGroceries();
+        await groceryRepository.deleteGroceries();
         emit(const LoadedGroceriesState(groceries: []));
       } catch (error) {
         emit(ErrorLoadingGroceriesState());
@@ -44,7 +44,7 @@ class GroceriesBloc extends Bloc<GroceriesEvent, GroceriesState> {
 
       try {
         for (var grocery in reorderedGroceries) {
-          await databaseClient.updateGrocery(grocery);
+          await groceryRepository.updateGrocery(grocery);
         }
         emit(LoadedGroceriesState(groceries: event.groceries));
       } catch (error) {

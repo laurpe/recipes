@@ -1,6 +1,8 @@
 import 'package:equatable/equatable.dart';
 import 'package:recipes/models/recipe.dart';
 
+import 'package:recipes/models/tag.dart';
+
 sealed class RecipesState extends Equatable {
   const RecipesState();
 

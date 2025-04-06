@@ -6,10 +6,11 @@ import 'package:get_it/get_it.dart';
 import 'package:recipes/blocs/recipe/bloc.dart';
 import 'package:recipes/blocs/recipe/events.dart';
 import 'package:recipes/blocs/recipe/state.dart';
-import 'package:recipes/database.dart';
+import 'package:recipes/database/database.dart';
 import 'package:recipes/helpers/add_ingredients_to_groceries.dart';
 import 'package:recipes/helpers/number_formatters.dart';
 import 'package:recipes/models/recipe.dart';
+import 'package:recipes/repositories/recipe_repository.dart';
 import 'package:recipes/screens/edit_recipe.dart';
 
 sealed class Result<T> {
@@ -32,7 +33,7 @@ class Added extends Result<Recipe> {
 
 Future<void> addRecipeToGroceries(Recipe recipe, BuildContext context) async {
   try {
-    await addIngredientsToGroceries(recipe, recipe.servings);
+    await addRecipeIngredientsToGroceries(recipe, recipe.servings);
 
     if (!context.mounted) return;
 
@@ -82,8 +83,9 @@ class SingleRecipe extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (_) {
-        final databaseClient = GetIt.I<DatabaseClient>();
-        return RecipeBloc(databaseClient: databaseClient, recipeId: recipeId)
+        final recipeRepository = GetIt.I<RecipeRepository>();
+        return RecipeBloc(
+            recipeRepository: recipeRepository, recipeId: recipeId)
           ..add(GetRecipe());
       },
       child: const SingleRecipeView(),
@@ -121,7 +123,9 @@ class SingleRecipeView extends StatelessWidget {
               child: const Text('Yes'),
               onPressed: () async {
                 try {
-                  await GetIt.I<DatabaseClient>().deleteRecipe(recipeId);
+                  await GetIt.I<AppDatabase>()
+                      .recipesDao
+                      .deleteRecipe(recipeId);
 
                   if (!context.mounted) return;
 
@@ -332,7 +336,7 @@ class SingleRecipeView extends StatelessWidget {
                       padding: const EdgeInsets.all(8.0),
                       shrinkWrap: true,
                       children: [
-                        for (var ingredient in state.recipe.ingredients)
+                        for (var ingredient in state.recipe.ingredients ?? [])
                           Row(
                             children: [
                               SizedBox(

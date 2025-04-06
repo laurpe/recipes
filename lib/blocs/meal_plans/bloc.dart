@@ -1,18 +1,18 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:recipes/blocs/meal_plans/events.dart';
 import 'package:recipes/blocs/meal_plans/state.dart';
-import 'package:recipes/database.dart';
+import 'package:recipes/repositories/meal_plan_repository.dart';
 
 class MealPlansBloc extends Bloc<MealPlansEvent, MealPlansState> {
-  final DatabaseClient databaseClient;
+  final MealPlanRepository mealPlanRepository;
 
-  MealPlansBloc({required this.databaseClient})
+  MealPlansBloc({required this.mealPlanRepository})
       : super(LoadingMealPlansState()) {
     on<GetMealPlans>((event, emit) async {
       try {
         emit(LoadingMealPlansState());
         emit(LoadedMealPlansState(
-            mealPlans: await databaseClient.getMealPlansList()));
+            mealPlans: await mealPlanRepository.getMealPlansList()));
       } catch (error) {
         emit(ErrorLoadingMealPlansState());
       }

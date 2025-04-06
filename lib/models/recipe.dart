@@ -1,71 +1,13 @@
+import 'package:drift/drift.dart';
 import 'package:equatable/equatable.dart';
-
-class Ingredient extends Equatable {
-  final int? id;
-  final double amountPerServing;
-  final String unit;
-  final String name;
-
-  const Ingredient(
-      {this.id,
-      required this.amountPerServing,
-      required this.unit,
-      required this.name});
-
-  Map<String, dynamic> toMap() {
-    Map<String, dynamic> map = {
-      'amount_per_serving': amountPerServing,
-      'unit': unit,
-      'name': name,
-    };
-
-    if (id != null) {
-      map['id'] = id;
-    }
-
-    return map;
-  }
-
-  @override
-  List<Object?> get props => [id, amountPerServing, unit, name];
-}
-
-class Tag extends Equatable {
-  final int? id;
-  final String name;
-
-  const Tag({this.id, required this.name});
-
-  Map<String, dynamic> toMap() {
-    Map<String, dynamic> map = {
-      'name': name,
-    };
-
-    if (id != null) {
-      map['id'] = id;
-    }
-
-    return map;
-  }
-
-  Tag copyWith({
-    int? id,
-    String? name,
-  }) {
-    return Tag(
-      id: id ?? this.id,
-      name: name ?? this.name,
-    );
-  }
-
-  @override
-  List<Object?> get props => [id, name];
-}
+import 'package:recipes/database/database.dart';
+import 'package:recipes/models/ingredient.dart';
+import 'package:recipes/models/tag.dart';
 
 class Recipe extends Equatable {
   final int? id;
   final String name;
-  final List<Ingredient> ingredients;
+  final List<Ingredient>? ingredients;
   final String instructions;
   final bool favorite;
   final int servings;
@@ -79,7 +21,7 @@ class Recipe extends Equatable {
   const Recipe({
     this.id,
     required this.name,
-    required this.ingredients,
+    this.ingredients,
     required this.instructions,
     required this.favorite,
     required this.servings,
@@ -91,23 +33,16 @@ class Recipe extends Equatable {
     this.caloriesPerServing,
   });
 
-  Map<String, dynamic> toMap() {
-    Map<String, dynamic> map = {
-      'name': name,
-      'instructions': instructions,
-      'favorite': favorite ? 1 : 0,
-      'servings': servings,
-      'carbohydrates_per_serving': carbohydratesPerServing,
-      'protein_per_serving': proteinPerServing,
-      'fat_per_serving': fatPerServing,
-      'calories_per_serving': caloriesPerServing,
-    };
-
-    if (id != null) {
-      map['id'] = id;
-    }
-
-    return map;
+  RecipesCompanion toCompanion() {
+    return RecipesCompanion(
+        name: Value(name),
+        instructions: Value(instructions),
+        favorite: Value(favorite),
+        servings: Value(servings),
+        carbohydratesPerServing: Value(carbohydratesPerServing),
+        proteinPerServing: Value(proteinPerServing),
+        fatPerServing: Value(fatPerServing),
+        caloriesPerServing: Value(caloriesPerServing));
   }
 
   Recipe copyWith({
@@ -150,39 +85,10 @@ class Recipe extends Equatable {
         favorite,
         servings,
         tags,
+        imagePath,
         carbohydratesPerServing,
         proteinPerServing,
         fatPerServing,
         caloriesPerServing
       ];
-}
-
-class RecipeListItem extends Equatable {
-  final int id;
-  final String name;
-
-  const RecipeListItem({
-    required this.id,
-    required this.name,
-  });
-
-  @override
-  List<Object?> get props => [id, name];
-}
-
-class MealRecipe {
-  final int recipeId;
-  final String recipeName;
-  final double? carbohydratesPerServing;
-  final double? proteinPerServing;
-  final double? fatPerServing;
-  final double? caloriesPerServing;
-
-  const MealRecipe(
-      {required this.recipeId,
-      required this.recipeName,
-      this.carbohydratesPerServing,
-      this.proteinPerServing,
-      this.fatPerServing,
-      this.caloriesPerServing});
 }

@@ -1,7 +1,9 @@
+import 'package:collection/collection.dart';
 import 'package:get_it/get_it.dart';
-import 'package:recipes/database.dart';
 import 'package:recipes/models/grocery.dart';
+import 'package:recipes/models/ingredient.dart';
 import 'package:recipes/models/recipe.dart';
+import 'package:recipes/repositories/grocery_repository.dart';
 
 /// Converts grocery units to default units.
 Grocery unitsToDefaults(Grocery grocery) {
@@ -48,10 +50,12 @@ List<Grocery> combineDuplicateGroceries(List<Grocery> groceries) {
   return resultMap.values.toList();
 }
 
-Future<void> addIngredientsToGroceries(Recipe recipe, int servings) async {
-  final databaseClient = GetIt.I<DatabaseClient>();
-  final groceries = await databaseClient.getGroceries();
-  final ingredients = recipe.ingredients;
+// TODO: combine this and next method
+Future<void> addRecipeIngredientsToGroceries(
+    Recipe recipe, int servings) async {
+  final groceryRepository = GetIt.I<GroceryRepository>();
+  final groceries = await groceryRepository.getGroceries();
+  final ingredients = recipe.ingredients ?? [];
   final List<Grocery> newGroceries = [];
   final int timestamp = DateTime.now().millisecondsSinceEpoch;
 
@@ -79,7 +83,44 @@ Future<void> addIngredientsToGroceries(Recipe recipe, int servings) async {
       combineDuplicateGroceries(unitCorrectedGroceries);
 
   try {
-    databaseClient.insertOrUpdateGroceries(combinedGroceries);
+    groceryRepository.insertOrUpdateGroceries(combinedGroceries);
+  } catch (error) {
+    rethrow;
+  }
+}
+
+Future<void> addIngredientsToGroceries(Map<Ingredient, int> ingredients) async {
+  final groceryRepository = GetIt.I<GroceryRepository>();
+  final oldGroceries = await groceryRepository.getGroceries();
+
+  final int timestamp = DateTime.now().millisecondsSinceEpoch;
+
+  final ingredientList = ingredients.entries.toList();
+
+  final newGroceries = ingredientList.mapIndexed((index, ingredient) {
+    return Grocery(
+      name: ingredient.key.name,
+      // multiply amountPerServing by ingredient multiplier
+      amount: ingredient.key.amountPerServing * ingredient.value,
+      unit: ingredient.key.unit,
+      isBought: false,
+      listOrder: timestamp + index,
+    );
+  });
+
+  final allGroceries = oldGroceries + newGroceries.toList();
+
+  List<Grocery> unitCorrectedGroceries = [];
+
+  for (var grocery in allGroceries) {
+    unitCorrectedGroceries.add(unitsToDefaults(grocery));
+  }
+
+  List<Grocery> combinedGroceries =
+      combineDuplicateGroceries(unitCorrectedGroceries);
+
+  try {
+    groceryRepository.insertOrUpdateGroceries(combinedGroceries);
   } catch (error) {
     rethrow;
   }

@@ -4,12 +4,11 @@ import 'package:get_it/get_it.dart';
 import 'package:recipes/blocs/meal_plan/bloc.dart';
 import 'package:recipes/blocs/meal_plan/events.dart';
 import 'package:recipes/blocs/meal_plan/state.dart';
-import 'package:recipes/database.dart';
+import 'package:recipes/database/database.dart';
 import 'package:recipes/helpers/number_formatters.dart';
-import 'package:recipes/models/grocery.dart';
 import 'package:recipes/helpers/add_ingredients_to_groceries.dart';
 import 'package:recipes/models/meal_plan.dart';
-import 'package:recipes/models/recipe.dart';
+import 'package:recipes/repositories/meal_plan_repository.dart';
 import 'package:recipes/screens/edit_meal_plan.dart';
 
 // TODO: make this and recipe result use same class
@@ -33,14 +32,12 @@ class Added extends Result<MealPlan> {
 
 Future<void> addMealplanToGroceries(
     MealPlan mealPlan, BuildContext context) async {
-  final databaseClient = GetIt.I<DatabaseClient>();
-  final recipes = await databaseClient.getMealPlanRecipes(mealPlan.id!);
+  final mealPlanRepository = GetIt.I<MealPlanRepository>();
+  final ingredients =
+      await mealPlanRepository.getMealPlanIngredients(mealPlan.id!);
 
-  /// TODO: could be optimized by adding all groceries at once
   try {
-    for (var recipe in recipes) {
-      await addIngredientsToGroceries(recipe, mealPlan.servingsPerMeal);
-    }
+    await addIngredientsToGroceries(ingredients);
 
     if (!context.mounted) return;
 
@@ -56,83 +53,6 @@ Future<void> addMealplanToGroceries(
         content: Text('Could not add meal plan to grocery list.'),
       ),
     );
-  }
-}
-
-Future<void> addGroceries(
-    Recipe recipe, int servings, BuildContext context) async {
-  final databaseClient = GetIt.I<DatabaseClient>();
-  final groceries = await databaseClient.getGroceries();
-  final ingredients = recipe.ingredients;
-  final List<Grocery> newGroceries = [];
-  final int timestamp = DateTime.now().millisecondsSinceEpoch;
-
-  for (var ingredient in ingredients) {
-    newGroceries.add(
-      Grocery(
-        name: ingredient.name,
-        amount: ingredient.amountPerServing * servings,
-        unit: ingredient.unit,
-        isBought: false,
-        listOrder: timestamp + ingredients.indexOf(ingredient),
-      ),
-    );
-  }
-
-  final allGroceries = groceries + newGroceries;
-
-  /// Converts grocery units to default units
-  Grocery unitsToDefaults(Grocery grocery) {
-    switch (grocery.unit) {
-      case 'tl':
-        return grocery.copyWith(amount: grocery.amount * 5, unit: 'ml');
-      case 'rkl':
-        return grocery.copyWith(amount: grocery.amount * 15, unit: 'ml');
-      case 'cl':
-        return grocery.copyWith(amount: grocery.amount * 10, unit: 'ml');
-      case 'dl':
-        return grocery.copyWith(amount: grocery.amount * 100, unit: 'ml');
-      case 'l':
-        return grocery.copyWith(amount: grocery.amount * 1000, unit: 'ml');
-      case 'kg':
-        return grocery.copyWith(amount: grocery.amount * 1000, unit: 'g');
-      default:
-        return grocery;
-    }
-  }
-
-  List<Grocery> unitCorrectedGroceries = [];
-
-  for (var grocery in allGroceries) {
-    unitCorrectedGroceries.add(unitsToDefaults(grocery));
-  }
-
-  Map<String, Grocery> resultMap =
-      unitCorrectedGroceries.fold(<String, Grocery>{}, (accumulator, grocery) {
-    if (accumulator.containsKey(grocery.name)) {
-      accumulator[grocery.name] = Grocery(
-          id: accumulator[grocery.name]!.id,
-          name: grocery.name,
-          amount: accumulator[grocery.name]!.amount + grocery.amount,
-          unit: accumulator[grocery.name]!.unit,
-          isBought: accumulator[grocery.name]!.isBought,
-          listOrder: accumulator[grocery.name]!.listOrder);
-      return accumulator;
-    }
-    accumulator[grocery.name] = grocery;
-    return accumulator;
-  });
-
-  List<Grocery> finalList = resultMap.values.toList();
-
-  try {
-    for (var grocery in finalList) {
-      grocery.id == null
-          ? await databaseClient.insertGrocery(grocery)
-          : await databaseClient.updateGrocery(grocery);
-    }
-  } catch (error) {
-    rethrow;
   }
 }
 
@@ -182,7 +102,9 @@ Future confirmMealPlanDelete(BuildContext context, int mealPlanId) async {
             child: const Text('Yes'),
             onPressed: () async {
               try {
-                await GetIt.I<DatabaseClient>().deleteMealPlan(mealPlanId);
+                await GetIt.I<AppDatabase>()
+                    .mealPlansDao
+                    .deleteMealPlan(mealPlanId);
 
                 if (!context.mounted) return;
 
@@ -209,9 +131,9 @@ class SingleMealPlan extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider(
         create: (_) {
-          final databaseClient = GetIt.I<DatabaseClient>();
+          final mealPlanRepository = GetIt.I<MealPlanRepository>();
           return MealPlanBloc(
-              databaseClient: databaseClient, mealPlanId: mealPlanId)
+              mealPlanRepository: mealPlanRepository, mealPlanId: mealPlanId)
             ..add(GetMealPlan());
         },
         child: const SingleMealPlanView());
@@ -257,18 +179,18 @@ class SingleMealPlanView extends StatelessWidget {
                       );
                     },
                     menuChildren: [
-                      MenuItemButton(
-                        child: const Row(
-                          children: [
-                            Icon(Icons.edit),
-                            SizedBox(width: 8),
-                            Text('Edit'),
-                          ],
-                        ),
-                        onPressed: () {
-                          openEditMealPlan(context, state.mealPlan);
-                        },
-                      ),
+                      // MenuItemButton(
+                      //   child: const Row(
+                      //     children: [
+                      //       Icon(Icons.edit),
+                      //       SizedBox(width: 8),
+                      //       Text('Edit'),
+                      //     ],
+                      //   ),
+                      //   onPressed: () {
+                      //     openEditMealPlan(context, state.mealPlan);
+                      //   },
+                      // ),
                       MenuItemButton(
                         child: const Row(
                           children: [

@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
-import 'package:recipes/database.dart';
+import 'package:recipes/database/database.dart';
 import 'package:recipes/models/meal_plan.dart';
 import 'package:recipes/models/recipe.dart';
+
+import 'package:recipes/repositories/recipe_repository.dart';
 import 'package:recipes/screens/meal_plan.dart';
 
 class EditMealPlan extends StatelessWidget {
@@ -37,20 +39,19 @@ class EditMealPlanForm extends StatefulWidget {
 
 class EditMealPlanFormState extends State<EditMealPlanForm> {
   final _formKey = GlobalKey<FormState>();
-  late List<RecipeListItem> _recipes = [];
+  late List<Recipe> _recipes = [];
   late MealPlan _mealPlan;
+  final RecipeRepository recipeRepository = GetIt.I<RecipeRepository>();
 
   @override
   void initState() {
     super.initState();
 
-    getRecipeList().then((value) => setState(() => _recipes = value));
+    recipeRepository
+        .getRecipes()
+        .then((value) => setState(() => _recipes = value));
 
     _mealPlan = widget.mealPlan;
-  }
-
-  Future<List<RecipeListItem>> getRecipeList() async {
-    return GetIt.I<DatabaseClient>().getRecipeList();
   }
 
   void onSubmit() async {
@@ -58,7 +59,7 @@ class EditMealPlanFormState extends State<EditMealPlanForm> {
       _formKey.currentState!.save();
 
       try {
-        await GetIt.I<DatabaseClient>().updateMealPlan(_mealPlan);
+        await GetIt.I<AppDatabase>().mealPlansDao.updateMealPlan(_mealPlan);
 
         if (mounted) {
           Navigator.of(context).pop(Updated(_mealPlan));

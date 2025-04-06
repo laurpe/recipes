@@ -7,6 +7,8 @@ import 'package:recipes/blocs/tags/bloc.dart';
 import 'package:recipes/blocs/tags/events.dart';
 import 'package:recipes/blocs/tags/state.dart';
 import 'package:recipes/models/recipe.dart';
+
+import 'package:recipes/models/tag.dart';
 import 'package:recipes/screens/add_recipe.dart';
 import 'package:recipes/screens/groceries.dart';
 import 'package:recipes/screens/meal_plan_list.dart';
@@ -269,9 +271,9 @@ class RecipeListTile extends StatelessWidget {
                 : Container(),
           ],
         ),
-        subtitle: recipe.tags!.isNotEmpty
-            ? Text(recipe.tags!.map((tag) => tag.name).join(', '))
-            : null,
+        // subtitle: recipe.tags!.isNotEmpty
+        //     ? Text(recipe.tags!.map((tag) => tag.name).join(', '))
+        //     : null,
       ),
     );
   }

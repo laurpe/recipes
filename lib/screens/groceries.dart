@@ -4,9 +4,10 @@ import 'package:get_it/get_it.dart';
 import 'package:recipes/blocs/groceries/bloc.dart';
 import 'package:recipes/blocs/groceries/events.dart';
 import 'package:recipes/blocs/groceries/state.dart';
-import 'package:recipes/database.dart';
+import 'package:recipes/database/database.dart';
 import 'package:recipes/models/grocery.dart';
 import 'package:recipes/helpers/number_formatters.dart';
+import 'package:recipes/repositories/grocery_repository.dart';
 
 class GroceriesList extends StatelessWidget {
   const GroceriesList({super.key});
@@ -15,8 +16,8 @@ class GroceriesList extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (context) {
-        final databaseClient = GetIt.I<DatabaseClient>();
-        return GroceriesBloc(databaseClient: databaseClient)
+        final groceryRepository = GetIt.I<GroceryRepository>();
+        return GroceriesBloc(groceryRepository: groceryRepository)
           ..add(GetGroceries());
       },
       child: const GroceriesListView(),
@@ -152,7 +153,7 @@ class ReorderableGroceryListState extends State<ReorderableGroceryList> {
       });
 
       try {
-        int id = await GetIt.I<DatabaseClient>().insertGrocery(grocery);
+        int id = await GetIt.I<AppDatabase>().groceriesDao.addGrocery(grocery);
 
         Grocery newGrocery = grocery.copyWith(id: id);
 
@@ -295,7 +296,8 @@ class ReorderableGroceryListState extends State<ReorderableGroceryList> {
                               isBought: true,
                               listOrder: DateTime.now().millisecondsSinceEpoch);
 
-                          await GetIt.I<DatabaseClient>()
+                          await GetIt.I<AppDatabase>()
+                              .groceriesDao
                               .updateGrocery(updatedGrocery);
                           setState(() {
                             _groceries.remove(grocery);
@@ -307,7 +309,8 @@ class ReorderableGroceryListState extends State<ReorderableGroceryList> {
                           Grocery updatedGrocery =
                               grocery.copyWith(isBought: false);
 
-                          await GetIt.I<DatabaseClient>()
+                          await GetIt.I<AppDatabase>()
+                              .groceriesDao
                               .updateGrocery(updatedGrocery);
                           setState(() {
                             _groceries.remove(grocery);
@@ -348,7 +351,8 @@ class ReorderableGroceryListState extends State<ReorderableGroceryList> {
                               ),
                               onPressed: () async {
                                 setState(() {
-                                  GetIt.I<DatabaseClient>()
+                                  GetIt.I<AppDatabase>()
+                                      .groceriesDao
                                       .deleteGrocery(grocery.id!);
                                   _groceries.remove(grocery);
                                 });

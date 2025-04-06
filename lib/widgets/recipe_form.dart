@@ -1,18 +1,18 @@
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:recipes/blocs/tags/bloc.dart';
 import 'package:recipes/blocs/tags/state.dart';
+import 'package:recipes/database/database.dart';
 import 'package:recipes/helpers/number_formatters.dart';
+import 'package:recipes/models/ingredient.dart';
 import 'package:recipes/models/recipe.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:recipes/models/tag.dart';
 import 'package:uuid/uuid.dart';
 import 'package:path/path.dart' as path;
-
-import '../database.dart';
 
 class ImageData {
   final String name;
@@ -105,7 +105,7 @@ class RecipeFormState extends State<RecipeForm> {
     _id = widget.initialValues.id;
     _name = widget.initialValues.name;
     _instructions = widget.initialValues.instructions;
-    _ingredients = widget.initialValues.ingredients;
+    _ingredients = widget.initialValues.ingredients ?? [];
     _servings = widget.initialValues.servings;
     _favorite = widget.initialValues.favorite;
     _tags = widget.initialValues.tags!;
@@ -167,9 +167,12 @@ class RecipeFormState extends State<RecipeForm> {
 
       // User has changed recipe image – delete old image
       if (widget.initialValues.imagePath != null && _imageChanged) {
+        // TODO: this method exists in database client and here, move somewhere to share
         deleteImageFromDisk(widget.initialValues.imagePath!);
 
-        GetIt.I<DatabaseClient>().deleteRecipeImage(widget.initialValues.id!);
+        GetIt.I<AppDatabase>()
+            .recipesDao
+            .deleteRecipeImage(widget.initialValues.id!);
       }
 
       ImageData? imageData =
@@ -196,7 +199,8 @@ class RecipeFormState extends State<RecipeForm> {
         final int recipeId = await widget.submitRecipe(context, recipe);
 
         if (imageData != null) {
-          GetIt.I<DatabaseClient>()
+          GetIt.I<AppDatabase>()
+              .recipesDao
               .insertOrUpdateRecipeImage(recipeId, imageData.name);
         }
 
